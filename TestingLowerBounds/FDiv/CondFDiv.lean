@@ -277,6 +277,53 @@ lemma condFDiv_nonneg [IsMarkovKernel κ] [IsMarkovKernel η]
   have h := fDiv_nonneg (μ := κ x) (ν := η x) hf_cvx hf_cont hf_one
   simp [EReal.toReal_nonneg, h]
 
+example (x : EReal) (h : x ≠ 0) (h' : 0 ≤ x) : 0 < x := by
+  exact lt_of_le_of_ne h' (id (Ne.symm h))
+
+/-
+problem: with the current definition of fdiv the lemma is not true in general, the problem arises in the following cases:
+1. if fDiv f μ ν = ⊤ and ξ = 0, then we have ⊤ = 0
+2. if fDiv f μ ν = ⊥, in this case we have ⊤ = 0 if ξ = 0, or ⊤ = ⊥ if ξ ≠ 0
+3. if fDiv f μ ν < 0 and ξ (univ) = ⊤, then we have ⊤ = ⊥
+We could address 1. and 2. by adding the hypothesis that ξ ≠ 0 and fDiv f μ ν ≠ ⊥, wich are both
+reasonable enough, but 3. is harder to address. One way to solve 3. is by assuming that μ and ν are
+probability measures, that way the fdiv is always nonnegative, but this is a very strong hypothesis.
+One thing to note, though, is that this lemma should always be true mathematically, this is a
+problem with the definition of fdiv, not with the lemma itself. Maybe the problem is even deeper,
+and the definition of integral itself becomes problematic in this situation.
+However for now I will put the hyothesis that μ and ν are probability measures and ξ ≠ 0
+I also have to add the hypothesis on f, but again, these should not be needed in principle
+-/
+lemma condFDiv_const {ξ : Measure β} [NeZero ξ] [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
+    (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hf_cont : ContinuousOn f (Set.Ici 0)) (hf_one : f 1 = 0) :
+    condFDiv f (kernel.const β μ) (kernel.const β ν) ξ = (fDiv f μ ν) * ξ Set.univ := by
+  by_cases h_zero : fDiv f μ ν = 0
+  · simp only [h_zero, zero_mul]
+    rw [condFDiv_eq'] <;>
+    simp only [kernel.const_apply, h_zero, EReal.toReal_zero, integral_zero, EReal.coe_zero, ne_eq,
+      EReal.zero_ne_top, not_false_eq_true, eventually_true, integrable_zero]
+  by_cases h_top : fDiv f μ ν = ⊤
+  · rw [h_top, EReal.top_mul_of_pos _]
+    swap
+    · simp only [EReal.coe_ennreal_pos, Measure.measure_univ_pos, ne_eq, NeZero.ne,
+        not_false_eq_true]
+    simp only [condFDiv_of_not_ae_finite, kernel.const_apply, h_top, ne_eq, not_true_eq_false,
+      eventually_false_iff_eq_bot, ae_eq_bot, NeZero.ne, not_false_eq_true]
+  by_cases hξ_top : ξ Set.univ = ⊤
+  · rw [hξ_top]
+    rw [condFDiv_of_not_integrable]
+    · apply (EReal.mul_top_of_pos _).symm
+      apply lt_of_le_of_ne (fDiv_nonneg hf_cvx hf_cont hf_one) _
+      symm; assumption
+    simp only [kernel.const_apply, integrable_const_iff, hξ_top, lt_self_iff_false, or_false,
+      EReal.toReal_eq_zero_iff, ne_eq, h_zero, not_false_eq_true, h_top, fDiv_ne_bot, and_self]
+  rw [condFDiv_eq' (by simp [h_top]) _]
+  swap; simp [integrable_const_iff, hξ_top, lt_top_iff_ne_top]
+  simp only [kernel.const_apply, integral_const, smul_eq_mul, mul_comm, EReal.coe_mul]
+  congr
+  · exact EReal.coe_toReal h_top fDiv_ne_bot
+  · exact EReal.coe_ennreal_toReal hξ_top
+
 variable [MeasurableSpace.CountablyGenerated β]
 
 section Integrable
