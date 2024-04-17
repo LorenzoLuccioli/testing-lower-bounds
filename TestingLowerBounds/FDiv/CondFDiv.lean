@@ -263,6 +263,13 @@ lemma condFDiv_eq' (hf_ae : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤)
     condFDiv f κ η μ = ((μ[fun x ↦ (fDiv f (κ x) (η x)).toReal] : ℝ) : EReal) :=
   if_pos ⟨hf_ae, hf⟩
 
+lemma condFDiv_zero_measure (hf_ae : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤) (h : μ = 0) :
+    condFDiv f κ η μ = 0 := by
+  rw [condFDiv_eq' hf_ae _, h]
+  · simp only [integral_zero_measure, EReal.coe_zero]
+  · rw [h]
+    simp only [integrable_zero_measure]
+
 lemma condFDiv_nonneg [IsMarkovKernel κ] [IsMarkovKernel η]
     (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hf_cont : ContinuousOn f (Set.Ici 0))
     (hf_one : f 1 = 0) : 0 ≤ condFDiv f κ η μ := by
