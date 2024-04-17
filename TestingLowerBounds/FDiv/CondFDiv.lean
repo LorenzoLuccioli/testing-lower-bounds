@@ -274,7 +274,7 @@ lemma condFDiv_nonneg [IsMarkovKernel κ] [IsMarkovKernel η]
   simp only [EReal.coe_nonneg]
   apply integral_nonneg _
   intro x
-  have h := @fDiv_nonneg _ _ (κ x) (η x) f _ _ hf_cvx hf_cont hf_one
+  have h := fDiv_nonneg (μ := κ x) (ν := η x) hf_cvx hf_cont hf_one
   simp [EReal.toReal_nonneg, h]
 
 variable [MeasurableSpace.CountablyGenerated β]
