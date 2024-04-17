@@ -399,8 +399,17 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       · rw [kl_of_not_integrable h]
         simp only [h, not_false_eq_true, integral_undef, EReal.toReal_top]
 
+
+--TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one
+--Why do we need to assume that β is not empty?
+lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] (μ ν : Measure (α × β))
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    kl μ ν = kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst := by
+  rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
+
+
+
 end Conditional
 
 end ProbabilityTheory
--- TODO : update the blueprint and put the lemmas in the relevant files, if necessary create some files and put them in the ForMathlib folder, after having done this change branch so that this one is dedicated to the PR
 -- TODO : add the chain rule, product version, then the tensorization for kl (see the one for the Renyi divergence)
