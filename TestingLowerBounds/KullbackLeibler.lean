@@ -407,9 +407,14 @@ lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] (μ ν : Measure 
     kl μ ν = kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
-
+lemma kl_prod_two [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
+    [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
+  --I need some lemma that makes me go from the product of measures to the compProd of a measure and a constant kernel, but I didn't find it in the compProd file, nor in the one in mathlib
+  --I will also need some lemma that tells me that the condKL of 2 constant kernels is just the KL of the 2 measures, this is definitely still not implemented, I didn't find anything for fDiv either, maybe it's worth it to implement this lemma for fDiv first and then use it to prove the one for condKL
+  sorry
 
 end Conditional
 
 end ProbabilityTheory
--- TODO : add the chain rule, product version, then the tensorization for kl (see the one for the Renyi divergence)
+-- TODO : add the tensorization for kl (see the one for the Renyi divergence)
