@@ -260,7 +260,7 @@ lemma condKL_of_not_ae_ac (h : ¬ ∀ᵐ a ∂μ, κ a ≪ η a) :
     condKL κ η μ = ⊤ := by
   apply condKL_of_not_ae_ne_top
   rw [kl_ae_ne_top_iff]
-    tauto
+  tauto
 
 @[simp]
 lemma condKL_of_not_ae_integrable (h : ¬ ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) :
