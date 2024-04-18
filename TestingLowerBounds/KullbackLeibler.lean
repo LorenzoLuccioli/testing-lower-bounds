@@ -459,27 +459,15 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     · rw [← llr_def, ← kl_of_ac_of_integrable hμν]
       exact intμν
     · simp_rw [← llr_def]
-      rw [condKL_of_ae_ne_top_of_integrable _ _]
-      rotate_left
-      · filter_upwards [hκη, intκη2] with a ha hκηa
-        intro h
-        apply kl_eq_top_iff.mp at h
-        tauto
-      · apply Integrable.congr intκη
-        filter_upwards [hκη, intκη2] with a ha hκηa
-        rw [kl_of_ac_of_integrable ha hκηa, EReal.toReal_coe]
-        apply integral_congr_ae
-        filter_upwards [ha.ae_le (kernel.rnDeriv_eq_rnDeriv_measure κ η a)] with x hx
-        rw [hx, llr_def]
-      norm_cast
-      apply integral_congr_ae
+      rw [condKL_of_ae_ac_of_ae_integrable_of_integrable' hκη intκη2 _]
+      apply (integrable_kl_iff hκη intκη2).mpr
+      simp_rw [llr_def]
+      convert Integrable.congr intκη _
       filter_upwards [hκη] with a ha
-      by_cases h : Integrable (llr (κ a) (η a)) (κ a)
-      · suffices hh : kl (κ a) (η a) = ∫ x, llr (κ a) (η a) x ∂(κ a) from by simp [hh]
-        exact kl_of_ac_of_integrable (ha) h
-      · rw [kl_of_not_integrable h]
-        simp only [h, not_false_eq_true, integral_undef, EReal.toReal_top]
-
+      have h := ha.ae_le (kernel.rnDeriv_eq_rnDeriv_measure κ η a)
+      apply integral_congr_ae
+      filter_upwards [h] with x hx
+      rw [hx]
 
 --TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one
 --Why do we need to assume that β is not empty?
