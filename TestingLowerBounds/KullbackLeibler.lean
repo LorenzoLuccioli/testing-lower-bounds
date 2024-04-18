@@ -438,6 +438,11 @@ lemma kl_prod_two [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMea
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
   simp only [← condKL_const, ← kl_compProd, compProd_const]
 
+lemma kl_prod_two' [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
+    [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν]:
+    kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
+  simp only [kl_prod_two, measure_univ, EReal.coe_ennreal_one, mul_one]
+
 end Conditional
 
 end ProbabilityTheory
