@@ -293,6 +293,13 @@ lemma condKL_zero_left : condKL 0 η μ = 0 := by
   simp only [kernel.zero_apply, kl_zero_left, EReal.toReal_zero, integral_zero, EReal.coe_zero]
 
 @[simp]
+lemma condKL_zero_right [NeZero μ] (h : ∀ᵐ a ∂μ, κ a ≠ 0) : condKL κ 0 μ = ⊤ := by
+  apply condKL_of_not_ae_ac
+  intro h1
+  apply Filter.eventually_false_iff_eq_bot.mp.mt (NeBot.ne' (f := μ.ae))
+  filter_upwards [h, h1] with a ha h1a using ha (eq_zero_of_ac_zero h1a)
+
+@[simp]
 lemma condKL_zero_measure : condKL κ η 0 = 0 := by
   have hf_ae : ∀ᵐ a ∂(0 : Measure α), kl (κ a) (η a) ≠ ⊤ := by
     simp only [ne_eq, ae_zero, eventually_bot]
