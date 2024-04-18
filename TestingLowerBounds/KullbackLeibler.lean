@@ -439,8 +439,7 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       filter_upwards [h] with x hx
       rw [hx, llr_def]
     apply integral_congr_ae
-    filter_upwards
-    intro a
+    filter_upwards with a
     congr
   _ = ↑(∫ (a : α), log (μ.rnDeriv ν a).toReal ∂μ)
       + ↑(∫ (a : α), ∫ (x : β), log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ) := by
@@ -455,14 +454,12 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     filter_upwards [h] with x hx
     congr
   _ = kl μ ν + condKL κ η μ := by
-    congr
-    · rw [← llr_def, ← kl_of_ac_of_integrable hμν]
-      exact intμν
-    · simp_rw [← llr_def]
-      rw [condKL_of_ae_ac_of_ae_integrable_of_integrable' hκη intκη2 _]
+    congr <;> simp_rw [← llr_def]
+    · rw [← kl_of_ac_of_integrable hμν intμν]
+    · rw [condKL_of_ae_ac_of_ae_integrable_of_integrable' hκη intκη2 _]
       apply (integrable_kl_iff hκη intκη2).mpr
       simp_rw [llr_def]
-      convert Integrable.congr intκη _
+      apply Integrable.congr intκη
       filter_upwards [hκη] with a ha
       have h := ha.ae_le (kernel.rnDeriv_eq_rnDeriv_measure κ η a)
       apply integral_congr_ae
