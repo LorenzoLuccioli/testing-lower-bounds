@@ -96,6 +96,12 @@ lemma kl_zero_left : kl 0 ν = 0 := by
   convert kl_of_ac_of_integrable (Measure.AbsolutelyContinuous.zero _) integrable_zero_measure
   simp only [integral_zero_measure, EReal.coe_zero]
 
+--TODO: put this in the right place, also check that there is not a similar lemma in mathlib, I tried to look for it but I didn't find it.
+lemma eq_zero_of_ac_zero (h : μ ≪ 0) : μ = 0 := Measure.measure_univ_eq_zero.mp (h rfl)
+
+@[simp]
+lemma kl_zero_right [NeZero μ] : kl μ 0 = ⊤ := kl_of_not_ac (eq_zero_of_ac_zero.mt (NeZero.ne _))
+
 lemma kl_eq_top_iff [IsFiniteMeasure μ] [SigmaFinite ν] :
     kl μ ν = ⊤ ↔ μ ≪ ν → ¬ Integrable (llr μ ν) μ := by
   rw [kl_eq_fDiv, fDiv_mul_log_eq_top_iff]
