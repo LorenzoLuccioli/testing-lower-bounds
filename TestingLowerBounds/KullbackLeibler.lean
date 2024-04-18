@@ -493,11 +493,21 @@ lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMe
   simp only [kl_prod_two, measure_univ, EReal.coe_ennreal_one, mul_one]
 
 --TODO: add the tensorization for kl in the finite version, it should be a simple induction using the one for 2 measures, but it's not very easy to even state, because I would like to request the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
+--moreover I don't know how to write the product in the first place, maybe at least I figured out how to write dependent function types
 
--- lemma kl_prod {ι : Type*} [Fintipe ι] {β} [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
---     [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν]
+
+#check Complex.exp_sum
+#check Finset.prod
+
+lemma kl_prod {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
+    [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
+    [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
+  True := by
+  -- kl (∏ i, μ i) (Π i, ν i) = ∑' i, kl (μ i) (μ i) := by
+  sorry
+
 
 end Conditional
 
 end ProbabilityTheory
--- TODO : add the tensorization for kl (see the one for the Renyi divergence)
+-- TODO : add the tensorization for kl for a finite product of measures
