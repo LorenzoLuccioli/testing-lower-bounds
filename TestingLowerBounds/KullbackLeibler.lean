@@ -95,7 +95,14 @@ lemma kl_eq_top_iff [IsFiniteMeasure μ] [SigmaFinite ν] :
     kl μ ν = ⊤ ↔ μ ≪ ν → ¬ Integrable (llr μ ν) μ := by
   rw [kl_eq_fDiv, fDiv_mul_log_eq_top_iff]
 
--- TODO : add the equivalent of integrable_fDiv_iff for kl
+--TODO: consider keeping only this one and getting rid of the previous one, since it is strictly more general
+lemma kl_eq_top_iff' :
+    kl μ ν = ⊤ ↔ ¬ μ ≪ ν ∨ ¬ Integrable (llr μ ν) μ := by
+  constructor <;> intro h <;> push_neg at *
+  · by_contra! hh
+    rw [kl_of_ac_of_integrable hh.1 hh.2] at h
+    exact EReal.coe_ne_top _ h
+  · rcases h with (h | h) <;> simp [h]
 
 section kl_nonneg
 
