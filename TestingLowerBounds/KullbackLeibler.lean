@@ -287,6 +287,11 @@ lemma condKL_nonneg (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel �
   · exact Real.continuous_mul_log.continuousOn
   · norm_num
 
+lemma condKL_const {ξ : Measure β} [NeZero ξ] [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
+    condKL (kernel.const β μ) (kernel.const β ν) ξ = (kl μ ν) * ξ Set.univ := by
+  rw [condKL_eq_condFDiv, kl_eq_fDiv]
+  exact condFDiv_const Real.convexOn_mul_log Real.continuous_mul_log.continuousOn (by norm_num)
+
 lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
     [IsFiniteKernel η] :
     kl (μ ⊗ₘ κ) (μ ⊗ₘ η) = condKL κ η μ := by
