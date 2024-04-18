@@ -287,7 +287,7 @@ lemma condFDiv_nonneg [IsMarkovKernel κ] [IsMarkovKernel η]
 example (x : EReal) (h : x ≠ 0) (h' : 0 ≤ x) : 0 < x := by
   exact lt_of_le_of_ne h' (id (Ne.symm h))
 
-lemma condFDiv_const {ξ : Measure β} (hξ_top : ξ Set.univ ≠ ⊤) (h_ne_bot : fDiv f μ ν ≠ ⊥) :
+lemma condFDiv_const {ξ : Measure β} [IsFiniteMeasure ξ] (h_ne_bot : fDiv f μ ν ≠ ⊥) :
     condFDiv f (kernel.const β μ) (kernel.const β ν) ξ = (fDiv f μ ν) * ξ Set.univ := by
   by_cases hξ_zero : ξ = 0
   · simp only [hξ_zero, condFDiv_zero_measure, Measure.zero_toOuterMeasure, OuterMeasure.coe_zero,
@@ -305,11 +305,11 @@ lemma condFDiv_const {ξ : Measure β} (hξ_top : ξ Set.univ ≠ ⊤) (h_ne_bot
     simp only [condFDiv_of_not_ae_finite, kernel.const_apply, h_top, ne_eq, not_true_eq_false,
       eventually_false_iff_eq_bot, ae_eq_bot, hξ_zero, not_false_eq_true]
   rw [condFDiv_eq' (by simp [h_top]) _]
-  swap; simp [integrable_const_iff, hξ_top, lt_top_iff_ne_top]
+  swap; simp [integrable_const_iff, lt_top_iff_ne_top]
   simp only [kernel.const_apply, integral_const, smul_eq_mul, mul_comm, EReal.coe_mul]
   congr
   · exact EReal.coe_toReal h_top h_ne_bot
-  · exact EReal.coe_ennreal_toReal hξ_top
+  · exact EReal.coe_ennreal_toReal (measure_ne_top _ _)
 
 variable [MeasurableSpace.CountablyGenerated β]
 
