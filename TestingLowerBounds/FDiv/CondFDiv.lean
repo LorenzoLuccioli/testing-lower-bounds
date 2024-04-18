@@ -3,6 +3,7 @@ Copyright (c) 2024 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
+-- theorem foo (n : Nat) : 0 ≤ n := by exact? -- trick to make exact? work TODO : erase this when we are done
 import TestingLowerBounds.MeasureCompProd
 import TestingLowerBounds.FDiv.Basic
 import Mathlib.Probability.Kernel.Disintegration.Basic
