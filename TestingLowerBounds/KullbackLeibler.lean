@@ -96,8 +96,7 @@ lemma kl_eq_top_iff [IsFiniteMeasure μ] [SigmaFinite ν] :
   rw [kl_eq_fDiv, fDiv_mul_log_eq_top_iff]
 
 --TODO: consider keeping only this one and getting rid of the previous one, since it is strictly more general
-lemma kl_eq_top_iff' :
-    kl μ ν = ⊤ ↔ ¬ μ ≪ ν ∨ ¬ Integrable (llr μ ν) μ := by
+lemma kl_eq_top_iff' : kl μ ν = ⊤ ↔ ¬ μ ≪ ν ∨ ¬ Integrable (llr μ ν) μ := by
   constructor <;> intro h <;> push_neg at *
   · by_contra! hh
     rw [kl_of_ac_of_integrable hh.1 hh.2] at h
@@ -228,11 +227,11 @@ lemma condKL_of_not_ae_integrable (h : ¬ ∀ᵐ a ∂μ, Integrable (llr (κ a)
   simp only [ha, ne_eq, not_false_eq_true, kl_of_not_integrable]
 
 @[simp]
-lemma condKL_of_not_ae_ac (h : ¬ ∀ᵐ x ∂μ, κ x ≪ η x) :
+lemma condKL_of_not_ae_ac (h : ¬ ∀ᵐ a ∂μ, κ a ≪ η a) :
     condKL κ η μ = ⊤ := by
   apply condKL_of_not_ae_ne_top
   contrapose! h
-  filter_upwards [h] with x ha
+  filter_upwards [h] with a ha
   contrapose! ha
   simp only [ha, not_false_eq_true, kl_of_not_ac]
 
