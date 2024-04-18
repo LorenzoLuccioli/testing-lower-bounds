@@ -267,7 +267,7 @@ lemma condFDiv_eq' (hf_ae : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤)
 lemma condFDiv_zero_measure : condFDiv f κ η 0 = 0 := by
   have hf_ae : ∀ᵐ a ∂(0 : Measure α), fDiv f (κ a) (η a) ≠ ⊤ := by
     simp only [ne_eq, ae_zero, eventually_bot]
-  rw [condFDiv_eq' hf_ae (by simp only [integrable_zero_measure])]
+  rw [condFDiv_eq' hf_ae integrable_zero_measure]
   simp only [integral_zero_measure, EReal.coe_zero]
 
 lemma condFDiv_nonneg [IsMarkovKernel κ] [IsMarkovKernel η]
