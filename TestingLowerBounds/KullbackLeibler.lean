@@ -91,6 +91,11 @@ lemma kl_eq_fDiv [SigmaFinite μ] [SigmaFinite ν] :
 lemma kl_self (μ : Measure α) [SigmaFinite μ] : kl μ μ = 0 := by
   rw [kl_eq_fDiv, fDiv_self (by norm_num)]
 
+@[simp]
+lemma kl_zero_measure : kl 0 ν = 0 := by
+  convert kl_of_ac_of_integrable (Measure.AbsolutelyContinuous.zero _) integrable_zero_measure
+  simp only [integral_zero_measure, EReal.coe_zero]
+
 lemma kl_eq_top_iff [IsFiniteMeasure μ] [SigmaFinite ν] :
     kl μ ν = ⊤ ↔ μ ≪ ν → ¬ Integrable (llr μ ν) μ := by
   rw [kl_eq_fDiv, fDiv_mul_log_eq_top_iff]
