@@ -278,6 +278,30 @@ lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     rw [← kl_eq_fDiv]
   simp only [ne_eq, h1, h2, condKL_of_ae_ne_top_of_integrable, ← kl_eq_fDiv, condFDiv_eq']
 
+-- TODO : put every hypothesis about condkl in normal form
+-- TODO : add the equivalent of integrable_fDiv_iff for kl
+--lemma that 2 is equiv to 2'. given 1'a, 1'b
+#check integrable_fDiv_iff
+lemma integrable_kl_iff [CountablyGenerated β] [IsFiniteMeasure μ] [SigmaFinite ν] [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a) (h_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)):
+    Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ
+      ↔ Integrable (fun a ↦ integral (κ a) (llr (κ a) (η a))) μ := by
+  -- have h := kl_ae_ne_top_iff.mpr ⟨h_ac, h_int⟩
+  -- simp_rw [kl_eq_fDiv, llr_def] at *
+  -- convert integrable_fDiv_iff h using 1 with x
+  -- apply integrable_congr
+  -- filter_upwards [h_ac, h_int] with a ha1 ha2
+  -- -- have
+  -- convert integral_rnDeriv_smul ha1 using 1 with x
+
+
+  sorry
+  -- simp [mul_comm, integral_rnDeriv_smul]
+  -- rw [mul_comm, integral_rnDeriv_smul]
+
+  -- have := integrable_fDiv_iff h
+
+
 @[simp]
 lemma condKL_self (κ : kernel α β) (μ : Measure α) [IsFiniteKernel κ] : condKL κ κ μ = 0 := by
   simp only [kl_self, ne_eq, not_false_eq_true, eventually_true, EReal.toReal_zero, integrable_zero,
