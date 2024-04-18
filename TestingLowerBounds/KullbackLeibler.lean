@@ -209,6 +209,15 @@ lemma condKL_of_ae_ne_top_of_integrable (h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) �
 lemma condKL_of_not_ae_ne_top (h : ¬ (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤)) :
     condKL κ η μ = ⊤ := if_neg (not_and_of_not_left _ h)
 
+/--Equivalence between two possible versions of the first condition for the finiteness of the conditional KL divergence-/
+lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
+    (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
+  constructor <;> intro h
+  · constructor <;> filter_upwards [h] with a ha <;> have := kl_eq_top_iff'.mpr.mt ha <;> tauto
+  · filter_upwards [h.1, h.2] with a ha1 ha2
+    apply kl_eq_top_iff'.mp.mt
+    tauto
+
 @[simp]
 lemma condKL_of_not_ae_integrable (h : ¬ ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) :
     condKL κ η μ = ⊤ := by
