@@ -481,20 +481,28 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
 
 --TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one
 --Why do we need to assume that β is not empty?
-lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] (μ ν : Measure (α × β))
+lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (α × β)}
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     kl μ ν = kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
+--TODO: choose if it makes sense to keep also the specialized version for probability measures, I think it may be useful to keep it
+--TODO: which of the two lemmas should go into the blueprint? or maybe both?
 lemma kl_prod_two [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
   simp only [← condKL_const, ← kl_compProd, compProd_const]
 
+/--Tensorization property for KL divergence-/
 lemma kl_prod_two' [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
-    [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν]:
+    [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν] :
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
   simp only [kl_prod_two, measure_univ, EReal.coe_ennreal_one, mul_one]
+
+--TODO: add the tensorization for kl in the finite version, it should be a simple induction using the one for 2 measures, but it's not very easy to even state, because I would like to request the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
+
+-- lemma kl_prod {ι : Type*} [Fintipe ι] {β} [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
+--     [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν]
 
 end Conditional
 
