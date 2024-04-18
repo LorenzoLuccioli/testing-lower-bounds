@@ -281,6 +281,15 @@ lemma condKL_of_not_integrable' (h : ¬ Integrable (fun a ↦ integral (κ a) (l
   apply condKL_of_not_integrable
   rwa [integrable_kl_iff (kl_ae_ne_top_iff.mp h_ne_top).1  (kl_ae_ne_top_iff.mp h_ne_top).2]
 
+lemma condKL_eq_top_iff : condKL κ η μ = ⊤ ↔
+    ¬ (∀ᵐ a ∂μ, κ a ≪ η a) ∨ ¬ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a))
+    ∨ ¬ Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ := by
+  constructor <;> intro h
+  · contrapose! h
+    rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h.1 h.2.1 h.2.2]
+    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true]
+  · rcases h with (h | h | h) <;> simp [h]
+
 lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     condKL κ η μ = condFDiv (fun x ↦ x * log x) κ η μ := by
   by_cases h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤
