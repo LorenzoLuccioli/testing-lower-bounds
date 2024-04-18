@@ -11,7 +11,6 @@ import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.L1Space
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 
-
 /-!
 # Kullback-Leibler divergence
 
@@ -129,7 +128,7 @@ lemma kl_ge_mul_log' [IsFiniteMeasure μ] [IsProbabilityMeasure ν]
   (le_fDiv_of_ac Real.convexOn_mul_log Real.continuous_mul_log.continuousOn hμν).trans_eq
     kl_eq_fDiv.symm
 
-lemma kl_ge_mul_log [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     (μ Set.univ).toReal * log ((μ Set.univ).toReal / (ν Set.univ).toReal) ≤ kl μ ν := by
   by_cases hμν : μ ≪ ν
   swap; · simp [hμν]
@@ -142,6 +141,7 @@ lemma kl_ge_mul_log [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
   by_cases hν : ν = 0
   · refine absurd ?_ hμ
     rw [hν] at hμν
+    -- set_option says.verify true in -- TODO : ask Remy why this apply? says was left here, I understand what it does, but not what is its  purpose in general. in this case the mistake seems to arise from the fact that I added a lemma that makes this passage a little bit more direct, so apply? is proposing to use it instead of the lemma that was used before
     apply? says exact Measure.measure_univ_eq_zero.mp (hμν rfl)
   let ν' := (ν Set.univ)⁻¹ • ν
   have : IsProbabilityMeasure ν' := by
@@ -180,7 +180,7 @@ lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMea
   swap; · rw [kl_of_not_integrable h_int]; simp
   calc 0
     = ((μ Set.univ).toReal : EReal) * log ((μ Set.univ).toReal / (ν Set.univ).toReal) := by simp
-  _ ≤ kl μ ν := kl_ge_mul_log
+  _ ≤ kl μ ν := kl_ge_mul_log _ _
 
 lemma kl_eq_zero_iff [SigmaFinite μ] [SigmaFinite ν] : kl μ ν = 0 ↔ μ = ν := by
   constructor <;> intro h
@@ -360,7 +360,7 @@ lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKer
   rw [kl_eq_fDiv, condKL_eq_condFDiv]
   exact fDiv_compProd_left μ κ η (by measurability) Real.convexOn_mul_log
 
-lemma kl_compProd_right [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     [IsMarkovKernel κ] :
     kl (μ ⊗ₘ κ) (ν ⊗ₘ κ) = kl μ ν := by
   rw [kl_eq_fDiv, kl_eq_fDiv]
@@ -466,14 +466,14 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       filter_upwards [h] with x hx
       rw [hx]
 
---TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one
+--TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one. A possible name could be kl_joint, but I'm not sure about it
 --Why do we need to assume that β is not empty?
 lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (α × β)}
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     kl μ ν = kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
---TODO: choose if it makes sense to keep also the specialized version for probability measures, I think it may be useful to keep it
+--TODO: choose if it makes sense to keep also the specialized version for probability measures, I think it may be useful to keep it.
 --TODO: which of the two lemmas should go into the blueprint? or maybe both?
 lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
@@ -487,8 +487,8 @@ lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMe
   simp only [kl_prod_two, measure_univ, EReal.coe_ennreal_one, mul_one]
 
 --TODO: add the tensorization for kl in the finite version, it should be a simple induction using the one for 2 measures, but it's not very easy to even state, because I would like to request the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
---moreover I don't know how to write the product in the first place, maybe at least I figured out how to write dependent function types
-
+--moreover I don't know how to write the product in the first place, at least I figured out how to write dependent function types
+--if the general case turns out to be very hard to write and also to use, consider making a corollary where all the measures are probability measures and all the spaces are countabily generated
 
 #check Complex.exp_sum
 #check Finset.prod
@@ -504,4 +504,3 @@ lemma kl_prod {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSp
 end Conditional
 
 end ProbabilityTheory
--- TODO : add the tensorization for kl for a finite product of measures
