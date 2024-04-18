@@ -277,6 +277,13 @@ lemma condKL_self (κ : kernel α β) (μ : Measure α) [IsFiniteKernel κ] : co
   simp only [kl_self, ne_eq, not_false_eq_true, eventually_true, EReal.toReal_zero, integrable_zero,
     condKL_of_ae_ne_top_of_integrable, integral_zero, EReal.coe_zero, EReal.zero_ne_top]
 
+@[simp]
+lemma condKL_zero_measure : condKL κ η 0 = 0 := by
+  have hf_ae : ∀ᵐ a ∂(0 : Measure α), kl (κ a) (η a) ≠ ⊤ := by
+    simp only [ne_eq, ae_zero, eventually_bot]
+  rw [condKL_of_ae_ne_top_of_integrable hf_ae integrable_zero_measure]
+  simp only [integral_zero_measure, EReal.coe_zero]
+
 lemma condKL_ne_bot (κ η : kernel α β) (μ : Measure α) : condKL κ η μ ≠ ⊥ := by
   rw [condKL]
   split_ifs with h
