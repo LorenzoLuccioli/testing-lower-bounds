@@ -219,7 +219,8 @@ lemma condKL_of_ae_ne_top_of_integrable (h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) �
 lemma condKL_of_not_ae_ne_top (h : ¬ (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤)) :
     condKL κ η μ = ⊤ := if_neg (not_and_of_not_left _ h)
 
-/--Equivalence between two possible versions of the first condition for the finiteness of the conditional KL divergence-/
+/--Equivalence between two possible versions of the first condition for the finiteness of the
+conditional KL divergence, the second version is the preferred one.-/
 lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
     (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
   constructor <;> intro h
@@ -279,28 +280,16 @@ lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
   simp only [ne_eq, h1, h2, condKL_of_ae_ne_top_of_integrable, ← kl_eq_fDiv, condFDiv_eq']
 
 -- TODO : put every hypothesis about condkl in normal form
--- TODO : add the equivalent of integrable_fDiv_iff for kl
---lemma that 2 is equiv to 2'. given 1'a, 1'b
-#check integrable_fDiv_iff
-lemma integrable_kl_iff [CountablyGenerated β] [IsFiniteMeasure μ] [SigmaFinite ν] [IsFiniteKernel κ] [IsFiniteKernel η]
-    (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a) (h_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)):
+
+/--Equivalence between two possible versions of the second condition for the finiteness of the
+conditional KL divergence, the first version is the preferred one.-/
+lemma integrable_kl_iff' (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
+    (h_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)):
     Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ
       ↔ Integrable (fun a ↦ integral (κ a) (llr (κ a) (η a))) μ := by
-  -- have h := kl_ae_ne_top_iff.mpr ⟨h_ac, h_int⟩
-  -- simp_rw [kl_eq_fDiv, llr_def] at *
-  -- convert integrable_fDiv_iff h using 1 with x
-  -- apply integrable_congr
-  -- filter_upwards [h_ac, h_int] with a ha1 ha2
-  -- -- have
-  -- convert integral_rnDeriv_smul ha1 using 1 with x
-
-
-  sorry
-  -- simp [mul_comm, integral_rnDeriv_smul]
-  -- rw [mul_comm, integral_rnDeriv_smul]
-
-  -- have := integrable_fDiv_iff h
-
+  apply integrable_congr
+  filter_upwards [h_ac, h_int] with a ha1 ha2
+  rw [kl_of_ac_of_integrable ha1 ha2, EReal.toReal_coe]
 
 @[simp]
 lemma condKL_self (κ : kernel α β) (μ : Measure α) [IsFiniteKernel κ] : condKL κ κ μ = 0 := by
