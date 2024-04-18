@@ -198,6 +198,26 @@ section Conditional
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β} {μ : Measure α}
 
+/--Equivalence between two possible versions of the first condition for the finiteness of the
+conditional KL divergence, the second version is the preferred one.-/
+lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
+    (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
+  constructor <;> intro h
+  · constructor <;> filter_upwards [h] with a ha <;> have := kl_eq_top_iff'.mpr.mt ha <;> tauto
+  · filter_upwards [h.1, h.2] with a ha1 ha2
+    apply kl_eq_top_iff'.mp.mt
+    tauto
+
+/--Equivalence between two possible versions of the second condition for the finiteness of the
+conditional KL divergence, the first version is the preferred one.-/
+lemma integrable_kl_iff (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
+    (h_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)):
+    Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ
+      ↔ Integrable (fun a ↦ integral (κ a) (llr (κ a) (η a))) μ := by
+  apply integrable_congr
+  filter_upwards [h_ac, h_int] with a ha1 ha2
+  rw [kl_of_ac_of_integrable ha1 ha2, EReal.toReal_coe]
+
 open Classical in
 
 /--
@@ -215,37 +235,39 @@ lemma condKL_of_ae_ne_top_of_integrable (h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) �
     (h2 : Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ) :
     condKL κ η μ = (μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) := if_pos ⟨h1, h2⟩
 
+lemma condKL_of_ae_ac_of_ae_integrable_of_integrable (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
+    (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a))
+    (h_int : Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ) :
+    condKL κ η μ = (μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) :=
+  condKL_of_ae_ne_top_of_integrable (kl_ae_ne_top_iff.mpr ⟨h_ac, h_ae_int⟩) h_int
+
+lemma condKL_of_ae_ac_of_ae_integrable_of_integrable' (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
+    (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a))
+    (h_int : Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ) :
+    condKL κ η μ = (μ[fun a ↦ integral (κ a) (llr (κ a) (η a))] : ℝ) := by
+  rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h_ac h_ae_int h_int]
+  congr 1
+  apply integral_congr_ae
+  filter_upwards [h_ac, h_ae_int] with a ha1 ha2
+  rw [kl_of_ac_of_integrable ha1 ha2, EReal.toReal_coe]
+
 @[simp]
 lemma condKL_of_not_ae_ne_top (h : ¬ (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤)) :
     condKL κ η μ = ⊤ := if_neg (not_and_of_not_left _ h)
 
-/--Equivalence between two possible versions of the first condition for the finiteness of the
-conditional KL divergence, the second version is the preferred one.-/
-lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
-    (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
-  constructor <;> intro h
-  · constructor <;> filter_upwards [h] with a ha <;> have := kl_eq_top_iff'.mpr.mt ha <;> tauto
-  · filter_upwards [h.1, h.2] with a ha1 ha2
-    apply kl_eq_top_iff'.mp.mt
+@[simp]
+lemma condKL_of_not_ae_ac (h : ¬ ∀ᵐ a ∂μ, κ a ≪ η a) :
+    condKL κ η μ = ⊤ := by
+  apply condKL_of_not_ae_ne_top
+  rw [kl_ae_ne_top_iff]
     tauto
 
 @[simp]
 lemma condKL_of_not_ae_integrable (h : ¬ ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) :
     condKL κ η μ = ⊤ := by
   apply condKL_of_not_ae_ne_top
-  contrapose! h
-  filter_upwards [h] with a ha
-  contrapose! ha
-  simp only [ha, ne_eq, not_false_eq_true, kl_of_not_integrable]
-
-@[simp]
-lemma condKL_of_not_ae_ac (h : ¬ ∀ᵐ a ∂μ, κ a ≪ η a) :
-    condKL κ η μ = ⊤ := by
-  apply condKL_of_not_ae_ne_top
-  contrapose! h
-  filter_upwards [h] with a ha
-  contrapose! ha
-  simp only [ha, not_false_eq_true, kl_of_not_ac]
+  rw [kl_ae_ne_top_iff]
+  tauto
 
 @[simp]
 lemma condKL_of_not_integrable (h : ¬ Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ) :
@@ -254,14 +276,10 @@ lemma condKL_of_not_integrable (h : ¬ Integrable (fun a ↦ (kl (κ a) (η a)).
 @[simp]
 lemma condKL_of_not_integrable' (h : ¬ Integrable (fun a ↦ integral (κ a) (llr (κ a) (η a))) μ) :
     condKL κ η μ = ⊤ := by
-  contrapose! h
-  have hh : (fun a => integral (κ a) (llr (κ a) (η a))) =ᵐ[μ] fun a => (kl (κ a) (η a)).toReal := by
-    have h1 := of_not_not (condKL_of_not_ae_ac.mt h)
-    have h2 := of_not_not (condKL_of_not_ae_ne_top.mt h)
-    filter_upwards [h1, h2] with a ha1 ha2
-    rw [kl_of_ac_of_integrable ha1 (of_not_not (kl_of_not_integrable.mt ha2))]
-    simp only [EReal.toReal_coe]
-  exact Integrable.congr (of_not_not (condKL_of_not_integrable.mt h)) hh.symm
+  by_cases h_ne_top : ∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤
+  swap ; exact condKL_of_not_ae_ne_top h_ne_top
+  apply condKL_of_not_integrable
+  rwa [integrable_kl_iff (kl_ae_ne_top_iff.mp h_ne_top).1  (kl_ae_ne_top_iff.mp h_ne_top).2]
 
 lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     condKL κ η μ = condFDiv (fun x ↦ x * log x) κ η μ := by
@@ -278,18 +296,6 @@ lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     convert h2 using 4 with a
     rw [← kl_eq_fDiv]
   simp only [ne_eq, h1, h2, condKL_of_ae_ne_top_of_integrable, ← kl_eq_fDiv, condFDiv_eq']
-
--- TODO : put every hypothesis about condkl in normal form
-
-/--Equivalence between two possible versions of the second condition for the finiteness of the
-conditional KL divergence, the first version is the preferred one.-/
-lemma integrable_kl_iff' (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
-    (h_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)):
-    Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ
-      ↔ Integrable (fun a ↦ integral (κ a) (llr (κ a) (η a))) μ := by
-  apply integrable_congr
-  filter_upwards [h_ac, h_int] with a ha1 ha2
-  rw [kl_of_ac_of_integrable ha1 ha2, EReal.toReal_coe]
 
 @[simp]
 lemma condKL_self (κ : kernel α β) (μ : Measure α) [IsFiniteKernel κ] : condKL κ κ μ = 0 := by
@@ -350,8 +356,6 @@ lemma kl_compProd_right [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteMe
     kl (μ ⊗ₘ κ) (ν ⊗ₘ κ) = kl μ ν := by
   rw [kl_eq_fDiv, kl_eq_fDiv]
   exact fDiv_compProd_right μ ν κ (by measurability) Real.convexOn_mul_log
-
--- TODO : the name of this lemma in the blueprint is kl_chain_rule, is it ok to keep it like this in lean or should we change one of the two names?
 
 /--The chain rule for the KL divergence.-/
 lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η] [IsFiniteMeasure μ]
@@ -477,13 +481,13 @@ lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] {μ ν : Measure 
 
 --TODO: choose if it makes sense to keep also the specialized version for probability measures, I think it may be useful to keep it
 --TODO: which of the two lemmas should go into the blueprint? or maybe both?
-lemma kl_prod_two [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
+lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
   simp only [← condKL_const, ← kl_compProd, compProd_const]
 
 /--Tensorization property for KL divergence-/
-lemma kl_prod_two' [CountablyGenerated β] (ξ ψ : Measure β) [IsProbabilityMeasure ξ]
+lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν] :
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
   simp only [kl_prod_two, measure_univ, EReal.coe_ennreal_one, mul_one]
