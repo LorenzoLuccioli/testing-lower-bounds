@@ -400,26 +400,18 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
   _ = ∫ a, ∫ x, llr (μ ⊗ₘ κ) (ν ⊗ₘ η) (a, x) ∂κ a ∂μ := by
     norm_cast
     exact Measure.integral_compProd h_int
-  _ = ∫ a, ∫ x, log ((∂μ/∂ν) a * kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
-    norm_cast
-    have h := hμν.ae_le (Measure.ae_ae_of_ae_compProd (kernel.rnDeriv_measure_compProd μ ν κ η))
-    apply integral_congr_ae
-    filter_upwards [h, hκη] with a ha hκηa
-    apply integral_congr_ae
-    filter_upwards [hκηa.ae_le ha] with x hx
-    unfold llr
-    congr
   _ = ∫ a, ∫ x, log (μ.rnDeriv ν a).toReal
       + log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
+    have h := hμν.ae_le (Measure.ae_ae_of_ae_compProd (kernel.rnDeriv_measure_compProd μ ν κ η))
     apply integral_congr_ae
-    filter_upwards [hκη, Measure.rnDeriv_toReal_pos hμν] with a hκηa hμν_pos
+    filter_upwards [h, hκη, Measure.rnDeriv_toReal_pos hμν] with a ha hκηa hμν_pos
     have hμν_zero : (μ.rnDeriv ν a).toReal ≠ 0 := by linarith
     apply integral_congr_ae
-    filter_upwards [kernel.rnDeriv_toReal_pos hκηa] with x hx
+    filter_upwards [kernel.rnDeriv_toReal_pos hκηa, hκηa.ae_le ha] with x hκη_pos hx
     have hκη_zero : (kernel.rnDeriv κ η a x).toReal ≠ 0 := by linarith
-    simp only [ENNReal.toReal_mul]
-    apply Real.log_mul hμν_zero hκη_zero
+    rw [llr, hx, ENNReal.toReal_mul]
+    exact Real.log_mul hμν_zero hκη_zero
   _ = ∫ a, ∫ _, log (μ.rnDeriv ν a).toReal ∂κ a ∂μ
       + ∫ a, ∫ x, log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
@@ -442,10 +434,8 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     filter_upwards with a
     congr
   _ = ∫ a, log (μ.rnDeriv ν a).toReal ∂μ
-      + ∫ a, ∫ x, log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
-    simp only [integral_const, measure_univ, ENNReal.one_toReal, smul_eq_mul, one_mul]
-  _ = ∫ a, log (μ.rnDeriv ν a).toReal ∂μ
       + ∫ a, ∫ x, log ((κ a).rnDeriv (η a) x).toReal ∂κ a ∂μ := by
+    simp only [integral_const, measure_univ, ENNReal.one_toReal, smul_eq_mul, one_mul]
     congr 2
     apply integral_congr_ae
     filter_upwards [hκη] with a ha
