@@ -26,7 +26,7 @@ import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 
 open Real MeasureTheory Filter MeasurableSpace
 
-open scoped ENNReal NNReal Topology
+open scoped ENNReal NNReal Topology BigOperators
 
 namespace ProbabilityTheory
 
@@ -142,7 +142,7 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   · refine absurd ?_ hμ
     rw [hν] at hμν
     -- set_option says.verify true in -- TODO : ask Remy why this apply? says was left here, I understand what it does, but not what is its  purpose in general. in this case the mistake seems to arise from the fact that I added a lemma that makes this passage a little bit more direct, so apply? is proposing to use it instead of the lemma that was used before
-    apply? says exact Measure.measure_univ_eq_zero.mp (hμν rfl)
+    exact eq_zero_of_ac_zero hμν
   let ν' := (ν Set.univ)⁻¹ • ν
   have : IsProbabilityMeasure ν' := by
     constructor
@@ -395,12 +395,12 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     filter_upwards [ha.ae_le (kernel.rnDeriv_eq_rnDeriv_measure κ η a)] with x hx
     rw [hx, llr_def]
   have intκη2 := ae_integrable_llr_of_integrable_llr_compProd h_prod h_int
-  calc kl (μ ⊗ₘ κ) (ν ⊗ₘ η) = ↑(∫ p, llr (μ ⊗ₘ κ) (ν ⊗ₘ η) p ∂(μ ⊗ₘ κ)) :=
+  calc kl (μ ⊗ₘ κ) (ν ⊗ₘ η) = ∫ p, llr (μ ⊗ₘ κ) (ν ⊗ₘ η) p ∂(μ ⊗ₘ κ) :=
     kl_of_ac_of_integrable h_prod h_int
-  _ = ↑(∫ (a : α), ∫ (x : β), llr (μ ⊗ₘ κ) (ν ⊗ₘ η) (a, x) ∂κ a ∂μ) := by
+  _ = ∫ a, ∫ x, llr (μ ⊗ₘ κ) (ν ⊗ₘ η) (a, x) ∂κ a ∂μ := by
     norm_cast
     exact Measure.integral_compProd h_int
-  _ = ↑(∫ (a : α), ∫ (x : β), log ((∂μ/∂ν) a * kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ) := by
+  _ = ∫ a, ∫ x, log ((∂μ/∂ν) a * kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
     have h := hμν.ae_le (Measure.ae_ae_of_ae_compProd (kernel.rnDeriv_measure_compProd μ ν κ η))
     apply integral_congr_ae
@@ -409,8 +409,8 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     filter_upwards [hκηa.ae_le ha] with x hx
     unfold llr
     congr
-  _ = ↑(∫ (a : α), ∫ (x : β), log (μ.rnDeriv ν a).toReal
-      + log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ) := by
+  _ = ∫ a, ∫ x, log (μ.rnDeriv ν a).toReal
+      + log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
     apply integral_congr_ae
     filter_upwards [hκη, Measure.rnDeriv_toReal_pos hμν] with a hκηa hμν_pos
@@ -420,8 +420,8 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     have hκη_zero : (kernel.rnDeriv κ η a x).toReal ≠ 0 := by linarith
     simp only [ENNReal.toReal_mul]
     apply Real.log_mul hμν_zero hκη_zero
-  _ = ↑(∫ (a : α), ∫ (_ : β), log (μ.rnDeriv ν a).toReal ∂κ a ∂μ)
-      + ↑(∫ (a : α), ∫ (x : β), log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ) := by
+  _ = ∫ a, ∫ _, log (μ.rnDeriv ν a).toReal ∂κ a ∂μ
+      + ∫ a, ∫ x, log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
     rw [← integral_add']
     simp only [Pi.add_apply]
@@ -441,11 +441,11 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     apply integral_congr_ae
     filter_upwards with a
     congr
-  _ = ↑(∫ (a : α), log (μ.rnDeriv ν a).toReal ∂μ)
-      + ↑(∫ (a : α), ∫ (x : β), log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ) := by
+  _ = ∫ a, log (μ.rnDeriv ν a).toReal ∂μ
+      + ∫ a, ∫ x, log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     simp only [integral_const, measure_univ, ENNReal.one_toReal, smul_eq_mul, one_mul]
-  _ = ↑(∫ (a : α), log (μ.rnDeriv ν a).toReal ∂μ)
-      + ↑(∫ (a : α), ∫ (x : β), log ((κ a).rnDeriv (η a) x).toReal ∂κ a ∂μ) := by
+  _ = ∫ a, log (μ.rnDeriv ν a).toReal ∂μ
+      + ∫ a, ∫ x, log ((κ a).rnDeriv (η a) x).toReal ∂κ a ∂μ := by
     congr 2
     apply integral_congr_ae
     filter_upwards [hκη] with a ha
@@ -465,6 +465,8 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       apply integral_congr_ae
       filter_upwards [h] with x hx
       rw [hx]
+--TODO: clean this proof, remove the type of variables in the integrals and the cpercion outside the integrals
+--TODO: make a lemma analogous to integral_congr_ae, but for double integrals, and use it inside the proof to make it a bit shorter
 
 --TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one. A possible name could be kl_joint, but I'm not sure about it
 --Why do we need to assume that β is not empty?
@@ -475,16 +477,16 @@ lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] {μ ν : Measure 
 
 --TODO: choose if it makes sense to keep also the specialized version for probability measures, I think it may be useful to keep it.
 --TODO: which of the two lemmas should go into the blueprint? or maybe both?
-lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
+lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
   simp only [← condKL_const, ← kl_compProd, compProd_const]
 
 /--Tensorization property for KL divergence-/
-lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
+lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsProbabilityMeasure μ] [IsFiniteMeasure ν] :
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
-  simp only [kl_prod_two, measure_univ, EReal.coe_ennreal_one, mul_one]
+  simp only [kl_prod_two', measure_univ, EReal.coe_ennreal_one, mul_one]
 
 --TODO: add the tensorization for kl in the finite version, it should be a simple induction using the one for 2 measures, but it's not very easy to even state, because I would like to request the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
 --moreover I don't know how to write the product in the first place, at least I figured out how to write dependent function types
@@ -496,11 +498,10 @@ lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMe
 lemma kl_prod {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
-  True := by
-  -- kl (∏ i, μ i) (Π i, ν i) = ∑' i, kl (μ i) (μ i) := by
+    kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (μ i) := by
   sorry
 
-
+#check Measure.pi
 end Conditional
 
 end ProbabilityTheory
