@@ -98,6 +98,8 @@ lemma kl_zero_left : kl 0 ν = 0 := by
 --TODO: put this in the right place, also check that there is not a similar lemma in mathlib, I tried to look for it but I didn't find it.
 lemma eq_zero_of_ac_zero (h : μ ≪ 0) : μ = 0 := Measure.measure_univ_eq_zero.mp (h rfl)
 
+#find_home! ProbabilityTheory.eq_zero_of_ac_zero
+
 @[simp]
 lemma kl_zero_right [NeZero μ] : kl μ 0 = ⊤ := kl_of_not_ac (eq_zero_of_ac_zero.mt (NeZero.ne _))
 
@@ -141,7 +143,6 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   by_cases hν : ν = 0
   · refine absurd ?_ hμ
     rw [hν] at hμν
-    -- set_option says.verify true in -- TODO : ask Remy why this apply? says was left here, I understand what it does, but not what is its  purpose in general. in this case the mistake seems to arise from the fact that I added a lemma that makes this passage a little bit more direct, so apply? is proposing to use it instead of the lemma that was used before
     exact eq_zero_of_ac_zero hμν
   let ν' := (ν Set.univ)⁻¹ • ν
   have : IsProbabilityMeasure ν' := by
@@ -497,14 +498,79 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 --moreover I don't know how to write the product in the first place, at least I figured out how to write dependent function types
 --if the general case turns out to be very hard to write and also to use, consider making a corollary where all the measures are probability measures and all the spaces are countabily generated
 
+--TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
+
+
+
 #check Complex.exp_sum
 #check Finset.prod
 
-lemma kl_prod {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
+lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
-    kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (μ i) := by
-  sorry
+    kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (ν i) := by
+  -- generalize Finset.univ (α := ι) = s
+  -- induction s using Finset.cons_induction_on
+  -- ·
+  --   sorry
+  -- ·
+  --   sorry
+
+
+  revert μ ν β
+  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [inst : (i : ι) → MeasurableSpace (β i)] [inst_1 : ∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [inst_2 : ∀ (i : ι), IsProbabilityMeasure (μ i)] [inst_3 : ∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
+  · intro ι ι' hι' e h β inst inst_1 μ ν inst_2 inst_3
+    specialize h (β := fun i ↦ β (e i)) (inst := fun i ↦ inst (e i))
+      (inst_1 := fun i ↦ inst_1 (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
+      (inst_2 := fun i ↦ inst_2 (e i)) (inst_3 := fun i ↦ inst_3 (e i))
+    --handle the sum, it should be easy, find some lemma that does it --done
+    have hι := Fintype.ofEquiv _ e.symm
+    -- rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h] --this is a version that should work, but for some reason it doesn't manage to apply the ← h, I don't understand why, the expression after the first lemma is exactly the same as in the case below, where I manually give it the equivalent of hι as an argument
+    -- rw [@Fintype.sum_equiv _ _ _ _ hι _ e.symm _
+    --   (fun i ↦ kl (μ (e i)) (ν (e i))) _, ← h] --this doesn't work either
+    rw [@Fintype.sum_equiv _ _ _ _ (Fintype.ofEquiv _ e.symm) _ e.symm _
+      (fun i ↦ kl (μ (e i)) (ν (e i))) _, ← h] --find a way to make this look better
+    --use the lemma fDiv_map_measurableEmbedding to get to the goal of proving the measurable equivalence of the two products
+    rw [kl_eq_fDiv, kl_eq_fDiv]
+    have em := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
+    have emr := MeasurableEquiv.measurableEmbedding em
+
+    symm
+
+    convert fDiv_map_measurableEmbedding emr
+    <;> sorry
+    rotate_left 2
+    ·
+      -- exact Measure.pi μ
+
+      sorry
+
+
+    -- have := fDiv_map_measurableEmbedding (MeasurableEquiv.measurableEmbedding em)
+
+    --apply MeasurableEquiv.piCongrLeft using e as the embedding
+
+
+    -- sorry
+    -- #check MeasurableEquiv.piCongrLeft
+  · intro β inst inst_1 μ ν inst_2 inst_3
+    simp only [Finset.univ_eq_empty, Finset.sum_empty]
+    rw [Measure.pi_of_empty, Measure.pi_of_empty]
+    simp only [kl_self]
+  · intro ι hι ind_h β inst inst_1 μ ν inst_2 inst_3
+    specialize ind_h (β := fun i ↦ β i) (inst := fun i ↦ inst i) (inst_1 := fun i ↦ inst_1 i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i) (inst_2 := fun i ↦ inst_2 i) (inst_3 := fun i ↦ inst_3 i)
+    --find some lemma to handle the sum over an option type
+    --find some lemma to have the equivalence between the pi over the option type and the sum of the 'some' elements and the null element
+    --use that equivalence with MeasurableEquiv.piCongrLeft to get the measurable equivalence
+    --use the lemma fDiv_map_measurableEmbedding with that measurable equivalence, now we should have in the goal kl of the product, where the type of indices is the sum type
+    --apply easurableEquiv.sumPiEquivProdPi using that sum to get the measurable equivalence
+    --use again the lemma fDiv_map_measurableEmbedding
+
+
+
+    #check MeasurableEquiv.sumPiEquivProdPi
+    sorry
+
 
 #check Measure.pi
 end Conditional
