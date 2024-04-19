@@ -366,6 +366,25 @@ lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMea
   rw [kl_eq_fDiv, kl_eq_fDiv]
   exact fDiv_compProd_right μ ν κ (by measurability) Real.convexOn_mul_log
 
+section IntegralLemma
+
+--TODO: put this lemma in a separate file, then PR it to mathlib, I'm not sure it can just go in the same file as integral_congr_ae, since it uses the kernels. maybe we caould do a simpler version with 2 probability measures instead of kernels
+variable {α β: Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
+variable {μ : Measure α} {κ : kernel α β}
+variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
+
+theorem integral_congr_ae₂ {f g : α → β → G} (h : ∀ᵐ a ∂μ, f a =ᵐ[κ a] g a) :
+    ∫ a, ∫ b, f a b ∂(κ a) ∂μ = ∫ a, ∫ b, g a b ∂(κ a) ∂μ := by
+  apply integral_congr_ae
+  filter_upwards [h] with a ha
+  apply integral_congr_ae
+  filter_upwards [ha] with b hb using hb
+
+#find_home! ProbabilityTheory.integral_congr_ae₂
+
+end IntegralLemma
+
+
 /--The chain rule for the KL divergence.-/
 lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η] [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] :
@@ -404,10 +423,9 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       + log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
     have h := hμν.ae_le (Measure.ae_ae_of_ae_compProd (kernel.rnDeriv_measure_compProd μ ν κ η))
-    apply integral_congr_ae
+    apply integral_congr_ae₂
     filter_upwards [h, hκη, Measure.rnDeriv_toReal_pos hμν] with a ha hκηa hμν_pos
     have hμν_zero : (μ.rnDeriv ν a).toReal ≠ 0 := by linarith
-    apply integral_congr_ae
     filter_upwards [kernel.rnDeriv_toReal_pos hκηa, hκηa.ae_le ha] with x hκη_pos hx
     have hκη_zero : (kernel.rnDeriv κ η a x).toReal ≠ 0 := by linarith
     rw [llr, hx, ENNReal.toReal_mul]
@@ -437,10 +455,9 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       + ∫ a, ∫ x, log ((κ a).rnDeriv (η a) x).toReal ∂κ a ∂μ := by
     simp only [integral_const, measure_univ, ENNReal.one_toReal, smul_eq_mul, one_mul]
     congr 2
-    apply integral_congr_ae
+    apply integral_congr_ae₂
     filter_upwards [hκη] with a ha
     have h := ha.ae_le (kernel.rnDeriv_eq_rnDeriv_measure κ η a)
-    apply integral_congr_ae
     filter_upwards [h] with x hx
     congr
   _ = kl μ ν + condKL κ η μ := by
@@ -455,8 +472,6 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       apply integral_congr_ae
       filter_upwards [h] with x hx
       rw [hx]
---TODO: clean this proof, remove the type of variables in the integrals and the cpercion outside the integrals
---TODO: make a lemma analogous to integral_congr_ae, but for double integrals, and use it inside the proof to make it a bit shorter
 
 --TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one. A possible name could be kl_joint, but I'm not sure about it
 --Why do we need to assume that β is not empty?
