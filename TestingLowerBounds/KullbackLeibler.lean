@@ -501,6 +501,24 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 --TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
 
 
+--I define the instances for Measure.pi to be finite or a probability measure, I think they are not in mathlib, or at least I didn't find them. if we keep we should check the names
+
+#check MeasureTheory.Measure.pi_univ
+
+instance MeasureTheory.Measure.pi.finite {ι : Type*} [Fintype ι] {α : ι → Type*}
+    [∀ i, MeasureSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsFiniteMeasure (μ i)] :
+    IsFiniteMeasure (Measure.pi μ) := by
+  constructor
+  rw [Measure.pi_univ]
+  exact ENNReal.prod_lt_top (fun i _ ↦ measure_ne_top (μ i) _)
+
+instance MeasureTheory.Measure.pi.probabilityMeasure {ι : Type*} [Fintype ι] {α : ι → Type*}
+    [∀ i, MeasureSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsProbabilityMeasure (μ i)] :
+    IsProbabilityMeasure (Measure.pi μ) := by
+  constructor
+  rw [Measure.pi_univ]
+  simp only [measure_univ, Finset.prod_const_one]
+
 
 #check Complex.exp_sum
 #check Finset.prod
