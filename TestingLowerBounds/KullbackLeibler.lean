@@ -520,6 +520,23 @@ instance MeasureTheory.Measure.pi.probabilityMeasure {ι : Type*} [Fintype ι] {
   simp only [measure_univ, Finset.prod_const_one]
 
 
+--TODO: find a place for this, probably just after MeasurableEquiv.piFinsetUnion, then move it and PR to mathlib
+/-- The measurable equivalence between the pi type over an Option α type and the product of the pi
+over α and α(none).-/
+def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*) [mα : ∀ i, MeasurableSpace (α i)] :
+    (∀ i, α i) ≃ᵐ (∀ (i : δ), α i) × α none := by
+  let e := Equiv.optionEquivSumPUnit.{_, u_3} δ
+  let em1 := MeasurableEquiv.piCongrLeft α e.symm
+  let em2 := MeasurableEquiv.sumPiEquivProdPi (fun i ↦ α (e.symm i))
+  let em3 : ((i : δ) → α (e.symm (Sum.inl i))) × ((i' : PUnit.{u_3 + 1}) → α (e.symm (Sum.inr i')))
+      ≃ᵐ ((i : δ) → α (some i)) × α none := by
+    apply MeasurableEquiv.prodCongr
+    · exact MeasurableEquiv.refl ((i : δ) → α (e.symm (Sum.inl i)))
+    · exact MeasurableEquiv.piUnique fun i ↦ α (e.symm (Sum.inr i))
+  exact em1.symm.trans <| em2.trans em3
+
+
+
 #check Complex.exp_sum
 #check Finset.prod
 
