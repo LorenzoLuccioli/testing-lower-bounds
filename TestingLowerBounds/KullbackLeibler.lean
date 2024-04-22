@@ -568,73 +568,65 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     specialize h (β := fun i ↦ β (e i)) (inst := fun i ↦ inst (e i))
       (inst_1 := fun i ↦ inst_1 (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
       (inst_2 := fun i ↦ inst_2 (e i)) (inst_3 := fun i ↦ inst_3 (e i))
-    --handle the sum, it should be easy, find some lemma that does it --done
     let hι := Fintype.ofEquiv _ e.symm
-    rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h]
-    rw [kl_eq_fDiv, kl_eq_fDiv]
-    let em := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
-    have emr := MeasurableEquiv.measurableEmbedding em.symm
-
-    --have hh := (Measure.pi μ).map em.symm
-
-
+    rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h, kl_eq_fDiv, kl_eq_fDiv]
+    let e_meas := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
+    have emr := MeasurableEquiv.measurableEmbedding e_meas.symm
     symm
-
     convert fDiv_map_measurableEmbedding emr
-    ·
-      convert Measure.pi_eq ?_
-      · infer_instance
-      intro s hs
-      -- simp [MeasurableEquiv.coe_piCongrLeft] at *
-      -- simp [MeasurableEquiv.coe_piCongrLeft]
-      rw [Measure.map_apply (by measurability)]
-      swap; exact MeasurableSet.univ_pi hs --measurability doesn't close this, but I think it should, however it should be enough to find the lemma for the measurability of a pi of sets
-      let s' : (i : ι') → Set (β i) := by
-        convert fun i ↦ s (e.symm i)
-        exact (Equiv.symm_apply_eq e).mp rfl
-      have : em.symm ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
-        ext p
-        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left]
+    · suffices Measure.map e_meas (Measure.pi (fun i ↦ μ (e i))) = Measure.pi μ by
+        rw [← this, MeasurableEquiv.map_symm_map]
+      symm
+      refine Measure.pi_eq (fun s _ ↦ ?_)
+      rw [e_meas.measurableEmbedding.map_apply]
+      let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
+      have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
+        ext x
+        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
+        symm
         apply e.forall_congr
         intro i
-
-        simp [s', em, MeasurableEquiv.piCongrLeft]
+        unfold_let e_meas
         convert Iff.rfl
-
-        sorry
-
-        -- rw [cast_eq_iff_heq]
-        -- simp [Equiv.apply_symm_apply e, Equiv.symm_apply_apply e]
-        -- constructor
-        -- · intro h i'
-        --   specialize h (e.symm i')
-
-        --   rw [Equiv.apply_symm_apply e _] at h
-        --   simp [Equiv.symm_apply_eq] at h
-
-      simp only [this, Measure.pi_pi]
-      apply Fintype.prod_equiv e.symm
-      intro i
-
-      congr <;> try simp
-      simp [s']
-
-
-      -- simp [Equiv.symm_apply_apply, Equiv.apply_symm_apply]
-      -- rw [Equiv.apply_symm_apply e i]
-
-
-
-      -- here I don't know how to proceed
-
-      --convert (Measure.pi_eq _).symm
-
-
-      --find a way to 'apply' the measure.pi
-      -- simp [emr, hs]
-      sorry
-    · -- here it should be the same as the previous case
-      sorry
+        have piCongrLeft_apply_apply' :
+            (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
+          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk]
+          rw [Equiv.piCongrLeft_apply_apply]
+        rw [piCongrLeft_apply_apply']
+      rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
+      · simp
+      intro i _
+      unfold_let s'
+      simp only
+      congr
+      all_goals rw [e.apply_symm_apply]
+    · --TODO: this is the same as the previous goal, we could directly separate this proof as a lemma or if we want to keep it here we could use some tactic to avoid repeating the proof, like <;> try { ... }
+      suffices Measure.map e_meas (Measure.pi (fun i ↦ ν (e i))) = Measure.pi ν by
+        rw [← this, MeasurableEquiv.map_symm_map]
+      symm
+      refine Measure.pi_eq (fun s _ ↦ ?_)
+      rw [e_meas.measurableEmbedding.map_apply]
+      let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
+      have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
+        ext x
+        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
+        symm
+        apply e.forall_congr
+        intro i
+        unfold_let e_meas
+        convert Iff.rfl
+        have piCongrLeft_apply_apply' :
+            (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
+          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk]
+          rw [Equiv.piCongrLeft_apply_apply]
+        rw [piCongrLeft_apply_apply']
+      rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
+      · simp
+      intro i _
+      unfold_let s'
+      simp only
+      congr
+      all_goals rw [e.apply_symm_apply]
     · constructor
       rw [Measure.pi_univ]
       simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
@@ -657,7 +649,12 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     --find some lemma to handle the sum over an option type (simp does this automatically)
     -- simp only [Fintype.sum_option] --maybe we can put this later to keep the infoview cleaner
     --find some lemma to have the equivalence between the pi over the option type and the sum of the 'some' elements and the null element
+    #check MeasurableEquiv.optionPiEquivProd
+    have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i)) (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
+      rw [kl_eq_fDiv, kl_eq_fDiv]
 
+
+      sorry
     --use that equivalence with MeasurableEquiv.piCongrLeft to get the measurable equivalence
     --use the lemma fDiv_map_measurableEmbedding with that measurable equivalence, now we should have in the goal kl of the product, where the type of indices is the sum type
     --apply easurableEquiv.sumPiEquivProdPi using that sum to get the measurable equivalence
