@@ -563,49 +563,101 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
 
 
   revert μ ν β
-  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [inst : (i : ι) → MeasurableSpace (β i)] [inst_1 : ∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [inst_2 : ∀ (i : ι), IsProbabilityMeasure (μ i)] [inst_3 : ∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
+  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [inst : (i : ι) → MeasurableSpace (β i)] [inst_1 : ∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [inst_2 : ∀ (i : ι), IsProbabilityMeasure (μ i)] [inst_3 : ∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?iso ?base ?step ι
   · intro ι ι' hι' e h β inst inst_1 μ ν inst_2 inst_3
     specialize h (β := fun i ↦ β (e i)) (inst := fun i ↦ inst (e i))
       (inst_1 := fun i ↦ inst_1 (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
       (inst_2 := fun i ↦ inst_2 (e i)) (inst_3 := fun i ↦ inst_3 (e i))
     --handle the sum, it should be easy, find some lemma that does it --done
-    have hι := Fintype.ofEquiv _ e.symm
-    -- rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h] --this is a version that should work, but for some reason it doesn't manage to apply the ← h, I don't understand why, the expression after the first lemma is exactly the same as in the case below, where I manually give it the equivalent of hι as an argument
-    -- rw [@Fintype.sum_equiv _ _ _ _ hι _ e.symm _
-    --   (fun i ↦ kl (μ (e i)) (ν (e i))) _, ← h] --this doesn't work either
-    rw [@Fintype.sum_equiv _ _ _ _ (Fintype.ofEquiv _ e.symm) _ e.symm _
-      (fun i ↦ kl (μ (e i)) (ν (e i))) _, ← h] --find a way to make this look better
-    --use the lemma fDiv_map_measurableEmbedding to get to the goal of proving the measurable equivalence of the two products
+    let hι := Fintype.ofEquiv _ e.symm
+    rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h]
     rw [kl_eq_fDiv, kl_eq_fDiv]
-    have em := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
-    have emr := MeasurableEquiv.measurableEmbedding em
+    let em := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
+    have emr := MeasurableEquiv.measurableEmbedding em.symm
+
+    --have hh := (Measure.pi μ).map em.symm
+
 
     symm
 
     convert fDiv_map_measurableEmbedding emr
-    <;> sorry
-    rotate_left 2
     ·
-      -- exact Measure.pi μ
+      convert Measure.pi_eq ?_
+      · infer_instance
+      intro s hs
+      -- simp [MeasurableEquiv.coe_piCongrLeft] at *
+      -- simp [MeasurableEquiv.coe_piCongrLeft]
+      rw [Measure.map_apply (by measurability)]
+      swap; exact MeasurableSet.univ_pi hs --measurability doesn't close this, but I think it should, however it should be enough to find the lemma for the measurability of a pi of sets
+      let s' : (i : ι') → Set (β i) := by
+        convert fun i ↦ s (e.symm i)
+        exact (Equiv.symm_apply_eq e).mp rfl
+      have : em.symm ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
+        ext p
+        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left]
+        apply e.forall_congr
+        intro i
 
+        simp [s', em, MeasurableEquiv.piCongrLeft]
+        convert Iff.rfl
+
+        sorry
+
+        -- rw [cast_eq_iff_heq]
+        -- simp [Equiv.apply_symm_apply e, Equiv.symm_apply_apply e]
+        -- constructor
+        -- · intro h i'
+        --   specialize h (e.symm i')
+
+        --   rw [Equiv.apply_symm_apply e _] at h
+        --   simp [Equiv.symm_apply_eq] at h
+
+      simp only [this, Measure.pi_pi]
+      apply Fintype.prod_equiv e.symm
+      intro i
+
+      congr <;> try simp
+      simp [s']
+
+
+      -- simp [Equiv.symm_apply_apply, Equiv.apply_symm_apply]
+      -- rw [Equiv.apply_symm_apply e i]
+
+
+
+      -- here I don't know how to proceed
+
+      --convert (Measure.pi_eq _).symm
+
+
+      --find a way to 'apply' the measure.pi
+      -- simp [emr, hs]
       sorry
-
-
-    -- have := fDiv_map_measurableEmbedding (MeasurableEquiv.measurableEmbedding em)
-
-    --apply MeasurableEquiv.piCongrLeft using e as the embedding
-
-
-    -- sorry
-    -- #check MeasurableEquiv.piCongrLeft
+    · -- here it should be the same as the previous case
+      sorry
+    · constructor
+      rw [Measure.pi_univ]
+      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
+      --for now I just solved the problem manually like this, but it's strange that it does not manage to infer the instance by itself
+      --apply MeasureTheory.Measure.pi.finite (μ := μ)
+      -- infer_instance -- this should work now that I made the instance, maybe I did something wrong in the instance itself
+      --TODO: it seems that there is no instance that says that the product of finite measures is finite, same with product of probability measure, maybe I just didn't find them, but if they don't exist, we should add them
+      -- simp [inst_2, inst_3]
+    · constructor
+      rw [Measure.pi_univ]
+      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
+    intro i
+    rw [Equiv.apply_symm_apply]
   · intro β inst inst_1 μ ν inst_2 inst_3
     simp only [Finset.univ_eq_empty, Finset.sum_empty]
     rw [Measure.pi_of_empty, Measure.pi_of_empty]
     simp only [kl_self]
   · intro ι hι ind_h β inst inst_1 μ ν inst_2 inst_3
     specialize ind_h (β := fun i ↦ β i) (inst := fun i ↦ inst i) (inst_1 := fun i ↦ inst_1 i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i) (inst_2 := fun i ↦ inst_2 i) (inst_3 := fun i ↦ inst_3 i)
-    --find some lemma to handle the sum over an option type
+    --find some lemma to handle the sum over an option type (simp does this automatically)
+    -- simp only [Fintype.sum_option] --maybe we can put this later to keep the infoview cleaner
     --find some lemma to have the equivalence between the pi over the option type and the sum of the 'some' elements and the null element
+
     --use that equivalence with MeasurableEquiv.piCongrLeft to get the measurable equivalence
     --use the lemma fDiv_map_measurableEmbedding with that measurable equivalence, now we should have in the goal kl of the product, where the type of indices is the sum type
     --apply easurableEquiv.sumPiEquivProdPi using that sum to get the measurable equivalence
@@ -615,6 +667,7 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
 
     #check MeasurableEquiv.sumPiEquivProdPi
     sorry
+
 
 
 #check Measure.pi
