@@ -1,31 +1,38 @@
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 
-
 open MeasureTheory
 
+variable {ι ι' : Type*} [Fintype ι] [Fintype ι'] {e : ι ≃ ι'} {β : ι' → Type*} [∀ i', MeasurableSpace (β i')]
+  {μ : (i : ι') → Measure (β i)} [∀ (i' : ι'), IsProbabilityMeasure (μ i')]
 
-variable {ι ι' : Type*} [Fintype ι] [Fintype ι'] {e : ι ≃ ι'} {β : ι' → Type*} [∀ i', MeasurableSpace (β i')] {μ : (i : ι') → Measure (β i)} [∀ (i' : ι'), IsProbabilityMeasure (μ i')]
+def e_meas : ((i : ι) → β (e i)) ≃ᵐ ((i' : ι') → β i') := MeasurableEquiv.piCongrLeft β e
 
-def em1 : ((b : ι) → β (e b)) ≃ᵐ ((a : ι') → β a) := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
+lemma piCongrLeft_apply_apply' :
+    (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
+  simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk]
+  rw [Equiv.piCongrLeft_apply_apply]
 
-theorem my_theorem : (Measure.pi fun i ↦ μ (e i)) = Measure.map (⇑em1.symm) (Measure.pi μ) := by
-  convert Measure.pi_eq ?_
-  · infer_instance
-  intro s hs
-  rw [Measure.map_apply (by measurability)]
-  swap; exact MeasurableSet.univ_pi hs
-  let s' : (i : ι') → Set (β i) := by
-    convert fun i ↦ s (e.symm i)
-    exact (Equiv.symm_apply_eq e).mp rfl
-  have : em1.symm ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
+
+lemma my_theorem : Measure.pi (fun i ↦ μ (e i)) = Measure.map e_meas.symm (Measure.pi μ) := by
+  suffices Measure.map e_meas (Measure.pi (fun i ↦ μ (e i))) = Measure.pi μ by
+    rw [← this, MeasurableEquiv.map_symm_map]
+  symm
+  refine Measure.pi_eq (fun s _ ↦ ?_)
+  rw [e_meas.measurableEmbedding.map_apply]
+  let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
+  have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
     ext x
-    simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left]
+    simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
+    symm
     apply e.forall_congr
     intro i
-    simp [s', em1, MeasurableEquiv.piCongrLeft]
+    rw [e_meas]
     convert Iff.rfl
-
-    sorry
-
-
-  sorry
+    rw [piCongrLeft_apply_apply']
+  rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
+  · simp
+  intro i _
+  unfold_let s'
+  simp only
+  congr
+  all_goals rw [e.apply_symm_apply]
