@@ -501,7 +501,7 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 --TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
 
 
---I define the instances for Measure.pi to be finite or a probability measure, I think they are not in mathlib, or at least I didn't find them. if we keep we should check the names
+--TODO: I define the instances for Measure.pi to be finite or a probability measure, I think they are not in mathlib, or at least I didn't find them. if we keep we should check the names
 
 #check MeasureTheory.Measure.pi_univ
 
@@ -525,9 +525,11 @@ instance MeasureTheory.Measure.pi.probabilityMeasure {ι : Type*} [Fintype ι] {
 over α and α(none).-/
 def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*) [mα : ∀ i, MeasurableSpace (α i)] :
     (∀ i, α i) ≃ᵐ (∀ (i : δ), α i) × α none := by
-  let e := Equiv.optionEquivSumPUnit.{_, u_3} δ
-  let em1 := MeasurableEquiv.piCongrLeft α e.symm
-  let em2 := MeasurableEquiv.sumPiEquivProdPi (fun i ↦ α (e.symm i))
+  let e : Option δ ≃ δ ⊕ PUnit := Equiv.optionEquivSumPUnit δ
+  let em1 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((a : Option δ) → α a) := MeasurableEquiv.piCongrLeft α e.symm
+  let em2 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((i : δ) → α (e.symm (Sum.inl i)))
+      × ((i' : PUnit) → α (e.symm (Sum.inr i'))) :=
+    MeasurableEquiv.sumPiEquivProdPi (fun i ↦ α (e.symm i))
   let em3 : ((i : δ) → α (e.symm (Sum.inl i))) × ((i' : PUnit.{u_3 + 1}) → α (e.symm (Sum.inr i')))
       ≃ᵐ ((i : δ) → α (some i)) × α none := by
     apply MeasurableEquiv.prodCongr
@@ -539,6 +541,14 @@ def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*) [m
 
 #check Complex.exp_sum
 #check Finset.prod
+
+--TODO: measurability should be able to solve something like this, maybe I should write this on zulip, see the file test_measruability
+example {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
+    (s : (i : ι) → Set (β i)) (h : ∀ i, MeasurableSet (s i)) :
+    MeasurableSet (Set.pi Set.univ s) := by
+  -- measurability
+  exact MeasurableSet.univ_pi h
+
 
 lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
