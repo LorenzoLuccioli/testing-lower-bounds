@@ -75,8 +75,8 @@ Since $\KL$ is an f-divergence, every inequality for f-divergences can be transl
 \end{lemma}
 
 \begin{proof} \leanok
-  \uses{lem:kl_eq_fDiv, lem:condFDiv_const}
-  KL is an f-divergence thanks to Lemma~\ref{lem:kl_eq_fDiv}, then apply Lemma~\ref{lem:condFDiv_const}.
+  \uses{lem:kl_eq_fDiv, lem:condFDiv_const, lem:condKL_eq_condFDiv}
+  KL is an f-divergence thanks to Lemma~\ref{lem:kl_eq_fDiv} and Lemma~\ref{lem:condKL_eq_condFDiv}, then apply Lemma~\ref{lem:condFDiv_const}.
 \end{proof}
 
 \begin{theorem}[Marginals]
@@ -241,6 +241,34 @@ For the case where $\mu \otimes \kappa \ll \nu \otimes \eta$ and $p \mapsto \log
 \begin{proof}
 \uses{thm:kl_compProd}
 Write $\mu = \mu_X \otimes \mu_{Y|X}$ and $\nu = \nu_X \otimes \nu_{Y|X}$, then use Theorem~\ref{thm:kl_compProd}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:kl_prod_two'}
+  \lean{ProbabilityTheory.kl_prod_two'}
+  \leanok
+  \uses{def:KL}
+  Let $\mu, \nu, \xi, \psi$ be measures on $\mathcal X$ such that $\xi, \psi$ are probability measures and $\mu, \nu$ are finite. Then
+  $$\KL(\mu \times \xi, \nu \times \psi) = \KL(\mu, \nu) + \KL(\xi, \psi) \mu (\mathcal X) \: .$$
+\end{lemma}
+
+\begin{proof}
+\uses{thm:kl_compProd, lem:condKL_const}
+Write $\mu \times \xi$ and $\nu \times \psi$ as composition product of a measure and a constant kernel, then apply the chain rule (Theorem~\ref{thm:kl_compProd}) and Lemma~\ref{lem:condKL_const}.
+\end{proof}
+
+\begin{lemma}[Tensorization]
+  \label{lem:kl_prod_two}
+  \lean{ProbabilityTheory.kl_prod_two}
+  \leanok
+  \uses{def:KL}
+  Let $\mu, \nu, \xi, \psi$ be measures on $\mathcal X$ such that $\mu, \xi, \psi$ are probability measures and $\nu$ is finite. Then
+  $$\KL(\mu \times \xi, \nu \times \psi) = \KL(\mu, \nu) + \KL(\xi, \psi) \: .$$
+\end{lemma}
+
+\begin{proof}
+\uses{lem:kl_prod_two'}
+Apply Lemma~\ref{lem:kl_prod_two'}.
 \end{proof}
 
 \begin{lemma}
