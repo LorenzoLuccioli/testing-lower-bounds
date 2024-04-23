@@ -361,8 +361,8 @@ lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKer
   rw [kl_eq_fDiv, condKL_eq_condFDiv]
   exact fDiv_compProd_left μ κ η (by measurability) Real.convexOn_mul_log
 
-lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    [IsMarkovKernel κ] :
+lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] [IsMarkovKernel κ] :
     kl (μ ⊗ₘ κ) (ν ⊗ₘ κ) = kl μ ν := by
   rw [kl_eq_fDiv, kl_eq_fDiv]
   exact fDiv_compProd_right μ ν κ (by measurability) Real.convexOn_mul_log
@@ -406,7 +406,8 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
   · simp only [h_int, not_false_eq_true, kl_of_not_integrable]
     rw [integrable_llr_compProd_iff h_prod] at h_int
     set_option push_neg.use_distrib true in push_neg at h_int
-    rcases h_int with ((h | h) | h) <;> simp [h, EReal.top_add_of_ne_bot, condKL_ne_bot, EReal.add_top_of_ne_bot, kl_ne_bot]
+    rcases h_int with ((h | h) | h) <;>
+    simp [h, EReal.top_add_of_ne_bot, condKL_ne_bot, EReal.add_top_of_ne_bot, kl_ne_bot]
   have intμν := integrable_llr_of_integrable_llr_compProd h_prod h_int
   have intκη : Integrable (fun a ↦ ∫ (x : β), log (kernel.rnDeriv κ η a x).toReal ∂κ a) μ := by
     apply Integrable.congr (integrable_integral_llr_of_integrable_llr_compProd h_prod h_int)
@@ -501,9 +502,9 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 --TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
 
 
---TODO: I define the instances for Measure.pi to be finite or a probability measure, I think they are not in mathlib, or at least I didn't find them. if we keep we should check the names
-
-#check MeasureTheory.Measure.pi_univ
+--TODO: I define the instances for Measure.pi to be finite or a probability measure, I think they are not in mathlib, or at least I didn't find them. if we keep them we should check the names
+--we could put them just below MeasureTheory.Measure.pi.sigmaFinite
+#check MeasureTheory.Measure.pi.sigmaFinite
 
 instance MeasureTheory.Measure.pi.finite {ι : Type*} [Fintype ι] {α : ι → Type*}
     [∀ i, MeasurableSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsFiniteMeasure (μ i)] :
@@ -516,25 +517,25 @@ instance MeasureTheory.Measure.pi.probabilityMeasure {ι : Type*} [Fintype ι] {
     [∀ i, MeasurableSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsProbabilityMeasure (μ i)] :
     IsProbabilityMeasure (Measure.pi μ) := by
   constructor
-  rw [Measure.pi_univ]
-  simp only [measure_univ, Finset.prod_const_one]
+  simp only [Measure.pi_univ, measure_univ, Finset.prod_const_one]
 
 
 --TODO: find a place for this, probably just after MeasurableEquiv.piFinsetUnion, then move it and PR to mathlib
 /-- The measurable equivalence between the pi type over an Option α type and the product of the pi
 over α and α(none).-/
-def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*) [mα : ∀ i, MeasurableSpace (α i)] :
+def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*)
+    [mα : ∀ i, MeasurableSpace (α i)] :
     (∀ i, α i) ≃ᵐ (∀ (i : δ), α i) × α none := by
   let e : Option δ ≃ δ ⊕ PUnit := Equiv.optionEquivSumPUnit δ
-  let em1 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((a : Option δ) → α a) := MeasurableEquiv.piCongrLeft α e.symm
+  let em1 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((a : Option δ) → α a) :=
+    MeasurableEquiv.piCongrLeft α e.symm
   let em2 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((i : δ) → α (e.symm (Sum.inl i)))
       × ((i' : PUnit) → α (e.symm (Sum.inr i'))) :=
     MeasurableEquiv.sumPiEquivProdPi (fun i ↦ α (e.symm i))
   let em3 : ((i : δ) → α (e.symm (Sum.inl i))) × ((i' : PUnit.{u_3 + 1}) → α (e.symm (Sum.inr i')))
-      ≃ᵐ ((i : δ) → α (some i)) × α none := by
-    apply MeasurableEquiv.prodCongr
-    · exact MeasurableEquiv.refl ((i : δ) → α (e.symm (Sum.inl i)))
-    · exact MeasurableEquiv.piUnique fun i ↦ α (e.symm (Sum.inr i))
+      ≃ᵐ ((i : δ) → α (some i)) × α none :=
+    MeasurableEquiv.prodCongr (MeasurableEquiv.refl ((i : δ) → α (e.symm (Sum.inl i))))
+      (MeasurableEquiv.piUnique fun i ↦ α (e.symm (Sum.inr i)))
   exact em1.symm.trans <| em2.trans em3
 
 
@@ -554,7 +555,11 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
     kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (ν i) := by
-  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [(i : ι) → MeasurableSpace (β i)] [∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [∀ (i : ι), IsProbabilityMeasure (μ i)] [∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
+  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4}
+    [(i : ι) → MeasurableSpace (β i)] [∀ (i : ι), CountablyGenerated (β i)]
+    {μ ν : (i : ι) → Measure (β i)} [∀ (i : ι), IsProbabilityMeasure (μ i)]
+    [∀ (i : ι), IsProbabilityMeasure (ν i)],
+    kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
   · intro ι ι' hι' e h β _ _ μ ν _ _
     specialize h (β := fun i ↦ β (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
     let hι : Fintype ι := Fintype.ofEquiv _ e.symm
@@ -617,13 +622,14 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i))
         (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
       rw [kl_eq_fDiv, kl_eq_fDiv]
-      let e_meas : ((i : Option ι) → β i) ≃ᵐ ((i : ι) → β (some i)) × β none :=
-        MeasurableEquiv.optionPiEquivProd β
-      have me := MeasurableEquiv.measurableEmbedding e_meas.symm
+      let e_meas : ((i : ι) → β (some i)) × β none ≃ᵐ ((i : Option ι) → β i) :=
+        MeasurableEquiv.optionPiEquivProd β |>.symm
+      have me := MeasurableEquiv.measurableEmbedding e_meas
       convert fDiv_map_measurableEmbedding me
       <;> try { -- this try is to avoid repeating exactly the same proof twice, maybe there is a better way though
       refine Measure.pi_eq (fun s _ ↦ ?_)
-      have : e_meas.symm ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none) := by
+      have : e_meas ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none)
+          := by
         ext x
         simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
         constructor; tauto
@@ -635,7 +641,6 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
       <;> infer_instance
     rw [Fintype.sum_option, h, add_comm, ← ind_h]
     convert kl_prod_two <;> tauto <;> infer_instance
-
 
 
 
