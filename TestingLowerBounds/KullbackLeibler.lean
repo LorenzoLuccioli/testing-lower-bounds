@@ -557,15 +557,14 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
   revert μ ν β
   refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [(i : ι) → MeasurableSpace (β i)] [∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [∀ (i : ι), IsProbabilityMeasure (μ i)] [∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
   · intro ι ι' hι' e h β _ _ μ ν _ _
-    specialize h (β := fun i ↦ β (e i))
-      (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
+    specialize h (β := fun i ↦ β (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
     let hι : Fintype ι := Fintype.ofEquiv _ e.symm
     rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h, kl_eq_fDiv, kl_eq_fDiv]
     let e_meas : ((b : ι) → β (e b)) ≃ᵐ ((a : ι') → β a) :=
       MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
     have me := MeasurableEquiv.measurableEmbedding e_meas.symm
     symm
-    convert fDiv_map_measurableEmbedding me
+    convert fDiv_map_measurableEmbedding me <;> try infer_instance
     · suffices Measure.map e_meas (Measure.pi (fun i ↦ μ (e i))) = Measure.pi μ by
         rw [← this, MeasurableEquiv.map_symm_map]
       symm
@@ -582,17 +581,17 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
         convert Iff.rfl
         have piCongrLeft_apply_apply' :
             (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
-          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk]
-          rw [Equiv.piCongrLeft_apply_apply]
+          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk,
+            Equiv.piCongrLeft_apply_apply]
         rw [piCongrLeft_apply_apply']
       rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
-      · simp
+      · simp only [Finset.mem_univ, implies_true]
       intro i _
       unfold_let s'
       simp only
       congr
       all_goals rw [e.apply_symm_apply]
-    · --TODO: this is the same as the previous goal, we could directly separate this proof as a lemma or if we want to keep it here we could use some tactic to avoid repeating the proof, like <;> try { ... }
+    · --TODO: this is the same as the previous goal, we could directly separate this proof as a lemma or if we want to keep it here we could use some tactic to avoid repeating the proof, like <;> try { ... }. Using directly try does not work, since the first suffices in each proof mentions the measure
       suffices Measure.map e_meas (Measure.pi (fun i ↦ ν (e i))) = Measure.pi ν by
         rw [← this, MeasurableEquiv.map_symm_map]
       symm
@@ -609,8 +608,8 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
         convert Iff.rfl
         have piCongrLeft_apply_apply' :
             (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
-          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk]
-          rw [Equiv.piCongrLeft_apply_apply]
+          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk,
+            Equiv.piCongrLeft_apply_apply]
         rw [piCongrLeft_apply_apply']
       rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
       · simp
@@ -619,14 +618,10 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
       simp only
       congr
       all_goals rw [e.apply_symm_apply]
-    · infer_instance
-    · infer_instance
     intro i
     rw [Equiv.apply_symm_apply]
   · intro β _ _ μ ν _ _
-    simp only [Finset.univ_eq_empty, Finset.sum_empty]
-    rw [Measure.pi_of_empty, Measure.pi_of_empty]
-    simp only [kl_self]
+    rw [Measure.pi_of_empty, Measure.pi_of_empty, kl_self, Finset.univ_eq_empty, Finset.sum_empty]
   · intro ι hι ind_h β _ _ μ ν _ _
     specialize ind_h (β := fun i ↦ β i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i)
     have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i))
@@ -638,10 +633,8 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
       have me := MeasurableEquiv.measurableEmbedding e_meas.symm
       symm
       convert fDiv_map_measurableEmbedding me
-      <;>try { -- this try is to avoid repeating exactly the same proof twice, maybe there is a better way though
+      <;> try { -- this try is to avoid repeating exactly the same proof twice, maybe there is a better way though
       refine Measure.pi_eq (fun s _ ↦ ?_)
-      rw [me.map_apply]
-      simp [univ_option]
       have : e_meas.symm ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none) := by
         ext x
         simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
@@ -649,18 +642,12 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
         constructor; tauto
         intro h i
         rcases i <;> tauto
-      simp only [this, Measure.prod_prod, Measure.pi_pi, mul_comm]
+      simp only [me.map_apply, univ_option, Finset.le_eq_subset, Finset.prod_insertNone, this,
+        Measure.prod_prod, Measure.pi_pi, mul_comm]
       }
       <;> infer_instance
-    simp only [Fintype.sum_option]
-    rw [h, add_comm, ← ind_h]
-    convert kl_prod_two <;> try tauto
-    · constructor
-      rw [Measure.pi_univ]
-      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
-    · constructor
-      rw [Measure.pi_univ]
-      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
+    rw [Fintype.sum_option, h, add_comm, ← ind_h]
+    convert kl_prod_two <;> tauto <;> infer_instance
 
 
 
