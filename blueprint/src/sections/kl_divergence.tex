@@ -62,7 +62,21 @@ Since $\KL$ is an f-divergence, every inequality for f-divergences can be transl
 
 \begin{proof} \leanok
   \uses{lem:kl_eq_fDiv, lem:fDiv_self}
-  KL is an f-divergence thanks to Lemma \ref{lem:kl_eq_fDiv}, then apply Lemma \ref{lem:fDiv_self}.
+  KL is an f-divergence thanks to Lemma~\ref{lem:kl_eq_fDiv}, then apply Lemma~\ref{lem:fDiv_self}.
+\end{proof}
+
+\begin{lemma}
+  \label{lem:condKL_const}
+  \lean{ProbabilityTheory.condKL_const}
+  \leanok
+  \uses{def:KL, def:condKL}
+  Let $\mu, \nu$ be finite measures on $\mathcal X$, $\xi$ be a finite measure on $\mathcal Y$. 
+  Then $\KL(x \mapsto \mu, x \mapsto \nu \mid \xi) = \KL(\mu, \nu) \xi (\mathcal X)$.
+\end{lemma}
+
+\begin{proof} \leanok
+  \uses{lem:kl_eq_fDiv, lem:condFDiv_const}
+  KL is an f-divergence thanks to Lemma~\ref{lem:kl_eq_fDiv}, then apply Lemma~\ref{lem:condFDiv_const}.
 \end{proof}
 
 \begin{theorem}[Marginals]
