@@ -12,6 +12,7 @@ import TestingLowerBounds.ForMathlib.L1Space
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 import TestingLowerBounds.ForMathlib.Pi
 import TestingLowerBounds.ForMathlib.MeasureSpace
+import TestingLowerBounds.ForMathlib.MeasurableSpace
 
 /-!
 # Kullback-Leibler divergence
@@ -517,25 +518,6 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 
 --TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
 
---TODO: find a place for this, probably just after MeasurableEquiv.piFinsetUnion, then move it and PR to mathlib
-#check MeasurableEquiv.piFinsetUnion
-/-- The measurable equivalence between the pi type over an Option α type and the product of the pi
-over α and α(none).-/
-def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*)
-    [mα : ∀ i, MeasurableSpace (α i)] :
-    (∀ i, α i) ≃ᵐ (∀ (i : δ), α i) × α none := by
-  let e : Option δ ≃ δ ⊕ PUnit := Equiv.optionEquivSumPUnit δ
-  let em1 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((a : Option δ) → α a) :=
-    MeasurableEquiv.piCongrLeft α e.symm
-  let em2 : ((i : δ ⊕ PUnit) → α (e.symm i)) ≃ᵐ ((i : δ) → α (e.symm (Sum.inl i)))
-      × ((i' : PUnit) → α (e.symm (Sum.inr i'))) :=
-    MeasurableEquiv.sumPiEquivProdPi (fun i ↦ α (e.symm i))
-  let em3 : ((i : δ) → α (e.symm (Sum.inl i))) × ((i' : PUnit.{u_3 + 1}) → α (e.symm (Sum.inr i')))
-      ≃ᵐ ((i : δ) → α (some i)) × α none :=
-    MeasurableEquiv.prodCongr (MeasurableEquiv.refl ((i : δ) → α (e.symm (Sum.inl i))))
-      (MeasurableEquiv.piUnique fun i ↦ α (e.symm (Sum.inr i)))
-  exact em1.symm.trans <| em2.trans em3
-
 --TODO: measurability should be able to solve something like this, maybe I should write this on zulip, see the file test_measurability
 example {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     (s : (i : ι) → Set (β i)) (h : ∀ i, MeasurableSet (s i)) :
@@ -616,7 +598,7 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
         (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
       rw [kl_eq_fDiv, kl_eq_fDiv]
       let e_meas : ((i : ι) → β (some i)) × β none ≃ᵐ ((i : Option ι) → β i) :=
-        MeasurableEquiv.optionPiEquivProd β |>.symm
+        MeasurableEquiv.piOptionEquivProd β |>.symm
       have me := MeasurableEquiv.measurableEmbedding e_meas
       convert fDiv_map_measurableEmbedding me
       <;> try { -- this try is to avoid repeating exactly the same proof twice, maybe there is a better way though
