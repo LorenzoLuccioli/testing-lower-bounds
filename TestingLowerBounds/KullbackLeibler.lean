@@ -506,14 +506,14 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 #check MeasureTheory.Measure.pi_univ
 
 instance MeasureTheory.Measure.pi.finite {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, MeasureSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsFiniteMeasure (μ i)] :
+    [∀ i, MeasurableSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsFiniteMeasure (μ i)] :
     IsFiniteMeasure (Measure.pi μ) := by
   constructor
   rw [Measure.pi_univ]
   exact ENNReal.prod_lt_top (fun i _ ↦ measure_ne_top (μ i) _)
 
 instance MeasureTheory.Measure.pi.probabilityMeasure {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, MeasureSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsProbabilityMeasure (μ i)] :
+    [∀ i, MeasurableSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsProbabilityMeasure (μ i)] :
     IsProbabilityMeasure (Measure.pi μ) := by
   constructor
   rw [Measure.pi_univ]
@@ -542,7 +542,7 @@ def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*) [m
 #check Complex.exp_sum
 #check Finset.prod
 
---TODO: measurability should be able to solve something like this, maybe I should write this on zulip, see the file test_measruability
+--TODO: measurability should be able to solve something like this, maybe I should write this on zulip, see the file test_measurability
 example {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     (s : (i : ι) → Set (β i)) (h : ∀ i, MeasurableSet (s i)) :
     MeasurableSet (Set.pi Set.univ s) := by
@@ -554,14 +554,6 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
     kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (ν i) := by
-  -- generalize Finset.univ (α := ι) = s
-  -- induction s using Finset.cons_induction_on
-  -- ·
-  --   sorry
-  -- ·
-  --   sorry
-
-
   revert μ ν β
   refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [inst : (i : ι) → MeasurableSpace (β i)] [inst_1 : ∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [inst_2 : ∀ (i : ι), IsProbabilityMeasure (μ i)] [inst_3 : ∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?iso ?base ?step ι
   · intro ι ι' hι' e h β inst inst_1 μ ν inst_2 inst_3
@@ -571,9 +563,9 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     let hι := Fintype.ofEquiv _ e.symm
     rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h, kl_eq_fDiv, kl_eq_fDiv]
     let e_meas := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
-    have emr := MeasurableEquiv.measurableEmbedding e_meas.symm
+    have me := MeasurableEquiv.measurableEmbedding e_meas.symm
     symm
-    convert fDiv_map_measurableEmbedding emr
+    convert fDiv_map_measurableEmbedding me
     · suffices Measure.map e_meas (Measure.pi (fun i ↦ μ (e i))) = Measure.pi μ by
         rw [← this, MeasurableEquiv.map_symm_map]
       symm
@@ -627,17 +619,8 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
       simp only
       congr
       all_goals rw [e.apply_symm_apply]
-    · constructor
-      rw [Measure.pi_univ]
-      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
-      --for now I just solved the problem manually like this, but it's strange that it does not manage to infer the instance by itself
-      --apply MeasureTheory.Measure.pi.finite (μ := μ)
-      -- infer_instance -- this should work now that I made the instance, maybe I did something wrong in the instance itself
-      --TODO: it seems that there is no instance that says that the product of finite measures is finite, same with product of probability measure, maybe I just didn't find them, but if they don't exist, we should add them
-      -- simp [inst_2, inst_3]
-    · constructor
-      rw [Measure.pi_univ]
-      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
+    · infer_instance
+    · infer_instance
     intro i
     rw [Equiv.apply_symm_apply]
   · intro β inst inst_1 μ ν inst_2 inst_3
@@ -647,23 +630,44 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
   · intro ι hι ind_h β inst inst_1 μ ν inst_2 inst_3
     specialize ind_h (β := fun i ↦ β i) (inst := fun i ↦ inst i) (inst_1 := fun i ↦ inst_1 i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i) (inst_2 := fun i ↦ inst_2 i) (inst_3 := fun i ↦ inst_3 i)
     --find some lemma to handle the sum over an option type (simp does this automatically)
-    -- simp only [Fintype.sum_option] --maybe we can put this later to keep the infoview cleaner
     --find some lemma to have the equivalence between the pi over the option type and the sum of the 'some' elements and the null element
     #check MeasurableEquiv.optionPiEquivProd
-    have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i)) (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
-      rw [kl_eq_fDiv, kl_eq_fDiv]
 
-
-      sorry
     --use that equivalence with MeasurableEquiv.piCongrLeft to get the measurable equivalence
     --use the lemma fDiv_map_measurableEmbedding with that measurable equivalence, now we should have in the goal kl of the product, where the type of indices is the sum type
     --apply easurableEquiv.sumPiEquivProdPi using that sum to get the measurable equivalence
     --use again the lemma fDiv_map_measurableEmbedding
 
+    have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i))
+        (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
+      rw [kl_eq_fDiv, kl_eq_fDiv]
+      symm
+
+      let e_meas := MeasurableEquiv.optionPiEquivProd β
+
+      have me := MeasurableEquiv.measurableEmbedding e_meas.symm
+      symm
+      convert fDiv_map_measurableEmbedding me
+      ·
+        sorry
+      ·
+        sorry
+      · infer_instance
+      · infer_instance
+    simp only [Fintype.sum_option]
+    rw [h, add_comm, ← ind_h]
+    convert kl_prod_two <;> try tauto
+    · constructor
+      rw [Measure.pi_univ]
+      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
+    · constructor
+      rw [Measure.pi_univ]
+      simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
 
 
-    #check MeasurableEquiv.sumPiEquivProdPi
-    sorry
+
+
+
 
 
 
