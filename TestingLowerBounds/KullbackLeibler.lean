@@ -554,7 +554,6 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
     kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (ν i) := by
-  revert μ ν β
   refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [(i : ι) → MeasurableSpace (β i)] [∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [∀ (i : ι), IsProbabilityMeasure (μ i)] [∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
   · intro ι ι' hι' e h β _ _ μ ν _ _
     specialize h (β := fun i ↦ β (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
