@@ -195,7 +195,7 @@ end kl_nonneg
 
 section Conditional
 
-variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β} {μ : Measure α}
+variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
 
 /--Equivalence between two possible versions of the first condition for the finiteness of the
 conditional KL divergence, the second version is the preferred one.-/
@@ -368,17 +368,28 @@ lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMea
 
 section IntegralLemma
 
---TODO: put this lemma in a separate file, then PR it to mathlib, I'm not sure it can just go in the same file as integral_congr_ae, since it uses the kernels. maybe we caould do a simpler version with 2 probability measures instead of kernels
+--TODO: put this lemma in a separate file, then PR it to mathlib, I'm not sure it can just go in the same file as integral_congr_ae, since it uses the kernels. maybe we could do a simpler version with 2 probability measures instead of kernels. decide what to do with the 2 vertions, are they both useful?
+--I could have proven the second one using the first, but it is probabily easier to do them separately, also in this way we can put them in separate files without worring about dependencies
+--also about the names, if we put the two lemmas under different namespaces (the first one could go under something that contains kernel) we can give them the same name
 variable {α β: Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
-variable {μ : Measure α} {κ : kernel α β}
+variable {μ : Measure α} {ν : Measure β} {κ : kernel α β}
 variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
 
-theorem integral_congr_ae₂ {f g : α → β → G} (h : ∀ᵐ a ∂μ, f a =ᵐ[κ a] g a) :
+lemma integral_congr_ae₂ {f g : α → β → G} (h : ∀ᵐ a ∂μ, f a =ᵐ[κ a] g a) :
     ∫ a, ∫ b, f a b ∂(κ a) ∂μ = ∫ a, ∫ b, g a b ∂(κ a) ∂μ := by
   apply integral_congr_ae
   filter_upwards [h] with a ha
   apply integral_congr_ae
   filter_upwards [ha] with b hb using hb
+
+--change the name of this one
+lemma integral_congr_ae₂' {f g : α → β → G} (h : ∀ᵐ a ∂μ, f a =ᵐ[ν] g a) :
+    ∫ a, ∫ b, f a b ∂ν ∂μ = ∫ a, ∫ b, g a b ∂ν ∂μ := by
+  apply integral_congr_ae
+  filter_upwards [h] with a ha
+  apply integral_congr_ae
+  filter_upwards [ha] with b hb using hb
+
 
 #find_home! ProbabilityTheory.integral_congr_ae₂
 
@@ -481,7 +492,14 @@ lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] {μ ν : Measure 
     kl μ ν = kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
---TODO: choose if it makes sense to keep also the specialized version for probability measures, I think it may be useful to keep it.
+
+end Conditional
+
+section Tensorization
+
+variable {β : Type*} {mβ : MeasurableSpace β}
+
+
 --TODO: which of the two lemmas should go into the blueprint? or maybe both?
 lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
@@ -494,13 +512,13 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
   simp only [kl_prod_two', measure_univ, EReal.coe_ennreal_one, mul_one]
 
---TODO: add the tensorization for kl in the finite version, it should be a simple induction using the one for 2 measures, but it's not very easy to even state, because I would like to request the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
---moreover I don't know how to write the product in the first place, at least I figured out how to write dependent function types
+--TODO: I would like the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
 --if the general case turns out to be very hard to write and also to use, consider making a corollary where all the measures are probability measures and all the spaces are countabily generated
 
 --TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
 
 --TODO: find a place for this, probably just after MeasurableEquiv.piFinsetUnion, then move it and PR to mathlib
+#check MeasurableEquiv.piFinsetUnion
 /-- The measurable equivalence between the pi type over an Option α type and the product of the pi
 over α and α(none).-/
 def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*)
@@ -517,11 +535,6 @@ def MeasurableEquiv.optionPiEquivProd {δ : Type*} (α : Option δ → Type*)
     MeasurableEquiv.prodCongr (MeasurableEquiv.refl ((i : δ) → α (e.symm (Sum.inl i))))
       (MeasurableEquiv.piUnique fun i ↦ α (e.symm (Sum.inr i)))
   exact em1.symm.trans <| em2.trans em3
-
-
-
-#check Complex.exp_sum
-#check Finset.prod
 
 --TODO: measurability should be able to solve something like this, maybe I should write this on zulip, see the file test_measurability
 example {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
@@ -622,9 +635,6 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     rw [Fintype.sum_option, h, add_comm, ← ind_h]
     convert kl_prod_two <;> tauto <;> infer_instance
 
-
-
-#check Measure.pi
-end Conditional
+end Tensorization
 
 end ProbabilityTheory
