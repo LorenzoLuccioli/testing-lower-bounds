@@ -501,7 +501,7 @@ section Tensorization
 variable {β : Type*} {mβ : MeasurableSpace β}
 
 
---TODO: which of the two lemmas should go into the blueprint? or maybe both?
+--TODO: which of the two lemmas should go into the blueprint? or maybe both? for now I put both
 lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
