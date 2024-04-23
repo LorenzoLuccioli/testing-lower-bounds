@@ -555,14 +555,14 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
     kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (ν i) := by
   revert μ ν β
-  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [inst : (i : ι) → MeasurableSpace (β i)] [inst_1 : ∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [inst_2 : ∀ (i : ι), IsProbabilityMeasure (μ i)] [inst_3 : ∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?iso ?base ?step ι
-  · intro ι ι' hι' e h β inst inst_1 μ ν inst_2 inst_3
-    specialize h (β := fun i ↦ β (e i)) (inst := fun i ↦ inst (e i))
-      (inst_1 := fun i ↦ inst_1 (e i)) (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
-      (inst_2 := fun i ↦ inst_2 (e i)) (inst_3 := fun i ↦ inst_3 (e i))
-    let hι := Fintype.ofEquiv _ e.symm
+  refine Fintype.induction_empty_option (P := fun ι ↦ ∀ {β : ι → Type u_4} [(i : ι) → MeasurableSpace (β i)] [∀ (i : ι), CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)} [∀ (i : ι), IsProbabilityMeasure (μ i)] [∀ (i : ι), IsProbabilityMeasure (ν i)], kl (Measure.pi μ) (Measure.pi ν) = ∑ i : ι, kl (μ i) (ν i) ) ?_ ?_ ?_ ι
+  · intro ι ι' hι' e h β _ _ μ ν _ _
+    specialize h (β := fun i ↦ β (e i))
+      (μ := fun i ↦ μ (e i)) (ν := fun i ↦ ν (e i))
+    let hι : Fintype ι := Fintype.ofEquiv _ e.symm
     rw [Fintype.sum_equiv e.symm _ (fun i ↦ kl (μ (e i)) (ν (e i))), ← h, kl_eq_fDiv, kl_eq_fDiv]
-    let e_meas := MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
+    let e_meas : ((b : ι) → β (e b)) ≃ᵐ ((a : ι') → β a) :=
+      MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
     have me := MeasurableEquiv.measurableEmbedding e_meas.symm
     symm
     convert fDiv_map_measurableEmbedding me
@@ -623,37 +623,35 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     · infer_instance
     intro i
     rw [Equiv.apply_symm_apply]
-  · intro β inst inst_1 μ ν inst_2 inst_3
+  · intro β _ _ μ ν _ _
     simp only [Finset.univ_eq_empty, Finset.sum_empty]
     rw [Measure.pi_of_empty, Measure.pi_of_empty]
     simp only [kl_self]
-  · intro ι hι ind_h β inst inst_1 μ ν inst_2 inst_3
-    specialize ind_h (β := fun i ↦ β i) (inst := fun i ↦ inst i) (inst_1 := fun i ↦ inst_1 i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i) (inst_2 := fun i ↦ inst_2 i) (inst_3 := fun i ↦ inst_3 i)
-    --find some lemma to handle the sum over an option type (simp does this automatically)
-    --find some lemma to have the equivalence between the pi over the option type and the sum of the 'some' elements and the null element
-    #check MeasurableEquiv.optionPiEquivProd
-
-    --use that equivalence with MeasurableEquiv.piCongrLeft to get the measurable equivalence
-    --use the lemma fDiv_map_measurableEmbedding with that measurable equivalence, now we should have in the goal kl of the product, where the type of indices is the sum type
-    --apply easurableEquiv.sumPiEquivProdPi using that sum to get the measurable equivalence
-    --use again the lemma fDiv_map_measurableEmbedding
-
+  · intro ι hι ind_h β _ _ μ ν _ _
+    specialize ind_h (β := fun i ↦ β i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i)
     have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i))
         (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
       rw [kl_eq_fDiv, kl_eq_fDiv]
       symm
-
-      let e_meas := MeasurableEquiv.optionPiEquivProd β
-
+      let e_meas : ((i : Option ι) → β i) ≃ᵐ ((i : ι) → β (some i)) × β none :=
+        MeasurableEquiv.optionPiEquivProd β
       have me := MeasurableEquiv.measurableEmbedding e_meas.symm
       symm
       convert fDiv_map_measurableEmbedding me
-      ·
-        sorry
-      ·
-        sorry
-      · infer_instance
-      · infer_instance
+      <;>try { -- this try is to avoid repeating exactly the same proof twice, maybe there is a better way though
+      refine Measure.pi_eq (fun s _ ↦ ?_)
+      rw [me.map_apply]
+      simp [univ_option]
+      have : e_meas.symm ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none) := by
+        ext x
+        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
+        unfold_let e_meas
+        constructor; tauto
+        intro h i
+        rcases i <;> tauto
+      simp only [this, Measure.prod_prod, Measure.pi_pi, mul_comm]
+      }
+      <;> infer_instance
     simp only [Fintype.sum_option]
     rw [h, add_comm, ← ind_h]
     convert kl_prod_two <;> try tauto
@@ -663,10 +661,6 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     · constructor
       rw [Measure.pi_univ]
       simp only [measure_univ, Finset.prod_const_one, ENNReal.one_lt_top]
-
-
-
-
 
 
 
