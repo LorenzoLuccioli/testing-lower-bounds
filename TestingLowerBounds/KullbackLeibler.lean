@@ -10,6 +10,7 @@ import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.L1Space
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
+import TestingLowerBounds.ForMathlib.Pi
 
 /-!
 # Kullback-Leibler divergence
@@ -500,25 +501,6 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
 --if the general case turns out to be very hard to write and also to use, consider making a corollary where all the measures are probability measures and all the spaces are countabily generated
 
 --TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
-
-
---TODO: I define the instances for Measure.pi to be finite or a probability measure, I think they are not in mathlib, or at least I didn't find them. if we keep them we should check the names
---we could put them just below MeasureTheory.Measure.pi.sigmaFinite
-#check MeasureTheory.Measure.pi.sigmaFinite
-
-instance MeasureTheory.Measure.pi.finite {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, MeasurableSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsFiniteMeasure (μ i)] :
-    IsFiniteMeasure (Measure.pi μ) := by
-  constructor
-  rw [Measure.pi_univ]
-  exact ENNReal.prod_lt_top (fun i _ ↦ measure_ne_top (μ i) _)
-
-instance MeasureTheory.Measure.pi.probabilityMeasure {ι : Type*} [Fintype ι] {α : ι → Type*}
-    [∀ i, MeasurableSpace (α i)] {μ : (i : ι) → Measure (α i)} [∀ i, IsProbabilityMeasure (μ i)] :
-    IsProbabilityMeasure (Measure.pi μ) := by
-  constructor
-  simp only [Measure.pi_univ, measure_univ, Finset.prod_const_one]
-
 
 --TODO: find a place for this, probably just after MeasurableEquiv.piFinsetUnion, then move it and PR to mathlib
 /-- The measurable equivalence between the pi type over an Option α type and the product of the pi
