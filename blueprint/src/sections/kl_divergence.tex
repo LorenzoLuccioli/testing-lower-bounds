@@ -271,6 +271,20 @@ Write $\mu \times \xi$ and $\nu \times \psi$ as composition product of a measure
 Apply Lemma~\ref{lem:kl_prod_two'}.
 \end{proof}
 
+\begin{lemma}[Tensorization - finite product]
+  \label{lem:kl_prod}
+  \lean{ProbabilityTheory.kl_prod}
+  \leanok
+  \uses{def:KL}
+  Let $I$ be a finite index set. Let $(\mu_i)_{i \in I}$ and $(\nu_i)_{i \in I}$ be probability measures on measurable spaces $(\mathcal X_i)_{i \in I}$. Then
+  $$\KL\left(\prod_{i \in I} \mu_i, \prod_{i \in I} \nu_i\right) = \sum_{i \in I} \KL(\mu_i, \nu_i) \: .$$
+\end{lemma}
+
+\begin{proof}
+\uses{lem:kl_prod_two'}
+Apply Lemma~\ref{lem:kl_prod_two'} and use induction on the cardinality of $I$.
+\end{proof}
+
 \begin{lemma}
   \label{lem:kl_chain_rule_cond_event}
   %\lean{}
