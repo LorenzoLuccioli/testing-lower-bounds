@@ -11,6 +11,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.L1Space
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 import TestingLowerBounds.ForMathlib.Pi
+import TestingLowerBounds.ForMathlib.MeasureSpace
 
 /-!
 # Kullback-Leibler divergence
@@ -96,13 +97,9 @@ lemma kl_zero_left : kl 0 ν = 0 := by
   convert kl_of_ac_of_integrable (Measure.AbsolutelyContinuous.zero _) integrable_zero_measure
   simp only [integral_zero_measure, EReal.coe_zero]
 
---TODO: put this in the right place, also check that there is not a similar lemma in mathlib, I tried to look for it but I didn't find it.
-lemma eq_zero_of_ac_zero (h : μ ≪ 0) : μ = 0 := Measure.measure_univ_eq_zero.mp (h rfl)
-
-#find_home! ProbabilityTheory.eq_zero_of_ac_zero
-
 @[simp]
-lemma kl_zero_right [NeZero μ] : kl μ 0 = ⊤ := kl_of_not_ac (eq_zero_of_ac_zero.mt (NeZero.ne _))
+lemma kl_zero_right [NeZero μ] : kl μ 0 = ⊤ :=
+  kl_of_not_ac (Measure.AbsolutelyContinuous.eq_zero_of_ac_zero.mt (NeZero.ne _))
 
 lemma kl_eq_top_iff [IsFiniteMeasure μ] [SigmaFinite ν] :
     kl μ ν = ⊤ ↔ μ ≪ ν → ¬ Integrable (llr μ ν) μ := by
@@ -144,7 +141,7 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   by_cases hν : ν = 0
   · refine absurd ?_ hμ
     rw [hν] at hμν
-    exact eq_zero_of_ac_zero hμν
+    exact Measure.AbsolutelyContinuous.eq_zero_of_ac_zero hμν
   let ν' := (ν Set.univ)⁻¹ • ν
   have : IsProbabilityMeasure ν' := by
     constructor
@@ -327,7 +324,8 @@ lemma condKL_zero_right [NeZero μ] (h : ∀ᵐ a ∂μ, κ a ≠ 0) : condKL κ
   apply condKL_of_not_ae_ac
   intro h1
   apply Filter.eventually_false_iff_eq_bot.mp.mt (NeBot.ne' (f := μ.ae))
-  filter_upwards [h, h1] with a ha h1a using ha (eq_zero_of_ac_zero h1a)
+  filter_upwards [h, h1] with a ha h1a
+  exact ha (Measure.AbsolutelyContinuous.eq_zero_of_ac_zero h1a)
 
 @[simp]
 lemma condKL_zero_measure : condKL κ η 0 = 0 := by
