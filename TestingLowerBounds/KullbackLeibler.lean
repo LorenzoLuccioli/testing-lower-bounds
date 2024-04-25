@@ -391,7 +391,6 @@ lemma integral_congr_ae₂' {f g : α → β → G} (h : ∀ᵐ a ∂μ, f a =�
   apply integral_congr_ae
   filter_upwards [ha] with b hb using hb
 
-
 #find_home! ProbabilityTheory.integral_congr_ae₂
 
 end IntegralLemma
