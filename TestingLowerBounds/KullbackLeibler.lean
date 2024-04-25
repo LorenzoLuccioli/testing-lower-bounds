@@ -525,6 +525,36 @@ example {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (�
   -- measurability
   exact MeasurableSet.univ_pi h
 
+--TODO: find a place for this, and a better name
+--the hypothesis hι and hι' are not needed both, we can do with just one of them, but then the statement complains that it doesn't find the instance for the other, should we just leave it like this or find some way to circumvent it?
+--should μ be an explicit argument?
+lemma Measure.pi_map_CongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fintype ι'] (e : ι ≃ ι')
+    {β : ι' → Type*} [∀ i, MeasurableSpace (β i)] {μ : (i : ι') → Measure (β i)}
+    [∀ i, SigmaFinite (μ i)] :
+    Measure.map (MeasurableEquiv.piCongrLeft (fun i ↦ β i) e) (Measure.pi fun i ↦ μ (e i))
+    = Measure.pi μ := by
+  let e_meas : ((b : ι) → β (e b)) ≃ᵐ ((a : ι') → β a) :=
+    MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
+  refine Measure.pi_eq (fun s _ ↦ ?_) |>.symm
+  rw [e_meas.measurableEmbedding.map_apply]
+  let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
+  have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
+    ext x
+    simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
+    apply (e.forall_congr _).symm
+    intro i
+    convert Iff.rfl
+    have piCongrLeft_apply_apply' :
+        (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
+      simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk,
+        Equiv.piCongrLeft_apply_apply]
+    rw [piCongrLeft_apply_apply']
+  rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
+  · simp only [Finset.mem_univ, implies_true]
+  intro i _
+  simp only [s']
+  congr
+  all_goals rw [e.apply_symm_apply]
 
 lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
@@ -542,52 +572,9 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     let e_meas : ((b : ι) → β (e b)) ≃ᵐ ((a : ι') → β a) :=
       MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
     have me := MeasurableEquiv.measurableEmbedding e_meas.symm
-    convert (fDiv_map_measurableEmbedding me).symm <;> try infer_instance
-    · suffices Measure.map e_meas (Measure.pi (fun i ↦ μ (e i))) = Measure.pi μ by
-        rw [← this, MeasurableEquiv.map_symm_map]
-      refine Measure.pi_eq (fun s _ ↦ ?_) |>.symm
-      rw [e_meas.measurableEmbedding.map_apply]
-      let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
-      have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
-        ext x
-        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
-        apply (e.forall_congr _).symm
-        intro i
-        convert Iff.rfl
-        have piCongrLeft_apply_apply' :
-            (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
-          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk,
-            Equiv.piCongrLeft_apply_apply]
-        rw [piCongrLeft_apply_apply']
-      rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
-      · simp only [Finset.mem_univ, implies_true]
-      intro i _
-      simp only [s']
-      congr
-      all_goals rw [e.apply_symm_apply]
-    · --TODO: this is the same as the previous goal, we could directly separate this proof as a lemma or if we want to keep it here we could use some tactic to avoid repeating the proof, like <;> try { ... }. Using directly try does not work, since the first suffices in each proof mentions the measure
-      suffices Measure.map e_meas (Measure.pi (fun i ↦ ν (e i))) = Measure.pi ν by
-        rw [← this, MeasurableEquiv.map_symm_map]
-      refine Measure.pi_eq (fun s _ ↦ ?_) |>.symm
-      rw [e_meas.measurableEmbedding.map_apply]
-      let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
-      have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
-        ext x
-        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
-        apply (e.forall_congr _).symm
-        intro i
-        convert Iff.rfl
-        have piCongrLeft_apply_apply' :
-            (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
-          simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk,
-            Equiv.piCongrLeft_apply_apply]
-        rw [piCongrLeft_apply_apply']
-      rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
-      · simp
-      intro i _
-      simp only [s']
-      congr
-      all_goals rw [e.apply_symm_apply]
+    convert (fDiv_map_measurableEmbedding me).symm
+    <;> try {rw [← Measure.pi_map_CongrLeft e, MeasurableEquiv.map_symm_map]}
+    <;> infer_instance
     intro i
     rw [Equiv.apply_symm_apply]
   · intro β _ _ μ ν _ _
@@ -600,22 +587,25 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
       let e_meas : ((i : ι) → β (some i)) × β none ≃ᵐ ((i : Option ι) → β i) :=
         MeasurableEquiv.piOptionEquivProd β |>.symm
       have me := MeasurableEquiv.measurableEmbedding e_meas
-      convert fDiv_map_measurableEmbedding me
-      <;> try { -- this try is to avoid repeating exactly the same proof twice, maybe there is a better way though
-      refine Measure.pi_eq (fun s _ ↦ ?_)
-      have : e_meas ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none)
+      have hh (ξ : (i : Option ι) → Measure (β i)) [∀ (i : Option ι), IsProbabilityMeasure (ξ i)] :
+      Measure.pi ξ = Measure.map (⇑e_meas) (Measure.prod (Measure.pi fun i ↦ ξ (some i)) (ξ none))
           := by
-        ext x
-        simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
-        constructor; tauto
-        intro h i
-        rcases i <;> tauto
-      simp only [me.map_apply, univ_option, Finset.le_eq_subset, Finset.prod_insertNone, this,
-        Measure.prod_prod, Measure.pi_pi, mul_comm]
-      }
-      <;> infer_instance
+        refine Measure.pi_eq (fun s _ ↦ ?_)
+        have : e_meas ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none)
+            := by
+          ext x
+          simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
+          constructor; tauto
+          intro h i
+          rcases i <;> tauto
+        simp only [me.map_apply, univ_option, Finset.le_eq_subset, Finset.prod_insertNone, this,
+          Measure.prod_prod, Measure.pi_pi, mul_comm]
+      convert fDiv_map_measurableEmbedding me
+      <;> try {exact hh _} <;> infer_instance
     rw [Fintype.sum_option, h, add_comm, ← ind_h]
     convert kl_prod_two <;> tauto <;> infer_instance
+
+--do the version of kl_prod wit a product of measures that are all the same
 
 end Tensorization
 
