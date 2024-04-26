@@ -391,7 +391,7 @@ lemma integral_congr_ae₂' {f g : α → β → G} (h : ∀ᵐ a ∂μ, f a =�
   apply integral_congr_ae
   filter_upwards [ha] with b hb using hb
 
-#find_home! ProbabilityTheory.integral_congr_ae₂
+-- #find_home! ProbabilityTheory.integral_congr_ae₂
 
 end IntegralLemma
 
@@ -555,7 +555,7 @@ lemma Measure.pi_map_CongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Finty
   congr
   all_goals rw [e.apply_symm_apply]
 
-lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
+lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
     [∀ i, IsProbabilityMeasure (μ i)] [∀ i, IsProbabilityMeasure (ν i)] :
     kl (Measure.pi μ) (Measure.pi ν) = ∑ i, kl (μ i) (ν i) := by
@@ -605,6 +605,17 @@ lemma kl_prod {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measur
     convert kl_prod_two <;> tauto <;> infer_instance
 
 --do the version of kl_prod wit a product of measures that are all the same
+
+--TODO: this is not a good name, find another one
+-- is it ok to state it like this or should we use a specific fintype like Fin n, so we have the cardinality defined in the statement?
+lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsProbabilityMeasure μ]
+    [IsProbabilityMeasure ν] :
+    kl (Measure.pi (fun (_ : ι) ↦ μ)) (Measure.pi (fun (_ : ι) ↦ ν)) = hι.card * kl μ ν := by
+  rw [kl_pi, Finset.sum_const, (Finset.card_eq_iff_eq_univ _).mpr, EReal.nsmul_eq_mul]
+  rfl
+
+--TODO: look for instances of EReal that should be there but are not, and add them, look at the page of ENNReals to see what is there, maybe some stuff is true even for EReals but hasn't been added yet
+
 
 end Tensorization
 
