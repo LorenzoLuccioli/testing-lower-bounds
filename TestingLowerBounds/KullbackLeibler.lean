@@ -605,7 +605,6 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
     convert kl_prod_two <;> tauto <;> infer_instance
 
 
---TODO: this is not a good name, find another one
 -- is it ok to state it like this or should we use a specific fintype like Fin n, so we have the cardinality defined in the statement?
 lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsProbabilityMeasure μ]
     [IsProbabilityMeasure ν] :
