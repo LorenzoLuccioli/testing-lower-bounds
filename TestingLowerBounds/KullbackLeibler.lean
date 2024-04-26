@@ -103,12 +103,7 @@ lemma kl_zero_left : kl 0 ν = 0 := by
 lemma kl_zero_right [NeZero μ] : kl μ 0 = ⊤ :=
   kl_of_not_ac (Measure.AbsolutelyContinuous.eq_zero_of_ac_zero.mt (NeZero.ne _))
 
-lemma kl_eq_top_iff [IsFiniteMeasure μ] [SigmaFinite ν] :
-    kl μ ν = ⊤ ↔ μ ≪ ν → ¬ Integrable (llr μ ν) μ := by
-  rw [kl_eq_fDiv, fDiv_mul_log_eq_top_iff]
-
---TODO: consider keeping only this one and getting rid of the previous one, since it is strictly more general
-lemma kl_eq_top_iff' : kl μ ν = ⊤ ↔ ¬ μ ≪ ν ∨ ¬ Integrable (llr μ ν) μ := by
+lemma kl_eq_top_iff : kl μ ν = ⊤ ↔ ¬ μ ≪ ν ∨ ¬ Integrable (llr μ ν) μ := by
   constructor <;> intro h <;> push_neg at *
   · contrapose! h
     rw [kl_of_ac_of_integrable h.1 h.2]
@@ -203,9 +198,9 @@ conditional KL divergence, the second version is the preferred one.-/
 lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
     (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
   constructor <;> intro h
-  · constructor <;> filter_upwards [h] with a ha <;> have := kl_eq_top_iff'.mpr.mt ha <;> tauto
+  · constructor <;> filter_upwards [h] with a ha <;> have := kl_eq_top_iff.mpr.mt ha <;> tauto
   · filter_upwards [h.1, h.2] with a ha1 ha2
-    apply kl_eq_top_iff'.mp.mt
+    apply kl_eq_top_iff.mp.mt
     tauto
 
 /--Equivalence between two possible versions of the second condition for the finiteness of the
