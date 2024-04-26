@@ -208,4 +208,11 @@ lemma toReal_nonpos {x : EReal} (hx : x ≤ 0) : x.toReal ≤ 0 := by
 lemma toReal_eq_zero_iff {x : EReal} : x.toReal ≠ 0 ↔ x ≠ 0 ∧ x ≠ ⊤ ∧ x ≠ ⊥ := by
   induction' x using EReal.rec with x <;> norm_num
 
+lemma nsmul_eq_mul (n : ℕ) (x : EReal) : n • x = n * x := by
+  induction n with
+  | zero => rw [Nat.zero_eq, zero_smul, Nat.cast_zero, zero_mul]
+  | succ n ih =>
+    rw [succ_nsmul, ih, Nat.cast_succ]
+    convert (EReal.coe_add_mul_of_nonneg x _ _).symm <;> simp
+
 end EReal
