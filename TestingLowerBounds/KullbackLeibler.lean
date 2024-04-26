@@ -604,7 +604,6 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
     rw [Fintype.sum_option, h, add_comm, ← ind_h]
     convert kl_prod_two <;> tauto <;> infer_instance
 
---do the version of kl_prod wit a product of measures that are all the same
 
 --TODO: this is not a good name, find another one
 -- is it ok to state it like this or should we use a specific fintype like Fin n, so we have the cardinality defined in the statement?
