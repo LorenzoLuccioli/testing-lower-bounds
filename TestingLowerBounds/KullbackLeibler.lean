@@ -580,6 +580,7 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
         --u_3 and u_4 seem to be universes that are already needed by the other definitions in the theorem
         --I think I understand what happened now, even though I still don't know why this problem did not show up earlier. In the proof of MeasurableEquiv.piOptionEquivProd I was forced to make the universe of PUnit.{u_8 + 1} explicit, and in that situation I just put there a universe level that was not used anywhere else in the proof, but it wasn't a good idea, because in that way the lemma requires an additional useless universe level, and so when we use it we need to specifiy the additional universe. The fix for this is to change the universe inside the proof of MeasurableEquiv.piOptionEquivProd to one that is already used, like u_8. The problem is that this has already been PRed to mathlib, so we need to make another PR just to fix this bug.
         --for now I just leave the explicit universe level here, I will fix it later
+        --I already made the branch of mathlib with the fix, now it's sufficient to make the PR, but first I want to discuss it, mayybe there is a better way to fix it
       have me := MeasurableEquiv.measurableEmbedding e_meas
       have hh (ξ : (i : Option ι) → Measure (β i)) [∀ (i : Option ι), IsProbabilityMeasure (ξ i)] :
       Measure.pi ξ = Measure.map (⇑e_meas) (Measure.prod (Measure.pi fun i ↦ ξ (some i)) (ξ none))
