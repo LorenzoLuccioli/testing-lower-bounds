@@ -9,11 +9,7 @@ import LeanCopilot
 import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
-import TestingLowerBounds.ForMathlib.L1Space
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
-import TestingLowerBounds.ForMathlib.Pi
-import TestingLowerBounds.ForMathlib.MeasureSpace
-import TestingLowerBounds.ForMathlib.MeasurableSpace
 
 /-!
 # Kullback-Leibler divergence
@@ -101,7 +97,7 @@ lemma kl_zero_left : kl 0 ν = 0 := by
 
 @[simp]
 lemma kl_zero_right [NeZero μ] : kl μ 0 = ⊤ :=
-  kl_of_not_ac (Measure.AbsolutelyContinuous.eq_zero_of_ac_zero.mt (NeZero.ne _))
+  kl_of_not_ac (Measure.absolutelyContinuous_zero_iff.mp.mt (NeZero.ne _))
 
 lemma kl_eq_top_iff : kl μ ν = ⊤ ↔ ¬ μ ≪ ν ∨ ¬ Integrable (llr μ ν) μ := by
   constructor <;> intro h <;> push_neg at *
@@ -138,7 +134,7 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   by_cases hν : ν = 0
   · refine absurd ?_ hμ
     rw [hν] at hμν
-    exact Measure.AbsolutelyContinuous.eq_zero_of_ac_zero hμν
+    exact Measure.absolutelyContinuous_zero_iff.mp hμν
   let ν' := (ν Set.univ)⁻¹ • ν
   have : IsProbabilityMeasure ν' := by
     constructor
@@ -321,7 +317,7 @@ lemma condKL_zero_right [NeZero μ] (h : ∀ᵐ a ∂μ, κ a ≠ 0) : condKL κ
   intro h1
   apply Filter.eventually_false_iff_eq_bot.mp.mt (NeBot.ne' (f := μ.ae))
   filter_upwards [h, h1] with a ha h1a
-  exact ha (Measure.AbsolutelyContinuous.eq_zero_of_ac_zero h1a)
+  exact ha (Measure.absolutelyContinuous_zero_iff.mp h1a)
 
 @[simp]
 lemma condKL_zero_measure : condKL κ η 0 = 0 := by
