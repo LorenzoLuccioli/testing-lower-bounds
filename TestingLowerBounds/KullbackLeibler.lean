@@ -575,7 +575,11 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
         (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
       rw [kl_eq_fDiv, kl_eq_fDiv]
       let e_meas : ((i : ι) → β (some i)) × β none ≃ᵐ ((i : Option ι) → β i) :=
-        MeasurableEquiv.piOptionEquivProd β |>.symm
+        MeasurableEquiv.piOptionEquivProd.{_, _, u_3} β |>.symm
+        --TODO: if I don't put the universe level it doesn't work, also if I put u_1 or u_2 it doesn't work, but if I put u_3 or u_4 it works. Maybe the problem is in the definition of piOptionEquivProd
+        --u_3 and u_4 seem to be universes that are already needed by the other definitions in the theorem
+        --I think I understand what happened now, even though I still don't know why this problem did not show up earlier. In the proof of MeasurableEquiv.piOptionEquivProd I was forced to make the universe of PUnit.{u_8 + 1} explicit, and in that situation I just put there a universe level that was not used anywhere else in the proof, but it wasn't a good idea, because in that way the lemma requires an additional useless universe level, and so when we use it we need to specifiy the additional universe. The fix for this is to change the universe inside the proof of MeasurableEquiv.piOptionEquivProd to one that is already used, like u_8. The problem is that this has already been PRed to mathlib, so we need to make another PR just to fix this bug.
+        --for now I just leave the explicit universe level here, I will fix it later
       have me := MeasurableEquiv.measurableEmbedding e_meas
       have hh (ξ : (i : Option ι) → Measure (β i)) [∀ (i : Option ι), IsProbabilityMeasure (ξ i)] :
       Measure.pi ξ = Measure.map (⇑e_meas) (Measure.prod (Measure.pi fun i ↦ ξ (some i)) (ξ none))
