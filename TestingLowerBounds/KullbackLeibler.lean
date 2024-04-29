@@ -347,7 +347,7 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
     condKL (kernel.const β μ) (kernel.const β ν) ξ = (kl μ ν) * ξ Set.univ := by
   have h := kl_ne_bot μ ν
   rw [condKL_eq_condFDiv, kl_eq_fDiv] at *
-  exact condFDiv_const h
+  exact condFDiv_const
 
 lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
     [IsFiniteKernel η] :
