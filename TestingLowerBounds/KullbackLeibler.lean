@@ -187,7 +187,7 @@ end kl_nonneg
 
 section Conditional
 
-variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
+variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {κ η : kernel α β}
 
 /--Equivalence between two possible versions of the first condition for the finiteness of the
 conditional KL divergence, the second version is the preferred one.-/
@@ -348,6 +348,12 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   have h := kl_ne_bot μ ν
   rw [condKL_eq_condFDiv, kl_eq_fDiv] at *
   exact condFDiv_const
+
+-- TODO: find a better name and finish this, I had to stop because there is not yet the def of κ(x,⬝) for a kernel, I have to look for it
+-- lemma condKL_compProd_meas {ξ : kernel α β} {κ η : kernel (α × β) γ} :
+--     condKL κ η (μ ⊗ₘ ξ) = ∫ x, condKL (κ x) (η x) (ξ x) ∂μ := by
+--   sorry
+
 
 lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
     [IsFiniteKernel η] :
