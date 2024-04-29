@@ -608,6 +608,21 @@ lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsPro
 
 --TODO: look for instances of EReal that should be there but are not, and add them, look at the page of ENNReals to see what is there, maybe some stuff is true even for EReals but hasn't been added yet
 
+#check ENNReal.covariantClass_mul_le
+--EReal is not covariant wrt the product, e.g. 1 ≤ 2, but -1 * 1 = -1 > -2 = -1 * 2
+--however EReal is covariant wrt the product with a nonnegative number, would it make sense to add an instance for this?
+--something like EReal.covariantClass_ENNReal_mul_le
+
+#check ENNReal.hasMeasurablePow
+--there is no such instance for EReal, but we can derive it from the fact that its a monoid, a mesaurable space and the instance MeasurableMul₂, but we still need to add this last instance
+--for MeasurableMul₂ we could pass through ContinuousMul
+
+--I think that the following lemma does not really require the hypothesys of the second space being nonempty, but to modify it I thin I need to change the definition a bit, and then maybe even the following lemmas
+#check ProbabilityTheory.kernel.borelMarkovFromReal
+--in any case the pooint is that if the second space is empty I can just define the kernel to be the only measure on the empty space.
+#synth TopologicalSpace EReal
+-- #synth NonUnitalSeminormedRing EReal
+-- #synth ContinuousMul ENNReal
 
 end Tensorization
 
