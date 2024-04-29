@@ -359,7 +359,7 @@ lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMea
   exact fDiv_compProd_right μ ν κ (by measurability) Real.convexOn_mul_log
 
 section IntegralLemma
-
+#check MeasurableEquiv.piOptionEquivProd
 --TODO: put this lemma in a separate file, then PR it to mathlib, I'm not sure it can just go in the same file as integral_congr_ae, since it uses the kernels. maybe we could do a simpler version with 2 probability measures instead of kernels. decide what to do with the 2 vertions, are they both useful?
 --I could have proven the second one using the first, but it is probabily easier to do them separately, also in this way we can put them in separate files without worring about dependencies
 --also about the names, if we put the two lemmas under different namespaces (the first one could go under something that contains kernel) we can give them the same name
@@ -578,7 +578,8 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
         --u_3 and u_4 seem to be universes that are already needed by the other definitions in the theorem
         --I think I understand what happened now, even though I still don't know why this problem did not show up earlier. In the proof of MeasurableEquiv.piOptionEquivProd I was forced to make the universe of PUnit.{u_8 + 1} explicit, and in that situation I just put there a universe level that was not used anywhere else in the proof, but it wasn't a good idea, because in that way the lemma requires an additional useless universe level, and so when we use it we need to specifiy the additional universe. The fix for this is to change the universe inside the proof of MeasurableEquiv.piOptionEquivProd to one that is already used, like u_8. The problem is that this has already been PRed to mathlib, so we need to make another PR just to fix this bug.
         --for now I just leave the explicit universe level here, I will fix it later
-        --I already made the branch of mathlib with the fix, now it's sufficient to make the PR, but first I want to discuss it, mayybe there is a better way to fix it
+        --I already made the branch of mathlib with the fix, now it's sufficient to make the PR, but first I want to discuss it, maybe there is a better way to fix it
+        --PRed to mathlib, when we bump remember to remove the explicit universe level here
       have me := MeasurableEquiv.measurableEmbedding e_meas
       have hh (ξ : (i : Option ι) → Measure (β i)) [∀ (i : Option ι), IsProbabilityMeasure (ξ i)] :
       Measure.pi ξ = Measure.map (⇑e_meas) (Measure.prod (Measure.pi fun i ↦ ξ (some i)) (ξ none))
@@ -615,14 +616,35 @@ lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsPro
 
 #check ENNReal.hasMeasurablePow
 --there is no such instance for EReal, but we can derive it from the fact that its a monoid, a mesaurable space and the instance MeasurableMul₂, but we still need to add this last instance
---for MeasurableMul₂ we could pass through ContinuousMul
+--for MeasurableMul₂ we could pass through ContinuousMul, is it even true for EReal? I think it's true, but I don't know how to add it, maybe it could be a possibility to pass through the fact that it is withTop.
 
---I think that the following lemma does not really require the hypothesys of the second space being nonempty, but to modify it I thin I need to change the definition a bit, and then maybe even the following lemmas
-#check ProbabilityTheory.kernel.borelMarkovFromReal
---in any case the pooint is that if the second space is empty I can just define the kernel to be the only measure on the empty space.
-#synth TopologicalSpace EReal
--- #synth NonUnitalSeminormedRing EReal
--- #synth ContinuousMul ENNReal
+#check ENNReal.instCanonicallyLinearOrderedAddCommMonoidENNReal
+#check ENNReal.instCanonicallyOrderedCommSemiringENNReal
+--this is not true for EReal, since the canonical order means that the order is the same as the one defined by subtraction, i.e. `x<y iff y=z+x`, but this is not true if we also have negative numbers
+
+
+instance : CharZero EReal := inferInstanceAs (CharZero (WithBot (WithTop ℝ)))
+#synth CharZero EReal --new
+
+-- instance : CanonicallyOrderedCommSemiring EReal := inferInstanceAs (CanonicallyOrderedCommSemiring (WithBot (WithTop ℝ)))
+-- #synth CanonicallyOrderedCommSemiring EReal
+
+
+
+
+-- #synth Coe EReal Real --already there
+
+-- #synth CompleteLinearOrder EReal --already there
+
+-- #synth ContinuousAdd EReal
+
+-- --I think that the following lemma does not really require the hypothesys of the second space being nonempty, but to modify it I thin I need to change the definition a bit, and then maybe even the following lemmas
+-- #check ProbabilityTheory.kernel.borelMarkovFromReal
+-- --in any case the pooint is that if the second space is empty I can just define the kernel to be the only measure on the empty space.
+-- #synth TopologicalSpace EReal
+-- -- #synth NonUnitalSeminormedRing EReal
+-- #synth BoundedOrder EReal
+-- #synth CanonicallyOrderedAddCommMonoid Real
 
 end Tensorization
 
