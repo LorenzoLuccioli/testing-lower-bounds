@@ -106,6 +106,18 @@ lemma kl_eq_top_iff : kl μ ν = ⊤ ↔ μ ≪ ν → ¬ Integrable (llr μ ν)
     exact EReal.coe_ne_top _
   · rcases or_not_of_imp h with (h | h) <;> simp [h]
 
+lemma kl_ne_top_iff : kl μ ν ≠ ⊤ ↔ μ ≪ ν ∧ Integrable (llr μ ν) μ := by
+  rw [ne_eq, kl_eq_top_iff]
+  push_neg
+  rfl
+
+lemma kl_ne_top_iff' : kl μ ν ≠ ⊤ ↔ kl μ ν = ∫ x, llr μ ν x ∂μ := by
+  constructor
+  · rw [kl_ne_top_iff]
+    rintro ⟨h1, h2⟩
+    rw [kl_of_ac_of_integrable h1 h2]
+  · simp_all only [ne_eq, EReal.coe_ne_top, not_false_eq_true, implies_true]
+
 section kl_nonneg
 
 @[simp]
