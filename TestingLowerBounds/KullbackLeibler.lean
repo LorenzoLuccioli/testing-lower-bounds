@@ -460,10 +460,17 @@ lemma condKL_compProd_meas_eq_top [SFinite μ] {ξ : kernel α β} [IsSFiniteKer
           exact ha_int2
 
 -- TODO: find a better name and finish this, I had to stop because there is not yet the def of κ(x,⬝) for a kernel, I have to look for it
--- lemma condKL_compProd_meas {ξ : kernel α β} {κ η : kernel (α × β) γ} :
---     condKL κ η (μ ⊗ₘ ξ) = ∫ x, condKL (κ x) (η x) (ξ x) ∂μ := by
---   sorry
-
+--stated like this it's wrong, find the right formulation
+lemma condKL_compProd_meas [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ}
+    (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
+    condKL κ η (μ ⊗ₘ ξ) = ∫ x, (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
+  rw [condKL_ne_top_iff'.mp h, Measure.integral_compProd (condKL_ne_top_iff.mp h).2.2]
+  replace h := condKL_compProd_meas_eq_top.mpr.mt h --this has to be changed, it's the same as h
+  push_neg at h
+  norm_cast
+  apply integral_congr_ae
+  filter_upwards [h.1] with a ha
+  simp_rw [condKL_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
 
 lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
     [IsFiniteKernel η] :
