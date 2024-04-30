@@ -296,6 +296,14 @@ lemma condKL_ne_top_iff : condKL κ η μ ≠ ⊤ ↔
   push_neg
   rfl
 
+lemma condKL_ne_top_iff' : condKL κ η μ ≠ ⊤
+    ↔ condKL κ η μ = (μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) := by
+  constructor
+  · rw [condKL_ne_top_iff]
+    rintro ⟨h1, h2, h3⟩
+    rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h1 h2 h3]
+  · simp_all only [ne_eq, EReal.coe_ne_top, not_false_eq_true, implies_true]
+
 lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     condKL κ η μ = condFDiv (fun x ↦ x * log x) κ η μ := by
   by_cases h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤
