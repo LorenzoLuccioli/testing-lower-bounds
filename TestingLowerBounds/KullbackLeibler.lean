@@ -10,6 +10,7 @@ import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
+import TestingLowerBounds.ForMathlib.KernelFstSnd
 
 /-!
 # Kullback-Leibler divergence
@@ -368,6 +369,95 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   have h := kl_ne_bot μ ν
   rw [condKL_eq_condFDiv, kl_eq_fDiv] at *
   exact condFDiv_const
+
+#check Measure.ae_compProd_iff
+#check condKL_eq_top_iff
+#check condKL_of_ae_ac_of_ae_integrable_of_integrable
+
+--this is to handle the case when the lhs is ⊤, in this case the rhs is 'morally' also ⊤, so the equality holds
+lemma condKL_compProd_meas_eq_top [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} :
+    condKL κ η (μ ⊗ₘ ξ) = ⊤ ↔ ¬ (∀ᵐ a ∂μ, condKL (kernel.snd' κ a) (kernel.snd' η a) (ξ a) ≠ ⊤)
+    ∨ ¬ Integrable (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by
+  rw [condKL_eq_top_iff]
+  constructor
+  · by_cases h_ae : ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x --consider putting here explicitly the hp unfolded with ae_compProd_iff, I think I cannot do that, since then the simp_all below will not work
+    swap
+    · rw [Measure.ae_compProd_iff] at h_ae
+      swap; sorry
+      simp_rw [condKL_ne_top_iff]
+      simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
+      tauto
+    by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
+    swap
+    · rw [Measure.ae_compProd_iff] at h_int
+      simp_rw [condKL_ne_top_iff]
+      swap; sorry
+      simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
+      tauto
+    simp_all only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not]
+    rw [Measure.integrable_compProd_iff]
+    swap; sorry
+    push_neg
+    intro h
+    by_cases h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ EReal.toReal (kl (κ (a, b)) (η (a, b)))) (ξ a)
+    swap
+    · left
+      contrapose! h_int2
+      rw [not_frequently] at h_int2
+      filter_upwards [h_int2] with a ha_int2
+      simp only [condKL_ne_top_iff, kernel.snd'_apply] at ha_int2
+      exact ha_int2.2.2
+    right
+    rw [Measure.ae_compProd_iff] at h_ae h_int
+    rotate_left; sorry; sorry
+    apply Integrable.congr.mt
+    swap; exact fun a ↦ ∫ b, EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂(ξ a)
+    push_neg
+    constructor
+    · filter_upwards [h_ae, h_int, h_int2] with a ha_ae ha_int ha_int2
+      rw [condKL_of_ae_ac_of_ae_integrable_of_integrable]
+      · simp only [EReal.toReal_coe, kernel.snd'_apply]
+      · filter_upwards [ha_ae] with b hb using kernel.snd'_apply _ _ _ ▸ hb
+      · filter_upwards [ha_int] with b hb using kernel.snd'_apply _ _ _ ▸ hb
+      · simp_rw [kernel.snd'_apply]
+        exact ha_int2
+    · replace h := h h_int2
+      contrapose! h
+      -- here I'm not sure how to proceed, because I have information on the integrability of something, but I have to prove the integrability of the same thing with the absoulte value inside an integral, I'm not even sure it's true in this case
+      sorry
+  · rw [Measure.ae_compProd_iff, Measure.ae_compProd_iff]
+    rotate_left; sorry; sorry
+    rw [Measure.integrable_compProd_iff]
+    swap; sorry
+    rintro (h | h)
+    · contrapose! h
+      filter_upwards [h.1, h.2.1, h.2.2.1] with a ha_ae ha_int ha_int2
+      apply condKL_ne_top_iff.mpr
+      simp only [kernel.snd'_apply]
+      exact ⟨ha_ae, ⟨ha_int, ha_int2⟩⟩
+    · contrapose! h
+      apply Integrable.congr
+      rotate_right; exact fun a ↦ ∫ b, EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂(ξ a)
+      · replace h := h.2.2.2
+        apply MeasureTheory.Integrable.mono h
+        ·
+          sorry
+        refine ae_of_all μ ?mpr.inr.hf.h.a
+        intro a
+        calc ‖∫ (b : β), EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂ξ a‖
+        _ ≤ ∫ (b : β), ‖EReal.toReal (kl (κ (a, b)) (η (a, b)))‖ ∂ξ a :=
+          MeasureTheory.norm_integral_le_integral_norm _
+        _ = _ := by
+          simp only [norm_eq_abs]
+          apply (abs_of_nonneg _).symm
+          positivity
+      · filter_upwards [h.1, h.2.1, h.2.2.1] with a ha_ae ha_int ha_int2 --this part is copied from above, maybe put it as a have before?
+        rw [condKL_of_ae_ac_of_ae_integrable_of_integrable]
+        · simp only [EReal.toReal_coe, kernel.snd'_apply]
+        · filter_upwards [ha_ae] with b hb using kernel.snd'_apply _ _ _ ▸ hb
+        · filter_upwards [ha_int] with b hb using kernel.snd'_apply _ _ _ ▸ hb
+        · simp_rw [kernel.snd'_apply]
+          exact ha_int2
 
 -- TODO: find a better name and finish this, I had to stop because there is not yet the def of κ(x,⬝) for a kernel, I have to look for it
 -- lemma condKL_compProd_meas {ξ : kernel α β} {κ η : kernel (α × β) γ} :
