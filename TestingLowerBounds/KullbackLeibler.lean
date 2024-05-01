@@ -411,13 +411,13 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
     by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
     swap
     · rw [Measure.ae_compProd_iff] at h_int
-      simp_rw [condKL_ne_top_iff]
       swap; sorry
+      simp_rw [condKL_ne_top_iff]
       simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
       tauto
     simp_all only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not]
     rw [Measure.integrable_compProd_iff]
-    swap; sorry
+    swap; exact (measurable_kl κ η).ereal_toReal.stronglyMeasurable.aestronglyMeasurable
     push_neg
     intro h
     by_cases h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ EReal.toReal (kl (κ (a, b)) (η (a, b)))) (ξ a)
@@ -451,10 +451,10 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       exact kl_nonneg _ _
   · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _), Measure.ae_compProd_iff]
     swap; sorry
-    rw [Measure.integrable_compProd_iff]
-    swap; sorry
     rintro h
     contrapose! h
+    have h_meas := (Integrable.integral_compProd' h.2.2).aestronglyMeasurable
+    rw [Measure.integrable_compProd_iff h.2.2.aestronglyMeasurable] at h
     constructor
     · filter_upwards [h.1, h.2.1, h.2.2.1] with a ha_ae ha_int ha_int2
       apply condKL_ne_top_iff.mpr
@@ -463,10 +463,8 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
     · apply Integrable.congr
       rotate_right; exact fun a ↦ ∫ b, EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂(ξ a)
       · replace h := h.2.2.2
-        apply MeasureTheory.Integrable.mono h
-        · #check MeasureTheory.Integrable.integral_compProd' --this should be put before, since now we don't hace the explicit hypothesis that we need to use it, but before we had it
-          sorry
-        refine ae_of_all μ ?mpr.inr.hf.h.a
+        apply MeasureTheory.Integrable.mono h h_meas
+        refine ae_of_all μ ?_
         intro a
         calc ‖∫ (b : β), EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂ξ a‖
         _ ≤ ∫ (b : β), ‖EReal.toReal (kl (κ (a, b)) (η (a, b)))‖ ∂ξ a :=
@@ -762,3 +760,5 @@ lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsPro
 end Tensorization
 
 end ProbabilityTheory
+--TODO: check if the EReal are a metrizable space (I think the istance is not there, since using a lemma it says that it failed to sintethize the instance of pseudo metrizable space), if there is not, we could add it, we can metrize the EReal using the metric d(x,y) = |arctg(x)-arctg(y)|. This may be useful to apply some lemmas, for example
+#check Measurable.stronglyMeasurable
