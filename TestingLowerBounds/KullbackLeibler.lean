@@ -374,16 +374,17 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
 #check condKL_eq_top_iff
 #check condKL_of_ae_ac_of_ae_integrable_of_integrable
 
+--TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is only used to prove that `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true, given that `Integrable (fun x ↦ ∫ (y : β), EReal.toReal (kl (κ (x, y)) (η (x, y))) ∂ξ x` but if
 --this is to handle the case when the lhs is ⊤, in this case the rhs is 'morally' also ⊤, so the equality holds
-lemma condKL_compProd_meas_eq_top [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} :
-    condKL κ η (μ ⊗ₘ ξ) = ⊤ ↔ ¬ (∀ᵐ a ∂μ, condKL (kernel.snd' κ a) (kernel.snd' η a) (ξ a) ≠ ⊤)
-    ∨ ¬ Integrable (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by
+lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] :
+    condKL κ η (μ ⊗ₘ ξ) = ⊤
+      ↔ ¬ (∀ᵐ a ∂μ, condKL (kernel.snd' κ a) (kernel.snd' η a) (ξ a) ≠ ⊤)
+        ∨ ¬ Integrable (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by
   rw [condKL_eq_top_iff]
   constructor
   · by_cases h_ae : ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x --consider putting here explicitly the hp unfolded with ae_compProd_iff, I think I cannot do that, since then the simp_all below will not work
     swap
-    · rw [Measure.ae_compProd_iff] at h_ae
-      swap; sorry
+    · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
       simp_rw [condKL_ne_top_iff]
       simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
       tauto
@@ -408,8 +409,9 @@ lemma condKL_compProd_meas_eq_top [SFinite μ] {ξ : kernel α β} [IsSFiniteKer
       simp only [condKL_ne_top_iff, kernel.snd'_apply] at ha_int2
       exact ha_int2.2.2
     right
-    rw [Measure.ae_compProd_iff] at h_ae h_int
-    rotate_left; sorry; sorry
+    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
+    rw [Measure.ae_compProd_iff] at h_int
+    swap; sorry --write this as a separate lemma
     apply Integrable.congr.mt
     swap; exact fun a ↦ ∫ b, EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂(ξ a)
     push_neg
@@ -423,24 +425,26 @@ lemma condKL_compProd_meas_eq_top [SFinite μ] {ξ : kernel α β} [IsSFiniteKer
         exact ha_int2
     · replace h := h h_int2
       contrapose! h
-      -- here I'm not sure how to proceed, because I have information on the integrability of something, but I have to prove the integrability of the same thing with the absoulte value inside an integral, I'm not even sure it's true in this case
-      sorry
-  · rw [Measure.ae_compProd_iff, Measure.ae_compProd_iff]
-    rotate_left; sorry; sorry
+      convert h with a b
+      simp only [norm_eq_abs, abs_eq_self]
+      apply EReal.toReal_nonneg
+      exact kl_nonneg _ _
+  · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _), Measure.ae_compProd_iff]
+    swap; sorry
     rw [Measure.integrable_compProd_iff]
     swap; sorry
-    rintro (h | h)
-    · contrapose! h
-      filter_upwards [h.1, h.2.1, h.2.2.1] with a ha_ae ha_int ha_int2
+    rintro h
+    contrapose! h
+    constructor
+    · filter_upwards [h.1, h.2.1, h.2.2.1] with a ha_ae ha_int ha_int2
       apply condKL_ne_top_iff.mpr
       simp only [kernel.snd'_apply]
       exact ⟨ha_ae, ⟨ha_int, ha_int2⟩⟩
-    · contrapose! h
-      apply Integrable.congr
+    · apply Integrable.congr
       rotate_right; exact fun a ↦ ∫ b, EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂(ξ a)
       · replace h := h.2.2.2
         apply MeasureTheory.Integrable.mono h
-        ·
+        · #check MeasureTheory.Integrable.integral_compProd' --this should be put before, since now we don't hace the explicit hypothesis that we need to use it, but before we had it
           sorry
         refine ae_of_all μ ?mpr.inr.hf.h.a
         intro a
@@ -461,16 +465,18 @@ lemma condKL_compProd_meas_eq_top [SFinite μ] {ξ : kernel α β} [IsSFiniteKer
 
 -- TODO: find a better name and finish this, I had to stop because there is not yet the def of κ(x,⬝) for a kernel, I have to look for it
 --stated like this it's wrong, find the right formulation
-lemma condKL_compProd_meas [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ}
-    (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
+lemma condKL_compProd_meas [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
+    {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
     condKL κ η (μ ⊗ₘ ξ) = ∫ x, (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
   rw [condKL_ne_top_iff'.mp h, Measure.integral_compProd (condKL_ne_top_iff.mp h).2.2]
-  replace h := condKL_compProd_meas_eq_top.mpr.mt h --this has to be changed, it's the same as h
+  replace h := condKL_compProd_meas_eq_top.mpr.mt h
   push_neg at h
   norm_cast
   apply integral_congr_ae
   filter_upwards [h.1] with a ha
   simp_rw [condKL_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
+
+-- TODO: generalize this to fdiv
 
 lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
     [IsFiniteKernel η] :
