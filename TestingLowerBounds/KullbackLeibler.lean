@@ -370,6 +370,24 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   rw [condKL_eq_condFDiv, kl_eq_fDiv] at *
   exact condFDiv_const
 
+--consider generalizing this with 3 kerneks instead of 2, then we could have `Integrable (llr (κ a) (η a)) (ξ a)`, moreover think about changing the arguments of the lemma and making them implicit
+lemma measurableSet_integrable_llr (κ η : kernel α β) [IsSFiniteKernel κ] (μ : Measure α) :
+    MeasurableSet {a | Integrable (llr (κ a) (η a)) (κ a)} := by
+  apply ProbabilityTheory.measurableSet_kernel_integrable -- this may simplify the proof, but it requires κ to be SFinite, moreover I'm note sure how to proceed to prove the measurability of uncurry ...
+  simp [llr_def]
+
+  sorry
+  -- simp_rw [Integrable]
+  -- have h (a : α) : AEStronglyMeasurable (llr (κ a) (η a)) (κ a) :=
+  --   StronglyMeasurable.aestronglyMeasurable (stronglyMeasurable_llr (κ a) (η a))
+  -- simp only [h, true_and]
+  -- refine measurableSet_lt ?hf ?hg
+  -- ·
+  --   sorry
+  -- · simp only [measurable_const]
+
+
+
 #check Measure.ae_compProd_iff
 #check condKL_eq_top_iff
 #check condKL_of_ae_ac_of_ae_integrable_of_integrable
