@@ -61,9 +61,11 @@ lemma comap_fst' (κ : kernel (α × β)  γ) (b : β) {f : δ → α} (hf : Mea
   ext d s
   rw [comap_apply, fst'_apply, comap_apply]
 
+@[simp]
 lemma fst'_prodMkLeft (α : Type*) [MeasurableSpace α] (κ : kernel β γ) (a : α) {b : β} :
     fst' (prodMkLeft α κ) b a = κ b := rfl
 
+@[simp]
 lemma fst'_prodMkRight (β : Type*) [MeasurableSpace β] (κ : kernel α γ) (b : β) :
     fst' (prodMkRight β κ) b = κ := rfl
 
@@ -101,9 +103,11 @@ lemma comap_snd' (κ : kernel (α × β)  γ) (a : α) {f : δ → β} (hf : Mea
   ext d s
   rw [comap_apply, snd'_apply, comap_apply]
 
+@[simp]
 lemma snd'_prodMkLeft (α : Type*) [MeasurableSpace α] (κ : kernel β γ) (a : α) :
     snd' (prodMkLeft α κ) a = κ := rfl
 
+@[simp]
 lemma snd'_prodMkRight (β : Type*) [MeasurableSpace β] (κ : kernel α γ) (b : β) {a : α} :
     snd' (prodMkRight β κ) a b = κ a := rfl
 
@@ -117,7 +121,7 @@ lemma snd'_swapRight (κ : kernel (α × β)  γ) : snd' (swapLeft κ) = fst' κ
 end FstSnd
 
 --this may be put in a different place than the rest, maybe still in the same file, also find a better name
-lemma compProd_eq_compProd_snd' (κ : kernel α β) (η : kernel (α × β) γ) [IsSFiniteKernel κ] [IsSFiniteKernel η] (a : α) :
+lemma compProd_apply_eq_compProd_snd' (κ : kernel α β) (η : kernel (α × β) γ) [IsSFiniteKernel κ] [IsSFiniteKernel η] (a : α) :
     (κ ⊗ₖ η) a = (κ a) ⊗ₘ (snd' η a) := by
   ext s hs
   simp_rw [compProd_apply _ _ _ hs, Measure.compProd_apply hs, snd'_apply]
