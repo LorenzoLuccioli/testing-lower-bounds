@@ -120,6 +120,12 @@ lemma kl_ne_top_iff' : kl μ ν ≠ ⊤ ↔ kl μ ν = ∫ x, llr μ ν x ∂μ 
     rw [kl_of_ac_of_integrable h1 h2]
   · simp_all only [ne_eq, EReal.coe_ne_top, not_false_eq_true, implies_true]
 
+lemma measurable_kl {β : Type*} [MeasurableSpace β] [CountablyGenerated β] (κ η : kernel α β)
+    [IsFiniteKernel κ] [IsFiniteKernel η] :
+    Measurable (fun a ↦ kl (κ a) (η a)) := by
+  simp_rw [kl_eq_fDiv]
+  exact measurable_fDiv _ _ (by measurability)
+
 section kl_nonneg
 
 @[simp]
