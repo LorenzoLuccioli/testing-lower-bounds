@@ -10,6 +10,7 @@ import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
+import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
 
 /-!
@@ -329,19 +330,14 @@ lemma condKL_self (κ : kernel α β) (μ : Measure α) [IsFiniteKernel κ] : co
 @[simp]
 lemma condKL_zero_left : condKL 0 η μ = 0 := by
   rw [condKL_of_ae_ne_top_of_integrable _ _]
-  rotate_left
+  · simp only [kernel.zero_apply, kl_zero_left, EReal.toReal_zero, integral_zero, EReal.coe_zero]
   · simp only [kernel.zero_apply, kl_zero_left, ne_eq, EReal.zero_ne_top, not_false_eq_true,
       eventually_true]
   · simp only [kernel.zero_apply, kl_zero_left, EReal.toReal_zero, integrable_zero]
-  simp only [kernel.zero_apply, kl_zero_left, EReal.toReal_zero, integral_zero, EReal.coe_zero]
 
 @[simp]
-lemma condKL_zero_right [NeZero μ] (h : ∀ᵐ a ∂μ, κ a ≠ 0) : condKL κ 0 μ = ⊤ := by
-  apply condKL_of_not_ae_ac
-  intro h1
-  apply Filter.eventually_false_iff_eq_bot.mp.mt (NeBot.ne' (f := μ.ae))
-  filter_upwards [h, h1] with a ha h1a
-  exact ha (Measure.absolutelyContinuous_zero_iff.mp h1a)
+lemma condKL_zero_right [NeZero μ] (h : ∃ᵐ a ∂μ, κ a ≠ 0) : condKL κ 0 μ = ⊤ := by
+  simp [h]
 
 @[simp]
 lemma condKL_zero_measure : condKL κ η 0 = 0 := by
@@ -558,7 +554,7 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     rw [integrable_llr_compProd_iff h_prod] at h_int
     set_option push_neg.use_distrib true in push_neg at h_int
     rcases h_int with ((h | h) | h) <;>
-    simp [h, EReal.top_add_of_ne_bot, condKL_ne_bot, EReal.add_top_of_ne_bot, kl_ne_bot]
+      simp [h, EReal.top_add_of_ne_bot, condKL_ne_bot, EReal.add_top_of_ne_bot, kl_ne_bot]
   have intμν := integrable_llr_of_integrable_llr_compProd h_prod h_int
   have intκη : Integrable (fun a ↦ ∫ (x : β), log (kernel.rnDeriv κ η a x).toReal ∂κ a) μ := by
     apply Integrable.congr (integrable_integral_llr_of_integrable_llr_compProd h_prod h_int)
@@ -624,11 +620,10 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
       filter_upwards [h] with x hx
       rw [hx]
 
---TODO: decide the name for this lemma, in the blueprint it is called kl_chain_rule_prod, but if we call it like that maybe we have to change also the name of the previous one. A possible name could be kl_joint, but I'm not sure about it
---Why do we need to assume that β is not empty?
-lemma kl_chain_rule_prod [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (α × β)}
+/--The chain rule for the KL divergence.-/
+lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (α × β)}
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
-    kl μ ν = kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst := by
+    kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
 
