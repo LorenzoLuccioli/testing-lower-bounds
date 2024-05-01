@@ -4,8 +4,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import TestingLowerBounds.DerivAtTop
-import TestingLowerBounds.SoonInMathlib.RadonNikodym
+import TestingLowerBounds.ForMathlib.RadonNikodym
 import TestingLowerBounds.ForMathlib.RnDeriv
+import TestingLowerBounds.ForMathlib.Measure
 
 /-!
 
@@ -466,10 +467,6 @@ lemma fDiv_absolutelyContinuous_add_mutuallySingular {μ₁ μ₂ ν : Measure �
     with x hx
   simp [hx]
 
-lemma _root_.MeasureTheory.Measure.AbsolutelyContinuous.add_left {μ₁ μ₂ ν : Measure α}
-    (h₁ : μ₁ ≪ ν) (h₂ : μ₂ ≪ ν) :
-    μ₁ + μ₂ ≪ ν := Measure.AbsolutelyContinuous.add_left_iff.mpr ⟨h₁, h₂⟩
-
 lemma fDiv_add_measure_le (μ₁ μ₂ ν : Measure α) [IsFiniteMeasure μ₁] [IsFiniteMeasure μ₂]
     [IsFiniteMeasure ν] (hf : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) :
     fDiv f (μ₁ + μ₂) ν ≤ fDiv f μ₁ ν + derivAtTop f * μ₂ Set.univ := by
@@ -707,33 +704,10 @@ lemma f_measure_univ_le_add (μ ν : Measure α) [IsFiniteMeasure μ] [IsProbabi
     (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) :
     f (μ Set.univ).toReal
       ≤ f (ν.withDensity (∂μ/∂ν) Set.univ).toReal + derivAtTop f * μ.singularPart ν Set.univ := by
-  by_cases hf_top : derivAtTop f = ⊤
-  · rw [hf_top]
-    by_cases hμν : μ ≪ ν
-    · rw [Measure.singularPart_eq_zero_of_ac hμν]
-      simp only [MeasurableSet.univ, withDensity_apply, Measure.restrict_univ,
-        Measure.zero_toOuterMeasure, OuterMeasure.coe_zero, Pi.zero_apply, EReal.coe_ennreal_zero,
-        mul_zero, add_zero, EReal.coe_le_coe_iff]
-      rw [Measure.lintegral_rnDeriv hμν]
-    · rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
-      have h_pos : 0 < (μ.singularPart ν Set.univ).toReal := by
-        rw [ENNReal.toReal_pos_iff]
-        simp [Measure.singularPart_eq_zero, hμν, measure_lt_top]
-      rw [EReal.top_mul_coe_of_pos h_pos, EReal.coe_add_top]
-      exact le_top
-  have h_le : (ν.withDensity (∂μ/∂ν) Set.univ).toReal ≤ (μ Set.univ).toReal := by
-    gcongr
-    · exact measure_ne_top _ _
-    · exact (MeasureTheory.Measure.withDensity_rnDeriv_le μ ν) _
-  have h := le_add_derivAtTop hf_cvx hf_top
-    (ENNReal.toReal_nonneg : 0 ≤ (ν.withDensity (∂μ/∂ν) Set.univ).toReal) h_le
-  lift derivAtTop f to ℝ using ⟨hf_top, derivAtTop_ne_bot⟩ with df
-  rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
-  norm_cast
-  refine h.trans_eq ?_
-  congr
-  rw [sub_eq_iff_eq_add, ← ENNReal.toReal_add (measure_ne_top _ _) (measure_ne_top _ _)]
-  conv_lhs => rw [μ.haveLebesgueDecomposition_add ν]
+  have : μ Set.univ = ν.withDensity (∂μ/∂ν) Set.univ + μ.singularPart ν Set.univ := by
+    conv_lhs => rw [μ.haveLebesgueDecomposition_add ν, add_comm]
+  rw [this]
+  exact toReal_le_add_derivAtTop hf_cvx (measure_ne_top _ _) (measure_ne_top _ _)
 
 lemma le_fDiv [IsFiniteMeasure μ] [IsProbabilityMeasure ν]
     (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hf_cont : ContinuousOn f (Set.Ici 0)) :
@@ -797,5 +771,54 @@ lemma fDiv_restrict_of_integrable (μ ν : Measure α) [IsFiniteMeasure μ] [IsF
     EReal.coe_mul]
   rw [EReal.coe_ennreal_toReal, mul_comm]
   exact measure_ne_top _ _
+
+section Measurability
+
+lemma measurableSet_integrable_f_kernel_rnDeriv [MeasurableSpace.CountablyGenerated β]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] (hf : StronglyMeasurable f) :
+    MeasurableSet {a | Integrable (fun x ↦ f (kernel.rnDeriv κ η a x).toReal) (η a)} :=
+  measurableSet_kernel_integrable
+    (hf.comp_measurable (kernel.measurable_rnDeriv κ η).ennreal_toReal)
+
+lemma measurableSet_integrable_f_rnDeriv [MeasurableSpace.CountablyGenerated β]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] (hf : StronglyMeasurable f) :
+    MeasurableSet {a | Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a)} := by
+  convert measurableSet_integrable_f_kernel_rnDeriv κ η hf using 3 with a
+  refine integrable_congr ?_
+  filter_upwards [kernel.rnDeriv_eq_rnDeriv_measure κ η a] with b hb
+  rw [hb]
+
+lemma measurable_fDiv [MeasurableSpace.CountablyGenerated β]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
+    (hf : StronglyMeasurable f) :
+    Measurable (fun a ↦ fDiv f (κ a) (η a)) := by
+  let s := {a | Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a)}
+  have hs : MeasurableSet s := measurableSet_integrable_f_rnDeriv κ η hf
+  classical
+  have h_eq : (fun a ↦ fDiv f (κ a) (η a))
+      = fun a ↦ if a ∈ s then ∫ x, f ((∂κ a/∂η a) x).toReal ∂(η a)
+          + derivAtTop f * (κ a).singularPart (η a) Set.univ
+        else ⊤ := by
+    ext a
+    split_ifs with ha
+    · rw [fDiv_of_integrable ha]
+    · rw [fDiv_of_not_integrable ha]
+  rw [h_eq]
+  refine Measurable.ite hs ?_ measurable_const
+  refine Measurable.add ?_ ?_
+  · have : ∀ a, ∫ x, f ((∂κ a/∂η a) x).toReal ∂η a
+        = ∫ x, f (kernel.rnDeriv κ η a x).toReal ∂η a := by
+      refine fun a ↦ integral_congr_ae ?_
+      filter_upwards [kernel.rnDeriv_eq_rnDeriv_measure κ η a] with x hx
+      rw [hx]
+    simp_rw [this]
+    refine (StronglyMeasurable.integral_kernel_prod_left ?_).measurable.coe_real_ereal
+    refine hf.comp_measurable ?_
+    exact ((kernel.measurable_rnDeriv κ η).comp measurable_swap).ennreal_toReal
+  · refine Measurable.const_mul ?_ _
+    exact ((Measure.measurable_coe MeasurableSet.univ).comp
+      (kernel.measurable_singularPart κ η)).coe_ereal_ennreal
+
+end Measurability
 
 end ProbabilityTheory
