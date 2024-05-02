@@ -599,6 +599,59 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
     kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
+lemma kl_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
+    condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = condKL κ₁ η₁ μ + condKL κ₂ η₂ (μ ⊗ₘ κ₁) := by
+  by_cases h_top_prod : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
+  ·
+    rw [h_top_prod]
+    rw [condKL_eq_top_iff] at h_top_prod
+    rcases h_top_prod with (h | h | h)
+    ·
+      simp_rw [kernel.compProd_apply_eq_compProd_snd',
+        kernel.Measure.absolutelyContinuous_compProd_iff, eventually_and, not_and_or] at h
+      -- have hh := kernel.Measure.absolutelyContinuous_compProd_iff.mpr.mt h
+      sorry
+    ·
+      sorry
+    ·
+      sorry
+  have h_top₁ : condKL κ₁ η₁ μ ≠ ⊤ := by
+    sorry
+  have h_top₂ : condKL κ₂ η₂ (μ ⊗ₘ κ₁) ≠ ⊤ := by
+   sorry
+  have h1 := condKL_ne_top_iff.mp h_top₁
+  have h2 := condKL_ne_top_iff.mp h_top₂
+  have hp := condKL_ne_top_iff.mp h_top_prod
+  simp_rw [kernel.compProd_apply_eq_compProd_snd'] at hp
+  rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h2
+  rw [condKL_ne_top_iff'.mp h_top_prod, condKL_ne_top_iff'.mp h_top₁, condKL_ne_top_iff'.mp h_top₂]
+  norm_cast
+  simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd]
+  rw [Measure.integral_compProd h2.2.2]
+  convert integral_add (condKL_ne_top_iff.mp h_top₁).2.2 (Integrable.integral_compProd' h2.2.2)
+    using 1
+  apply integral_congr_ae
+  have := h2.2.1
+  filter_upwards [h1.1, h1.2.1, h2.1] with a h11 h12 h21 --I will need to add some hypothesis here
+  -- have here put a modified version of h2.2.1, then use it below (it's needed 2 times)
+  rw [EReal.toReal_add]
+  rotate_left
+  · exact kl_ne_top_iff.mpr ⟨h11, h12⟩
+  · exact kl_ne_bot (κ₁ a) (η₁ a)
+  · apply condKL_ne_top_iff.mpr
+    simp_rw [kernel.snd'_apply] --this may not be a good thing to do, right now it seems a good idea, but if things do not turn right remove it
+    constructor
+    · exact h21
+    constructor
+    · --here use h2.2.1, but it has to be modified, use ae_integrable_llr_iff
+      sorry
+    ·
+      sorry
+  · exact condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)
+  congr
+  rw [condKL_ne_top_iff'.mp _, EReal.toReal_coe]
+  simp_rw [kernel.snd'_apply]
+  sorry --this is the same as in the 3rd dot after the rotate left
 
 end Conditional
 
