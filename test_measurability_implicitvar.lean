@@ -4,9 +4,8 @@ import Mathlib.Probability.Kernel.Basic
 already defined as a variable in our environment, then this kernel becomes a required argument for
 the lemma, even if it is otherwise never mentioned in the statement or proof of the lemma -/
 
-open Real MeasureTheory
 
-variable {α : Type*} {μ : Measure ℝ} {k : ProbabilityTheory.kernel ℝ ℝ}
+variable {μ : MeasureTheory.Measure ℝ} {k : ProbabilityTheory.kernel ℝ ℝ}
 
 lemma my_lemma1 : Measurable fun (x : ℝ) ↦ x := by
   measurability
