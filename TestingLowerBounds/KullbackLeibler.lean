@@ -343,7 +343,7 @@ lemma condKL_zero_left : condKL 0 η μ = 0 := by
   · simp only [kernel.zero_apply, kl_zero_left, EReal.toReal_zero, integrable_zero]
 
 @[simp]
-lemma condKL_zero_right [NeZero μ] (h : ∃ᵐ a ∂μ, κ a ≠ 0) : condKL κ 0 μ = ⊤ := by
+lemma condKL_zero_right (h : ∃ᵐ a ∂μ, κ a ≠ 0) : condKL κ 0 μ = ⊤ := by
   simp [h]
 
 @[simp]
@@ -369,8 +369,7 @@ lemma condKL_nonneg (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel �
 
 lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     condKL (kernel.const β μ) (kernel.const β ν) ξ = (kl μ ν) * ξ Set.univ := by
-  have h := kl_ne_bot μ ν
-  rw [condKL_eq_condFDiv, kl_eq_fDiv] at *
+  rw [condKL_eq_condFDiv, kl_eq_fDiv]
   exact condFDiv_const
 
 --consider generalizing this with 3 kerneks instead of 2, then we could have `Integrable (llr (κ a) (η a)) (ξ a)`, moreover think about changing the arguments of the lemma and making them implicit
