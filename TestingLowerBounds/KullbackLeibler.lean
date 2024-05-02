@@ -372,23 +372,15 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   rw [condKL_eq_condFDiv, kl_eq_fDiv]
   exact condFDiv_const
 
-  --new strategy: try to change the goal inside the proof of the lemma, use the fact that a.e. there is absolute continuity to change the hypothesys from the integrabbility wrt κ to the one wrt η, then change this lemma here to be wrt η
-#check ProbabilityTheory.measurableSet_integrable_f_rnDeriv
-
+--TODO: put this in the right place, maybe in the file about llr
 lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     MeasurableSet {a | Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a)} := by
   simp_rw [llr_def]
   refine ProbabilityTheory.measurableSet_integrable_f_rnDeriv (f := fun x ↦ x * log x) κ η ?_
   refine stronglyMeasurable_id.mul measurable_log.stronglyMeasurable
 
-#check Measure.ae_compProd_iff
-#check condKL_eq_top_iff
-#check condKL_of_ae_ac_of_ae_integrable_of_integrable
-
-#check integrable_rnDeriv_smul_iff
-
---TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is only used to prove that `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true, given that `Integrable (fun x ↦ ∫ (y : β), EReal.toReal (kl (κ (x, y)) (η (x, y))) ∂ξ x` but if
---this is to handle the case when the lhs is ⊤, in this case the rhs is 'morally' also ⊤, so the equality holds
+--TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is only used to prove that `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true, given that `Integrable (fun x ↦ ∫ (y : β), EReal.toReal (kl (κ (x, y)) (η (x, y))) ∂ξ x` but if the kernels are finite then the kl is bounded from below, so it should be still possible to conclude the integrability of the first function, this would however require more work
+--this is to handle the case in `condKL_compProd_meas` when the lhs is ⊤, in this case the rhs is 'morally' also ⊤, so the equality holds, but actually in Lean the equality is not true, because of how we handle the infinities in the integrals, so we have to make a separate lemma for this case
 lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β}
     [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] :
     condKL κ η (μ ⊗ₘ ξ) = ⊤
@@ -483,8 +475,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
         apply (abs_of_nonneg _).symm
         positivity
 
--- TODO: find a better name and finish this, I had to stop because there is not yet the def of κ(x,⬝) for a kernel, I have to look for it
---stated like this it's wrong, find the right formulation
+-- TODO: find a better name
 lemma condKL_compProd_meas [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
     {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
     condKL κ η (μ ⊗ₘ ξ) = ∫ x, (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
