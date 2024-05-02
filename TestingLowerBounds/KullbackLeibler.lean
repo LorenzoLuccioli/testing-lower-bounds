@@ -378,7 +378,8 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
 lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     MeasurableSet {a | Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a)} := by
   simp_rw [llr_def]
-  exact ProbabilityTheory.measurableSet_integrable_f_rnDeriv (f := fun x ↦ x * log x) κ η (by measurability)
+  refine ProbabilityTheory.measurableSet_integrable_f_rnDeriv (f := fun x ↦ x * log x) κ η ?_
+  refine stronglyMeasurable_id.mul measurable_log.stronglyMeasurable
 
 #check Measure.ae_compProd_iff
 #check condKL_eq_top_iff
@@ -404,11 +405,17 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
     · simp only [EReal.toReal_coe, kernel.snd'_apply]
     · filter_upwards [ha_ae] with b hb using kernel.snd'_apply _ _ _ ▸ hb
     · filter_upwards [ha_int] with b hb using kernel.snd'_apply _ _ _ ▸ hb
-    · simp_rw [kernel.snd'_apply]
-      exact ha_int2
-  have hh (h : ∀ᵐ a ∂μ ⊗ₘ ξ, κ a ≪ η a) : ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (llr (κ a) (η a)) (κ a)
-      ↔ Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
-    filter_upwards [h] with a ha using (integrable_rnDeriv_smul_iff ha).symm
+    · simp_rw [kernel.snd'_apply, ha_int2]
+  have h_ae_int1 (h_ae : ∀ᵐ x ∂μ ⊗ₘ ξ, κ x ≪ η x) :
+      (∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x))
+        ↔ ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
+    apply eventually_congr
+    filter_upwards [h_ae] with a ha using (integrable_rnDeriv_smul_iff ha).symm
+  have h_ae_int2 (h_ae : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, κ (a, b) ≪ η (a, b)) : (∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b))) ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (fun x ↦ ((∂κ (a, b)/∂η (a, b)) x).toReal * llr (κ (a, b)) (η (a, b)) x) (η (a, b)) := by
+    apply eventually_congr
+    filter_upwards [h_ae] with a ha
+    apply eventually_congr
+    filter_upwards [ha] with b hb using (integrable_rnDeriv_smul_iff hb).symm
   constructor
   · by_cases h_ae : ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x
     swap
@@ -418,25 +425,12 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       tauto
     by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
     swap
-    · replace h_int :
-          ¬ ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
-        contrapose! h_int
-        filter_upwards [h_int, h_ae] with a ha_int ha_ae
-        exact (integrable_rnDeriv_smul_iff ha_ae).mp ha_int
+    · rw [h_ae_int1 h_ae, Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)] at h_int
       rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-      rw [Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)] at h_int
-      rotate_left
-      · exact κ
-      · exact η
-      replace h_int : ¬ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
-        contrapose! h_int
-        filter_upwards [h_int, h_ae] with a ha_int ha_ae
-        filter_upwards [ha_int, ha_ae] with b hb_int hb_ae
-        exact (integrable_rnDeriv_mul_log_iff hb_ae).mpr hb_int
-      simp_rw [condKL_ne_top_iff]
-      simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
-      tauto
-    simp_all only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not]
+      rw [← h_ae_int2 h_ae] at h_int
+      simp only [condKL_ne_top_iff, not_eventually, kernel.snd'_apply, eventually_and, h_int,
+        false_and, and_false, not_false_eq_true, true_or, implies_true]
+    simp only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not, h_ae, h_int]
     rw [Measure.integrable_compProd_iff]
     swap; exact (measurable_kl κ η).ereal_toReal.stronglyMeasurable.aestronglyMeasurable
     push_neg
@@ -450,19 +444,9 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       simp only [condKL_ne_top_iff, kernel.snd'_apply] at ha_int2
       exact ha_int2.2.2
     right
-    replace h_int :
-        ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
-      filter_upwards [h_int, h_ae] with a ha_int ha_ae
-      exact (integrable_rnDeriv_smul_iff ha_ae).mpr ha_int
+    rw [h_ae_int1 h_ae, Measure.ae_compProd_iff (measurableSet_integrable_llr κ η)] at h_int
     rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-    rw [Measure.ae_compProd_iff (measurableSet_integrable_llr κ η)] at h_int
-    rotate_left --TODO: here the lemma requires other two kernels as arguments, which are never used, I'm not sure why it does this, I have to change something in the statement of the lemma, the two kernels were already defined as implicit variables in the environment, but since I redefined them as explicit in the statement, this should overrun the implicit ones and just forger about them, right?
-    · exact κ
-    · exact η
-    replace h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
-      filter_upwards [h_int, h_ae] with a ha_int ha_ae
-      filter_upwards [ha_int, ha_ae] with b hb_int hb_ae
-      exact (integrable_rnDeriv_mul_log_iff hb_ae).mp hb_int
+    rw [← h_ae_int2 h_ae] at h_int
     apply Integrable.congr.mt
     swap; exact fun a ↦ ∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂(ξ a)
     push_neg
@@ -472,24 +456,13 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       contrapose! h
       convert h with a b
       simp only [norm_eq_abs, abs_eq_self]
-      apply EReal.toReal_nonneg
-      exact kl_nonneg _ _
+      exact EReal.toReal_nonneg (kl_nonneg _ _)
   · rintro h
     contrapose! h
     obtain ⟨h_ae, ⟨h_int1, h_int2⟩⟩ := h
-    replace h_int1 :
-        ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
-      filter_upwards [h_int1, h_ae] with a ha_int ha_ae
-      exact (integrable_rnDeriv_smul_iff ha_ae).mpr ha_int
+    rw [h_ae_int1 h_ae, Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)] at h_int1
     rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-    rw  [Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)] at h_int1
-    rotate_left
-    · exact κ
-    · exact η
-    replace h_int1 : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
-      filter_upwards [h_int1, h_ae] with a ha_int ha_ae
-      filter_upwards [ha_int, ha_ae] with b hb_int hb_ae
-      exact (integrable_rnDeriv_mul_log_iff hb_ae).mp hb_int
+    rw [← h_ae_int2 h_ae] at h_int1
     have h_meas := (Integrable.integral_compProd' h_int2).aestronglyMeasurable
     rw [Measure.integrable_compProd_iff h_int2.aestronglyMeasurable] at h_int2
     constructor
@@ -497,20 +470,18 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       apply condKL_ne_top_iff.mpr
       simp only [kernel.snd'_apply]
       exact ⟨ha_ae, ⟨ha_int, ha_int2⟩⟩
-    · apply Integrable.congr
-      rotate_right; exact fun a ↦ ∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂(ξ a)
-      · replace h_int := h_int2.2
-        apply MeasureTheory.Integrable.mono h_int h_meas
-        refine ae_of_all μ ?_
-        intro a
-        calc ‖∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂ξ a‖
-        _ ≤ ∫ b, ‖(kl (κ (a, b)) (η (a, b))).toReal‖ ∂ξ a :=
-          MeasureTheory.norm_integral_le_integral_norm _
-        _ = _ := by
-          simp only [norm_eq_abs]
-          apply (abs_of_nonneg _).symm
-          positivity
-      · exact h_ae_eq h_ae h_int1 h_int2.1 |>.symm
+    · refine Integrable.congr ?_ (h_ae_eq h_ae h_int1 h_int2.1).symm
+      replace h_int := h_int2.2
+      apply MeasureTheory.Integrable.mono h_int h_meas
+      refine ae_of_all μ ?_
+      intro a
+      calc ‖∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂ξ a‖
+      _ ≤ ∫ b, ‖(kl (κ (a, b)) (η (a, b))).toReal‖ ∂ξ a :=
+        MeasureTheory.norm_integral_le_integral_norm _
+      _ = _ := by
+        simp only [norm_eq_abs]
+        apply (abs_of_nonneg _).symm
+        positivity
 
 -- TODO: find a better name and finish this, I had to stop because there is not yet the def of κ(x,⬝) for a kernel, I have to look for it
 --stated like this it's wrong, find the right formulation
