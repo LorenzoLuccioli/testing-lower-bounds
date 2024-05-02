@@ -373,10 +373,14 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   exact condFDiv_const
 
 --consider generalizing this with 3 kerneks instead of 2, then we could have `Integrable (llr (κ a) (η a)) (ξ a)`, moreover think about changing the arguments of the lemma and making them implicit
-lemma measurableSet_integrable_llr (κ η : kernel α β) [IsSFiniteKernel κ] (μ : Measure α) :
+lemma measurableSet_integrable_llr (κ η : kernel α β) [IsSFiniteKernel κ] :
     MeasurableSet {a | Integrable (llr (κ a) (η a)) (κ a)} := by
-  apply ProbabilityTheory.measurableSet_kernel_integrable -- this may simplify the proof, but it requires κ to be SFinite, moreover I'm note sure how to proceed to prove the measurability of uncurry ...
-  simp [llr_def]
+  simp_rw [llr_def]
+  -- apply ProbabilityTheory.measurableSet_integrable_f_rnDeriv --this will not work, since the lemma necessairly gives us the integrability wrt η a, but we should be able to convert this to the integrability wrt κ a of the function multiplied by the rnDeriv, so that f becomes x*logx
+  --we cannot do that either, because we need the absolute continuity of κ a wrt η a, the problem is that even inside the theorem we only have the absolute continuity of κ a wrt η a a.e., I don't know how to proceed. maybe if the product measure was complete we could still prove this, but we have never used that hypothesys, it could be a bit strange to add it now
+
+  -- apply ProbabilityTheory.measurableSet_kernel_integrable -- this may simplify the proof, but it requires κ to be SFinite, moreover I'm note sure how to proceed to prove the measurability of uncurry ...
+  -- simp [llr_def]
 
   sorry
   -- simp_rw [Integrable]
@@ -410,8 +414,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       tauto
     by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
     swap
-    · rw [Measure.ae_compProd_iff] at h_int
-      swap; sorry
+    · rw [Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)] at h_int
       simp_rw [condKL_ne_top_iff]
       simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
       tauto
@@ -430,8 +433,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       exact ha_int2.2.2
     right
     rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-    rw [Measure.ae_compProd_iff] at h_int
-    swap; sorry --write this as a separate lemma
+    rw [Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)] at h_int
     apply Integrable.congr.mt
     swap; exact fun a ↦ ∫ b, EReal.toReal (kl (κ (a, b)) (η (a, b))) ∂(ξ a)
     push_neg
@@ -449,8 +451,8 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       simp only [norm_eq_abs, abs_eq_self]
       apply EReal.toReal_nonneg
       exact kl_nonneg _ _
-  · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _), Measure.ae_compProd_iff]
-    swap; sorry
+  · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _),
+      Measure.ae_compProd_iff (measurableSet_integrable_llr _ _)]
     rintro h
     contrapose! h
     have h_meas := (Integrable.integral_compProd' h.2.2).aestronglyMeasurable
