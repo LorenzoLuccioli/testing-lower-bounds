@@ -599,6 +599,123 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
     kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
+#check integrable_add_iff_integrable_right
+--This is a generalization of the next lemma, the proof doesn't work, though, there is some kind of type problem
+-- lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_right [TopologicalSpace β] [Add β] [ContinuousAdd β] [Neg β] [ContinuousNeg β] [AddCommGroup β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f + g) μ ↔ AEStronglyMeasurable g μ := by
+--   constructor <;> intro h
+--   · have : g = f + g + (-f) := by
+--       ext a
+--       simp only [Pi.add_apply, Pi.neg_apply]
+--       convert (add_neg_cancel_comm (f a) (g a)).symm using 2
+
+--       rw [add_neg_cancel_comm (f a) (g a)]
+--       simp [add_neg_cancel_comm, add_zero]
+--     rw [this]
+--     exact h.add hf.neg
+--   · exact hf.add h
+
+--TODO: put this in te right place, and PR this to mathlib, moreover write similar results for measurable, aemeasurable ecc...
+--TODO: this result shouold not require β to be a NormedAddCommGroup, it should be enough to have a topological space and a few other hypothesys on the  continuity of the sum and the negation, but for some reason it doesn't work, there seems to be some type problem
+lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_right [NormedAddCommGroup β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f + g) μ ↔ AEStronglyMeasurable g μ :=
+  ⟨fun h ↦ show g = f + g + (-f) by simp only [add_neg_cancel_comm] ▸ h.add hf.neg,
+    fun h ↦ hf.add h⟩
+
+lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_left[NormedAddCommGroup β]  {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (g + f) μ ↔ AEStronglyMeasurable g μ := by
+  rw [add_comm, AEStronglyMeasurable_add_iff_integrable_right hf]
+
+example {P Q R : Prop} : R ∧ P ↔ Q ∧ R := by
+  simp [and_comm]
+
+
+--TODO: it seems that hasFiniteIntegral.add does not exist, in Integrable.add this is proven directly, ti should be added to mathlib
+#check Integrable.add'
+lemma MeasureTheory.integrable_add_iff_of_nonneg {f g : α → ℝ} (h_meas : AEStronglyMeasurable f μ)
+    (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g) :
+    Integrable (f + g) μ ↔ Integrable f μ ∧ Integrable g μ := by
+  simp_rw [Integrable, AEStronglyMeasurable_add_iff_integrable_right h_meas, h_meas, true_and, ← and_assoc, and_comm, and_assoc]
+  apply and_congr_right'
+
+
+  constructor
+  swap; exact fun ⟨hf, hg⟩ => ⟨hf.add hg, hf, hg⟩
+
+
+
+--TODO: this can be generalized, relaxing the markov kernel hypothesis, it is sufficient that the kernels are finite and that they are not zero, but just stating that is not enough, because the actual hypothesys needed is that `∀ b, NeZero (snd' κ₂ a) b` but this is very ugly to use as an explicit hypothesis, maybe it is worth it to add an instance saying that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`
+lemma kernel.absolutelyContinuous_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁] [IsMarkovKernel κ₂]
+    [IsMarkovKernel η₂] (a : α) :
+    (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a ↔ κ₁ a ≪ η₁ a ∧ ∀ᵐ b ∂κ₁ a, κ₂ (a, b) ≪ η₂ (a, b) := by
+  simp_rw [kernel.compProd_apply_eq_compProd_snd',
+    kernel.Measure.absolutelyContinuous_compProd_iff, kernel.snd'_apply]
+
+lemma kernel.integrable_llr_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
+    [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
+    Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
+      ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
+        ∧ Integrable (fun b ↦ EReal.toReal (kl (κ₂ (a, b)) (η₂ (a, b)))) (κ₁ a)
+        ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
+  have h_ac' := kernel.absolutelyContinuous_compProd_iff a |>.mp h_ac |>.2
+  simp_rw [kernel.compProd_apply_eq_compProd_snd'] at h_ac
+  simp_rw [kernel.compProd_apply_eq_compProd_snd',
+    ProbabilityTheory.integrable_llr_compProd_iff h_ac, kernel.snd'_apply]
+  by_cases h_int₁ : Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
+  swap; tauto
+  by_cases h_int₂ : ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b))
+  swap; tauto
+  simp only [h_int₁, true_and, h_int₂, and_true]
+  apply integrable_congr
+  filter_upwards [h_int₂, h_ac'] with b hb_int hb_ac
+  rw [kl_of_ac_of_integrable hb_ac hb_int, EReal.toReal_coe]
+
+lemma kl_compProd_kernel_eq_top [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
+    [IsMarkovKernel η₂] [SFinite μ] :
+    condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤ ↔ condKL κ₁ η₁ μ = ⊤ ∨ condKL κ₂ η₂ (μ ⊗ₘ κ₁) = ⊤ := by
+  simp_rw [condKL_eq_top_iff,
+    Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)]
+  by_cases h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a
+  <;> have h_ac' := h_ac
+  <;> simp only [kernel.absolutelyContinuous_compProd_iff, eventually_and, not_and_or] at h_ac'
+  <;> simp only [h_ac, h_ac', not_false_eq_true, true_or, not_true, true_iff, false_or]
+  swap; tauto
+  rw [← Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ac'
+  by_cases h_ae_int : ∀ᵐ a ∂μ, Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
+  <;> have h_ae_int' := h_ae_int
+  <;> simp only [eventually_congr (h_ac.mono (fun a h ↦ (kernel.integrable_llr_compProd_iff a h))),
+    eventually_and, not_and_or] at h_ae_int'
+  <;> simp only [h_ae_int, h_ae_int', not_false_eq_true, true_or, true_and, not_true, true_iff,
+    false_or, not_and_or, ae_integrable_llr_iff h_ac'.2, Measure.integrable_compProd_iff
+    (measurable_kl _ _).ereal_toReal.stronglyMeasurable.aestronglyMeasurable]
+  swap
+  · by_cases h_int₁ : ∀ᵐ x ∂μ, Integrable (llr (κ₁ x) (η₁ x)) (κ₁ x)
+    swap; tauto
+    by_cases h_int₂ : ∀ᵐ a ∂μ, ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b))
+    swap; tauto
+    simp only [h_int₁, h_int₂, not_true_eq_false, false_or, or_false] at h_ae_int'
+    right; right; left
+    exact h_ae_int'
+  simp only [norm_eq_abs, EReal.toReal_nonneg (kl_nonneg _ _), abs_of_nonneg, ← not_and_or,
+    not_iff_not]
+
+  have h_eq : ∀ᵐ a ∂μ, EReal.toReal (kl ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a))
+      = EReal.toReal (kl (κ₁ a) (η₁ a)) + ∫ b, EReal.toReal (kl (κ₂ (a, b)) (η₂ (a, b))) ∂κ₁ a := by
+    filter_upwards [h_ac, h_ae_int] with a ha_ac ha_int
+    rw [kl_of_ac_of_integrable ha_ac ha_int, EReal.toReal_coe]
+
+    sorry
+  rw [integrable_congr h_eq]
+
+  -- have h_eq' : ∀ᵐ a ∂μ, EReal.toReal (kl ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) = ∫ x, llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a) x ∂((κ₁ ⊗ₖ κ₂) a) := by --probably to be deleted
+  --   filter_upwards [h_ac, h_ae_int] with a ha_ac ha_int
+  --   rw [kl_of_ac_of_integrable ha_ac ha_int, EReal.toReal_coe]
+  -- rw [integrable_congr h_eq']
+
+  sorry
+
+
+
 lemma kl_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
     condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = condKL κ₁ η₁ μ + condKL κ₂ η₂ (μ ⊗ₘ κ₁) := by
   by_cases h_top_prod : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
@@ -629,6 +746,7 @@ lemma kl_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {�
   rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h2
   rw [condKL_ne_top_iff'.mp h_top_prod, condKL_ne_top_iff'.mp h_top₁, condKL_ne_top_iff'.mp h_top₂]
   norm_cast
+
   simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd]
   rw [Measure.integral_compProd h2.2.2]
   convert integral_add h1.2.2 h23 using 1
