@@ -381,18 +381,18 @@ lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β
 
 lemma ae_integrable_llr_iff [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
     {κ η : kernel (α × β) γ} [IsFiniteKernel κ] [IsFiniteKernel η]
-    (h_ae : ∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, κ x ≪ η x) :
+    (h_ac : ∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, κ x ≪ η x) :
     (∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x))
       ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
   calc
   _ ↔ ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
     apply eventually_congr
-    filter_upwards [h_ae] with a ha using (integrable_rnDeriv_smul_iff ha).symm
+    filter_upwards [h_ac] with a ha using (integrable_rnDeriv_smul_iff ha).symm
   _ ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (fun x ↦ ((∂κ (a, b)/∂η (a, b)) x).toReal * llr (κ (a, b)) (η (a, b)) x) (η (a, b)) := kernel.ae_compProd_iff (measurableSet_integrable_llr κ η)
   _ ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
     apply eventually_congr
-    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-    filter_upwards [h_ae] with a ha
+    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ac
+    filter_upwards [h_ac] with a ha
     apply eventually_congr
     filter_upwards [ha] with b hb using (integrable_rnDeriv_smul_iff hb)
 
@@ -429,8 +429,8 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       simp only [condKL_ne_top_iff, not_eventually, kernel.snd'_apply, eventually_and, h_int,
         false_and, and_false, not_false_eq_true, true_or, implies_true]
     simp only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not, h_ae, h_int]
-    rw [Measure.integrable_compProd_iff]
-    swap; exact (measurable_kl κ η).ereal_toReal.stronglyMeasurable.aestronglyMeasurable
+    rw [Measure.integrable_compProd_iff
+      (measurable_kl κ η).ereal_toReal.stronglyMeasurable.aestronglyMeasurable]
     push_neg
     intro h
     by_cases h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ (kl (κ (a, b)) (η (a, b))).toReal) (ξ a)
