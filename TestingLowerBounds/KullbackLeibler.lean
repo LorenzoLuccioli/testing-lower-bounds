@@ -388,30 +388,6 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   rw [condKL_eq_condFDiv, kl_eq_fDiv]
   exact condFDiv_const
 
---TODO: put this in the right place, maybe in the file about llr
-lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
-    MeasurableSet {a | Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a)} := by
-  simp_rw [llr_def]
-  refine ProbabilityTheory.measurableSet_integrable_f_rnDeriv (f := fun x ↦ x * log x) κ η ?_
-  refine stronglyMeasurable_id.mul measurable_log.stronglyMeasurable
-
-lemma ae_integrable_llr_iff [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
-    {κ η : kernel (α × β) γ} [IsFiniteKernel κ] [IsFiniteKernel η]
-    (h_ac : ∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, κ x ≪ η x) :
-    (∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x))
-      ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
-  calc
-  _ ↔ ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
-    apply eventually_congr
-    filter_upwards [h_ac] with a ha using (integrable_rnDeriv_smul_iff ha).symm
-  _ ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (fun x ↦ ((∂κ (a, b)/∂η (a, b)) x).toReal * llr (κ (a, b)) (η (a, b)) x) (η (a, b)) := kernel.ae_compProd_iff (measurableSet_integrable_llr κ η)
-  _ ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
-    apply eventually_congr
-    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ac
-    filter_upwards [h_ac] with a ha
-    apply eventually_congr
-    filter_upwards [ha] with b hb using (integrable_rnDeriv_smul_iff hb)
-
 --TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is only used to prove that `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true, given that `Integrable (fun x ↦ ∫ (y : β), EReal.toReal (kl (κ (x, y)) (η (x, y))) ∂ξ x` but if the kernels are finite then the kl is bounded from below, so it should be still possible to conclude the integrability of the first function, this would however require more work
 --this is to handle the case in `condKL_compProd_meas` when the lhs is ⊤, in this case the rhs is 'morally' also ⊤, so the equality holds, but actually in Lean the equality is not true, because of how we handle the infinities in the integrals, so we have to make a separate lemma for this case
 lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β}
@@ -438,7 +414,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       exact h_ae
     by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
     swap
-    · rw [ae_integrable_llr_iff h_ae] at h_int
+    · rw [ae_compProd_integrable_llr_iff h_ae] at h_int
       rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
       simp only [condKL_ne_top_iff, not_eventually, kernel.snd'_apply, eventually_and, h_int,
         false_and, and_false, not_false_eq_true, true_or, implies_true]
@@ -456,7 +432,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       simp only [condKL_ne_top_iff, kernel.snd'_apply] at ha_int2
       exact ha_int2.2.2
     right
-    rw [ae_integrable_llr_iff h_ae] at h_int
+    rw [ae_compProd_integrable_llr_iff h_ae] at h_int
     rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
     apply Integrable.congr.mt
     swap; exact fun a ↦ ∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂(ξ a)
@@ -471,7 +447,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
   · rintro h
     contrapose! h
     obtain ⟨h_ae, ⟨h_int1, h_int2⟩⟩ := h
-    rw [ae_integrable_llr_iff h_ae] at h_int1
+    rw [ae_compProd_integrable_llr_iff h_ae] at h_int1
     rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
     have h_meas := (Integrable.integral_compProd' h_int2).aestronglyMeasurable
     rw [Measure.integrable_compProd_iff h_int2.aestronglyMeasurable] at h_int2
@@ -737,7 +713,7 @@ lemma condKL_compProd_kernel_eq_top [CountablyGenerated γ] {κ₁ η₁ : kerne
   <;> simp only [eventually_congr (h_ac.mono (fun a h ↦ (kernel.integrable_llr_compProd_iff a h))),
     eventually_and, not_and_or] at h_ae_int'
   <;> simp only [h_ae_int, h_ae_int', not_false_eq_true, true_or, true_and, not_true, true_iff,
-    false_or, not_and_or, ae_integrable_llr_iff h_ac'.2, Measure.integrable_compProd_iff
+    false_or, not_and_or, ae_compProd_integrable_llr_iff h_ac'.2, Measure.integrable_compProd_iff
     (measurable_kl _ _).ereal_toReal.stronglyMeasurable.aestronglyMeasurable]
   swap
   · by_cases h_int₁ : ∀ᵐ x ∂μ, Integrable (llr (κ₁ x) (η₁ x)) (κ₁ x)
