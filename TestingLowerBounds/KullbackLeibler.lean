@@ -12,6 +12,7 @@ import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
+import TestingLowerBounds.ForMathlib.MulLog
 
 /-!
 # Kullback-Leibler divergence
@@ -41,10 +42,6 @@ lemma integrable_rnDeriv_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     [SigmaFinite μ] {f : α → E} (hf : Integrable f μ) :
     Integrable (fun x ↦ (μ.rnDeriv ν x).toReal • f x) ν :=
   (integrable_rnDeriv_smul_iff hμν).mpr hf
-
---TODO: move this, I'm not sure it is actually needed, but this property is used a bunch of times and making measurability handle it makes the code significantly slower
-lemma stronglyMeasurable_mul_log : StronglyMeasurable (fun x ↦ x * log x) := by
-  exact stronglyMeasurable_id.mul measurable_log.stronglyMeasurable
 
 end move_this
 
