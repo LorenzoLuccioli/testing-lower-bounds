@@ -42,6 +42,10 @@ lemma integrable_rnDeriv_smul {E : Type*} [NormedAddCommGroup E] [NormedSpace �
     Integrable (fun x ↦ (μ.rnDeriv ν x).toReal • f x) ν :=
   (integrable_rnDeriv_smul_iff hμν).mpr hf
 
+--TODO: move this, I'm not sure it is actually needed, but this property is used a bunch of times and making measurability handle it makes the code significantly slower
+lemma stronglyMeasurable_mul_log : StronglyMeasurable (fun x ↦ x * log x) := by
+  exact stronglyMeasurable_id.mul measurable_log.stronglyMeasurable
+
 end move_this
 
 open Classical in
@@ -130,7 +134,7 @@ lemma measurable_kl {β : Type*} [MeasurableSpace β] [CountablyGenerated β] (�
     [IsFiniteKernel κ] [IsFiniteKernel η] :
     Measurable (fun a ↦ kl (κ a) (η a)) := by
   simp_rw [kl_eq_fDiv]
-  exact measurable_fDiv _ _ (by measurability)
+  exact measurable_fDiv _ _ stronglyMeasurable_mul_log
 
 section kl_nonneg
 
@@ -307,8 +311,10 @@ lemma condKL_eq_top_iff : condKL κ η μ = ⊤ ↔
   constructor <;> intro h
   · contrapose! h
     rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h.1 h.2.1 h.2.2]
-    simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true]
-  · rcases h with (h | h | h) <;> simp [h]
+    exact EReal.coe_ne_top _
+  · rcases h with (h | h | h) <;>
+      simp only [h, not_false_eq_true, condKL_of_not_ae_ac, condKL_of_not_ae_integrable,
+        condKL_of_not_integrable]
 
 lemma condKL_ne_top_iff : condKL κ η μ ≠ ⊤ ↔
     (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a))
@@ -329,13 +335,13 @@ lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     condKL κ η μ = condFDiv (fun x ↦ x * log x) κ η μ := by
   by_cases h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤
   swap
-  · simp [h1]
+  · simp only [ne_eq, h1, not_false_eq_true, condKL_of_not_ae_ne_top]
     refine (condFDiv_of_not_ae_finite ?_).symm
     convert h1 using 4 with a
     rw [kl_eq_fDiv]
   by_cases h2 : Integrable (fun x ↦ (kl (κ x) (η x)).toReal) μ
   swap
-  · simp [h2]
+  · simp only [h2, not_false_eq_true, condKL_of_not_integrable]
     refine (condFDiv_of_not_integrable ?_).symm
     convert h2 using 4 with a
     rw [← kl_eq_fDiv]
@@ -356,7 +362,8 @@ lemma condKL_zero_left : condKL 0 η μ = 0 := by
 
 @[simp]
 lemma condKL_zero_right (h : ∃ᵐ a ∂μ, κ a ≠ 0) : condKL κ 0 μ = ⊤ := by
-  simp [h]
+  simp only [kernel.zero_apply, Measure.absolutelyContinuous_zero_iff, not_eventually, h,
+    condKL_of_not_ae_ac]
 
 @[simp]
 lemma condKL_zero_measure : condKL κ η 0 = 0 := by
@@ -429,9 +436,9 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
   · by_cases h_ae : ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x
     swap
     · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-      simp_rw [condKL_ne_top_iff]
-      simp only [kernel.snd'_apply, eventually_and, not_and, not_eventually]
-      tauto
+      simp_rw [condKL_ne_top_iff, kernel.snd'_apply, eventually_and, not_and_or]
+      intro; left; left
+      exact h_ae
     by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
     swap
     · rw [ae_integrable_llr_iff h_ae] at h_int
@@ -507,13 +514,13 @@ lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKer
     [IsFiniteKernel η] :
     kl (μ ⊗ₘ κ) (μ ⊗ₘ η) = condKL κ η μ := by
   rw [kl_eq_fDiv, condKL_eq_condFDiv]
-  exact fDiv_compProd_left μ κ η (by measurability) Real.convexOn_mul_log
+  exact fDiv_compProd_left μ κ η stronglyMeasurable_mul_log Real.convexOn_mul_log
 
 lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] [IsMarkovKernel κ] :
     kl (μ ⊗ₘ κ) (ν ⊗ₘ κ) = kl μ ν := by
   rw [kl_eq_fDiv, kl_eq_fDiv]
-  exact fDiv_compProd_right μ ν κ (by measurability) Real.convexOn_mul_log
+  exact fDiv_compProd_right μ ν κ stronglyMeasurable_mul_log Real.convexOn_mul_log
 
 
 /--The chain rule for the KL divergence.-/
@@ -537,7 +544,9 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     rw [integrable_llr_compProd_iff h_prod] at h_int
     set_option push_neg.use_distrib true in push_neg at h_int
     rcases h_int with ((h | h) | h) <;>
-      simp [h, EReal.top_add_of_ne_bot, condKL_ne_bot, EReal.add_top_of_ne_bot, kl_ne_bot]
+      simp only [h, not_false_eq_true, kl_of_not_integrable, ne_eq, EReal.top_add_of_ne_bot,
+        condKL_ne_bot, condKL_of_not_integrable', EReal.add_top_of_ne_bot, kl_ne_bot,
+        condKL_of_not_ae_integrable]
   have intμν := integrable_llr_of_integrable_llr_compProd h_prod h_int
   have intκη : Integrable (fun a ↦ ∫ (x : β), log (kernel.rnDeriv κ η a x).toReal ∂κ a) μ := by
     apply Integrable.congr (integrable_integral_llr_of_integrable_llr_compProd h_prod h_int)
