@@ -679,7 +679,7 @@ lemma kernel.integrable_llr_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : 
     [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
     Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
       ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
-        ∧ Integrable (fun b ↦ EReal.toReal (kl (κ₂ (a, b)) (η₂ (a, b)))) (κ₁ a)
+        ∧ Integrable (fun b ↦ (kl (κ₂ (a, b)) (η₂ (a, b))).toReal) (κ₁ a)
         ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
   have h_ac' := kernel.absolutelyContinuous_compProd_iff a |>.mp h_ac |>.2
   simp_rw [kernel.compProd_apply_eq_compProd_snd'] at h_ac
@@ -694,10 +694,25 @@ lemma kernel.integrable_llr_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : 
   filter_upwards [h_ac'] with b hb_ac
   rw [kl_toReal_of_ac hb_ac]
 
-lemma kl_compProd_kernel_eq_top'' [CountablyGenerated β] [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] [SFinite μ] :
-    condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤ ↔ condKL κ₁ η₁ μ = ⊤ ∨ condKL κ₂ η₂ (μ ⊗ₘ κ₁) = ⊤ := by sorry
+lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
+    [IsMarkovKernel η₂] (h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a)
+    (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)) :
+    ∀ᵐ a ∂μ, (kl ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)).toReal
+      = (kl (κ₁ a) (η₁ a)).toReal + ∫ b, (kl (κ₂ (a, b)) (η₂ (a, b))).toReal ∂κ₁ a := by
+  simp only [eventually_congr (h_ac.mono (fun a h ↦ (kernel.integrable_llr_compProd_iff a h))),
+    eventually_and] at h_ae_int
+  simp only [kernel.absolutelyContinuous_compProd_iff, eventually_and] at h_ac
+  filter_upwards [h_ac.1, h_ac.2, h_ae_int.1, h_ae_int.2.1, h_ae_int.2.2] with a ha_ac₁ ha_ac₂
+    ha_int₁ ha_int_kl₂ ha_int₂
+  have h_snd_ne_top : condKL (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a) ≠ ⊤ := by
+    apply condKL_ne_top_iff.mpr
+    simp_rw [kernel.snd'_apply]
+    exact ⟨ha_ac₂, ⟨ha_int₂, ha_int_kl₂⟩⟩
+  simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd,
+    EReal.toReal_add (kl_ne_top_iff.mpr ⟨ha_ac₁, ha_int₁⟩) (kl_ne_bot (κ₁ a) (η₁ a)) h_snd_ne_top
+    (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
+    condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
 
 lemma condKL_compProd_kernel_eq_top [CountablyGenerated β] [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
@@ -728,19 +743,7 @@ lemma condKL_compProd_kernel_eq_top [CountablyGenerated β] [CountablyGenerated 
     exact h_ae_int'
   simp only [norm_eq_abs, EReal.toReal_nonneg (kl_nonneg _ _), abs_of_nonneg, ← not_and_or,
     not_iff_not]
-
-  have h_eq : ∀ᵐ a ∂μ, EReal.toReal (kl ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a))
-      = EReal.toReal (kl (κ₁ a) (η₁ a)) + ∫ b, EReal.toReal (kl (κ₂ (a, b)) (η₂ (a, b))) ∂κ₁ a := by
-    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ac'
-    filter_upwards [h_ac, h_ae_int, h_ac'.1, h_ac'.2, h_ae_int'.1, h_ae_int'.2.1, h_ae_int'.2.2]
-      with a ha_ac ha_int ha_ac₁ ha_ac₂ ha_int₁ ha_int_kl₂ ha_int₂
-    simp_rw [kl_toReal_of_ac ha_ac, kl_toReal_of_ac ha_ac₁]
---consider making a lemma for the fact that under hp h_ac and h_ae_int then this have h_eq holds, I think this may be reused in the proof below as well, it is essentially extracting that part of the proof from below and then reusing it here
---now I try to make a general lemma for kl saying that EReal.toReal kl ... is always equal to the integral, I hope this iss true, but I have to check what happens in the caase where the ac hp is not met, the I will do the same for condKL
-
-
-    sorry
-  rw [integrable_congr h_eq]
+  rw [integrable_congr (kl_compProd_kernel_of_ae_ac_of_ae_integrable h_ac h_ae_int)]
   apply MeasureTheory.integrable_add_iff_of_nonneg
   · exact (measurable_kl _ _).ereal_toReal.stronglyMeasurable.aestronglyMeasurable
   · filter_upwards with a using EReal.toReal_nonneg (kl_nonneg _ _)
@@ -775,10 +778,10 @@ lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β
   have h23 := Integrable.integral_compProd' h2.2.2
   have h23' := Integrable.compProd_mk_left_ae' h2.2.2
   rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h2
-  rw [condKL_ne_top_iff'.mp h_top_prod, condKL_ne_top_iff'.mp h_top₁, condKL_ne_top_iff'.mp h_top₂]
+  rw [condKL_ne_top_iff'.mp h_top_prod, condKL_ne_top_iff'.mp h_top₁, condKL_ne_top_iff'.mp h_top₂,
+    Measure.integral_compProd h2.2.2]
   norm_cast
 
-  simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd, Measure.integral_compProd h2.2.2]
   convert integral_add h1.2.2 h23 using 1
   apply integral_congr_ae
   filter_upwards [h1.1, h1.2.1, h2.1, h22', h23'] with a h11 h12 h21 h22 h230
@@ -786,9 +789,10 @@ lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β
     apply condKL_ne_top_iff.mpr
     simp_rw [kernel.snd'_apply]
     exact ⟨h21, ⟨h22, h230⟩⟩
-  rw [EReal.toReal_add (kl_ne_top_iff.mpr ⟨h11, h12⟩) (kl_ne_bot (κ₁ a) (η₁ a)) h_snd_ne_top
-    (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a))]
-  simp_rw [condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
+  simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd,
+    EReal.toReal_add (kl_ne_top_iff.mpr ⟨h11, h12⟩) (kl_ne_bot (κ₁ a) (η₁ a)) h_snd_ne_top
+      (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
+    condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
 
 
 end Conditional
