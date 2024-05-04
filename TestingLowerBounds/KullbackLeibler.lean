@@ -752,50 +752,21 @@ lemma condKL_compProd_kernel_eq_top [CountablyGenerated γ] {κ₁ η₁ : kerne
   · filter_upwards with a using EReal.toReal_nonneg (kl_nonneg _ _)
 
 
-lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
+lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
     condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = condKL κ₁ η₁ μ + condKL κ₂ η₂ (μ ⊗ₘ κ₁) := by
-  by_cases h_top_prod : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
-  · -- we could make a seoarate lemma that handles this case, something like lhs = ⊤ iff rhs.1 = ⊤ or rhs.2 = ⊤
-    rw [h_top_prod]
-    rw [condKL_eq_top_iff] at h_top_prod
-    rcases h_top_prod with (h | h | h)
-    ·
-      simp_rw [kernel.compProd_apply_eq_compProd_snd',
-        kernel.Measure.absolutelyContinuous_compProd_iff, eventually_and, not_and_or] at h
-      -- have hh := kernel.Measure.absolutelyContinuous_compProd_iff.mpr.mt h
-      sorry
-    ·
-      sorry
-    ·
-      sorry
-  have h_top₁ : condKL κ₁ η₁ μ ≠ ⊤ := by
-    sorry
-  have h_top₂ : condKL κ₂ η₂ (μ ⊗ₘ κ₁) ≠ ⊤ := by
-   sorry
-  have h1 := condKL_ne_top_iff.mp h_top₁
-  have h2 := condKL_ne_top_iff.mp h_top₂
-  have hp := condKL_ne_top_iff.mp h_top_prod
-  -- simp_rw [kernel.compProd_apply_eq_compProd_snd'] at hp
-  have h22' := (ae_integrable_llr_iff h2.1).mp h2.2.1
-  have h23 := Integrable.integral_compProd' h2.2.2
-  have h23' := Integrable.compProd_mk_left_ae' h2.2.2
-  rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h2
-  rw [condKL_ne_top_iff'.mp h_top_prod, condKL_ne_top_iff'.mp h_top₁, condKL_ne_top_iff'.mp h_top₂,
-    Measure.integral_compProd h2.2.2]
+  by_cases hp : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
+  · rw [hp]
+    rw [condKL_compProd_kernel_eq_top] at hp
+    rcases hp with (h | h) <;> rw [h]
+    · exact (EReal.top_add_of_ne_bot (condKL_ne_bot _ _ _)).symm
+    · exact (EReal.add_top_of_ne_bot (condKL_ne_bot _ _ _)).symm
+  obtain ⟨h1, h2⟩ := not_or.mp <| condKL_compProd_kernel_eq_top.mpr.mt hp
+  rw [condKL_ne_top_iff'.mp hp, condKL_ne_top_iff'.mp h1, condKL_ne_top_iff'.mp h2]
+  rw [← ne_eq, condKL_ne_top_iff] at h1 h2 hp
+  rw [Measure.integral_compProd h2.2.2]
   norm_cast
-
-  convert integral_add h1.2.2 h23 using 1
-  apply integral_congr_ae
-  filter_upwards [h1.1, h1.2.1, h2.1, h22', h23'] with a h11 h12 h21 h22 h230
-  have h_snd_ne_top : condKL (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a) ≠ ⊤ := by
-    apply condKL_ne_top_iff.mpr
-    simp_rw [kernel.snd'_apply]
-    exact ⟨h21, ⟨h22, h230⟩⟩
-  simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd,
-    EReal.toReal_add (kl_ne_top_iff.mpr ⟨h11, h12⟩) (kl_ne_bot (κ₁ a) (η₁ a)) h_snd_ne_top
-      (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
-    condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
-
+  convert integral_add h1.2.2 (Integrable.integral_compProd' h2.2.2) using 1
+  exact integral_congr_ae <| kl_compProd_kernel_of_ae_ac_of_ae_integrable hp.1 hp.2.1
 
 end Conditional
 
