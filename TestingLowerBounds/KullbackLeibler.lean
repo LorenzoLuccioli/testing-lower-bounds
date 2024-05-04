@@ -59,6 +59,12 @@ lemma kl_of_not_ac (h : ¬ μ ≪ ν) : kl μ ν = ⊤ := if_neg (not_and_of_not
 lemma kl_of_not_integrable (h : ¬ Integrable (llr μ ν) μ) : kl μ ν = ⊤ :=
   if_neg (not_and_of_not_right _ h)
 
+--This lemma is to make some proof a bit easier, since we can avoid repeating the integrability hypothesis if we have a cast to the reals. Unfortunately this cannot be used if we don't have the absolute continuity, since in that case the integral may still be finite but not zero.
+lemma kl_toReal_of_ac (h : μ ≪ ν) : (kl μ ν).toReal = ∫ a, llr μ ν a ∂μ := by
+  by_cases h_int : Integrable (llr μ ν) μ
+  · rw [kl_of_ac_of_integrable h h_int, EReal.toReal_coe]
+  · rw [kl_of_not_integrable h_int, integral_undef h_int, EReal.toReal_top]
+
 lemma derivAtTop_mul_log : derivAtTop (fun x ↦ x * log x) = ⊤ := by
   rw [derivAtTop_eq_top_iff]
   refine (tendsto_congr' ?_).mp tendsto_log_atTop
@@ -218,13 +224,12 @@ lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
 
 /--Equivalence between two possible versions of the second condition for the finiteness of the
 conditional KL divergence, the first version is the preferred one.-/
-lemma integrable_kl_iff (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
-    (h_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) :
+lemma integrable_kl_iff (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a) :
     Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ
       ↔ Integrable (fun a ↦ ∫ x, llr (κ a) (η a) x ∂(κ a)) μ := by
   apply integrable_congr
-  filter_upwards [h_ac, h_int] with a ha1 ha2
-  rw [kl_of_ac_of_integrable ha1 ha2, EReal.toReal_coe]
+  filter_upwards [h_ac] with a ha1
+  rw [kl_toReal_of_ac ha1]
 
 open Classical in
 
@@ -256,8 +261,8 @@ lemma condKL_of_ae_ac_of_ae_integrable_of_integrable' (h_ac : ∀ᵐ a ∂μ, κ
   rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h_ac h_ae_int h_int]
   congr 1
   apply integral_congr_ae
-  filter_upwards [h_ac, h_ae_int] with a ha1 ha2
-  rw [kl_of_ac_of_integrable ha1 ha2, EReal.toReal_coe]
+  filter_upwards [h_ac] with a ha1
+  rw [kl_toReal_of_ac ha1]
 
 @[simp]
 lemma condKL_of_not_ae_ne_top (h : ¬ (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤)) :
@@ -287,7 +292,14 @@ lemma condKL_of_not_integrable' (h : ¬ Integrable (fun a ↦ ∫ x, llr (κ a) 
   by_cases h_ne_top : ∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤
   swap; exact condKL_of_not_ae_ne_top h_ne_top
   apply condKL_of_not_integrable
-  rwa [integrable_kl_iff (kl_ae_ne_top_iff.mp h_ne_top).1 (kl_ae_ne_top_iff.mp h_ne_top).2]
+  rwa [integrable_kl_iff (kl_ae_ne_top_iff.mp h_ne_top).1]
+
+lemma condKL_toReal_of_ae_ac_of_ae_integrable (h_ac : ∀ᵐ a ∂μ, κ a ≪ η a)
+    (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) :
+    (condKL κ η μ).toReal = μ[fun a ↦ (kl (κ a) (η a)).toReal] := by
+  by_cases h_int : Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ
+  · rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h_ac h_ae_int h_int, EReal.toReal_coe]
+  · rw [condKL_of_not_integrable h_int, integral_undef h_int, EReal.toReal_top]
 
 lemma condKL_eq_top_iff : condKL κ η μ = ⊤ ↔
     ¬ (∀ᵐ a ∂μ, κ a ≪ η a) ∨ ¬ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a))
@@ -405,16 +417,14 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
         ∨ ¬ Integrable (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by
   rw [condKL_eq_top_iff]
   have h_ae_eq (h_ae : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, κ (a, b) ≪ η (a, b))
-      (h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)))
-      (h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ (kl (κ (a, b)) (η (a, b))).toReal) (ξ a)) :
+      (h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b))) :
       (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal)
         =ᵐ[μ] fun a ↦ ∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂ξ a := by
-    filter_upwards [h_ae, h_int, h_int2] with a ha_ae ha_int ha_int2
-    rw [condKL_of_ae_ac_of_ae_integrable_of_integrable]
-    · simp only [EReal.toReal_coe, kernel.snd'_apply]
+    filter_upwards [h_ae, h_int] with a ha_ae ha_int
+    rw [condKL_toReal_of_ae_ac_of_ae_integrable]
+    · simp only [kernel.snd'_apply]
     · filter_upwards [ha_ae] with b hb using kernel.snd'_apply _ _ _ ▸ hb
     · filter_upwards [ha_int] with b hb using kernel.snd'_apply _ _ _ ▸ hb
-    · simp_rw [kernel.snd'_apply, ha_int2]
   constructor
   · by_cases h_ae : ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x
     swap
@@ -448,7 +458,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
     swap; exact fun a ↦ ∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂(ξ a)
     push_neg
     constructor
-    · exact h_ae_eq h_ae h_int h_int2
+    · exact h_ae_eq h_ae h_int
     · replace h := h h_int2
       contrapose! h
       convert h with a b
@@ -466,7 +476,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       apply condKL_ne_top_iff.mpr
       simp only [kernel.snd'_apply]
       exact ⟨ha_ae, ⟨ha_int, ha_int2⟩⟩
-    · refine Integrable.congr ?_ (h_ae_eq h_ae h_int1 h_int2.1).symm
+    · refine Integrable.congr ?_ (h_ae_eq h_ae h_int1).symm
       replace h_int := h_int2.2
       apply MeasureTheory.Integrable.mono h_int h_meas
       refine ae_of_all μ ?_
@@ -584,7 +594,7 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     congr <;> simp_rw [← llr_def]
     · rw [← kl_of_ac_of_integrable hμν intμν]
     · rw [condKL_of_ae_ac_of_ae_integrable_of_integrable' hκη intκη2 _]
-      apply (integrable_kl_iff hκη intκη2).mpr
+      apply (integrable_kl_iff hκη).mpr
       simp_rw [llr_def]
       apply Integrable.congr intκη
       filter_upwards [hκη] with a ha
@@ -623,7 +633,6 @@ lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_right [NormedAddComm
 lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_left[NormedAddCommGroup β]  {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (g + f) μ ↔ AEStronglyMeasurable g μ := by
   rw [add_comm, AEStronglyMeasurable_add_iff_integrable_right hf]
 
-#check HasFiniteIntegral
 --TODO: put this in the right place and PR to mathlib
 lemma MeasureTheory.integrable_left_of_integrable_add_of_nonneg {f g : α → ℝ}
     (h_meas : AEStronglyMeasurable f μ) (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g)
@@ -649,7 +658,6 @@ lemma MeasureTheory.integrable_right_of_integrable_add_of_nonneg {f g : α → �
     hg hf (add_comm f g ▸ h_int)
 
 --TODO: it seems that hasFiniteIntegral.add does not exist, in Integrable.add this is proven directly, it should be added to mathlib. This is not the case, there is a good reason for that not to be in mathlib, because it is not true in general if the functions are not measurable, infact in this case we can have functions with integral equal to zero just because they are not measurable, but the sum is measurable and has infinite integral
-#check Integrable.add'
 lemma MeasureTheory.integrable_add_iff_of_nonneg {f g : α → ℝ} (h_meas : AEStronglyMeasurable f μ)
     (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g) :
     Integrable (f + g) μ ↔ Integrable f μ ∧ Integrable g μ :=
