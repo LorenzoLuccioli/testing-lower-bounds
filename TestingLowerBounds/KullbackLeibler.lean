@@ -145,7 +145,7 @@ lemma kl_ne_bot (μ ν : Measure α) : kl μ ν ≠ ⊥ := by
 lemma kl_ge_mul_log' [IsFiniteMeasure μ] [IsProbabilityMeasure ν]
     (hμν : μ ≪ ν) :
     (μ Set.univ).toReal * log (μ Set.univ).toReal ≤ kl μ ν :=
-  (le_fDiv_of_ac Real.convexOn_mul_log Real.continuous_mul_log.continuousOn hμν).trans_eq
+  (le_fDiv_of_ac convexOn_mul_log continuous_mul_log.continuousOn hμν).trans_eq
     kl_eq_fDiv.symm
 
 lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
@@ -220,8 +220,7 @@ variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {
 conditional KL divergence, the second version is the preferred one.-/
 lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
     (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
-  simp_rw [ne_eq, kl_eq_top_iff, Classical.not_imp_iff_and_not, Classical.not_not,
-    Filter.eventually_and]
+  simp_rw [ne_eq, kl_eq_top_iff, Classical.not_imp_iff_and_not, Classical.not_not, eventually_and]
 
 /--Equivalence between two possible versions of the second condition for the finiteness of the
 conditional KL divergence, the first version is the preferred one.-/
@@ -378,10 +377,7 @@ lemma condKL_ne_bot (κ η : kernel α β) (μ : Measure α) : condKL κ η μ �
 lemma condKL_nonneg (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η] (μ : Measure α) :
     0 ≤ condKL κ η μ := by
   rw [condKL_eq_condFDiv]
-  apply condFDiv_nonneg
-  · exact Real.convexOn_mul_log
-  · exact Real.continuous_mul_log.continuousOn
-  · norm_num
+  exact condFDiv_nonneg convexOn_mul_log continuous_mul_log.continuousOn (by norm_num)
 
 lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     condKL (kernel.const β μ) (kernel.const β ν) ξ = (kl μ ν) * ξ Set.univ := by
@@ -458,12 +454,12 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       exact ⟨ha_ae, ⟨ha_int, ha_int2⟩⟩
     · refine Integrable.congr ?_ (h_ae_eq h_ae h_int1).symm
       replace h_int := h_int2.2
-      apply MeasureTheory.Integrable.mono h_int h_meas
+      apply Integrable.mono h_int h_meas
       refine ae_of_all μ ?_
       intro a
       calc ‖∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂ξ a‖
       _ ≤ ∫ b, ‖(kl (κ (a, b)) (η (a, b))).toReal‖ ∂ξ a :=
-        MeasureTheory.norm_integral_le_integral_norm _
+        norm_integral_le_integral_norm _
       _ = _ := by
         simp only [norm_eq_abs]
         apply (abs_of_nonneg _).symm
@@ -487,13 +483,13 @@ lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKer
     [IsFiniteKernel η] :
     kl (μ ⊗ₘ κ) (μ ⊗ₘ η) = condKL κ η μ := by
   rw [kl_eq_fDiv, condKL_eq_condFDiv]
-  exact fDiv_compProd_left μ κ η stronglyMeasurable_mul_log Real.convexOn_mul_log
+  exact fDiv_compProd_left μ κ η stronglyMeasurable_mul_log convexOn_mul_log
 
 lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] [IsMarkovKernel κ] :
     kl (μ ⊗ₘ κ) (ν ⊗ₘ κ) = kl μ ν := by
   rw [kl_eq_fDiv, kl_eq_fDiv]
-  exact fDiv_compProd_right μ ν κ stronglyMeasurable_mul_log Real.convexOn_mul_log
+  exact fDiv_compProd_right μ ν κ stronglyMeasurable_mul_log convexOn_mul_log
 
 
 /--The chain rule for the KL divergence.-/
@@ -541,7 +537,7 @@ lemma kl_compProd [CountablyGenerated β] [IsMarkovKernel κ] [IsMarkovKernel η
     filter_upwards [kernel.rnDeriv_toReal_pos hκηa, hκηa.ae_le ha] with x hκη_pos hx
     have hκη_zero : (kernel.rnDeriv κ η a x).toReal ≠ 0 := by linarith
     rw [llr, hx, ENNReal.toReal_mul]
-    exact Real.log_mul hμν_zero hκη_zero
+    exact log_mul hμν_zero hκη_zero
   _ = ∫ a, ∫ _, log (μ.rnDeriv ν a).toReal ∂κ a ∂μ
       + ∫ a, ∫ x, log (kernel.rnDeriv κ η a x).toReal ∂κ a ∂μ := by
     norm_cast
@@ -627,8 +623,8 @@ lemma MeasureTheory.integrable_left_of_integrable_add_of_nonneg {f g : α → �
       have hfg : 0 ≤ f a + g a := by
         apply add_nonneg <;> assumption
       simp only [Pi.zero_apply, Pi.add_apply, ENNReal.coe_le_coe] at *
-      rw [← Real.toNNReal_eq_nnnorm_of_nonneg haf, ← Real.toNNReal_eq_nnnorm_of_nonneg hfg]
-      apply (Real.toNNReal_le_toNNReal_iff hfg).mpr
+      rw [← toNNReal_eq_nnnorm_of_nonneg haf, ← toNNReal_eq_nnnorm_of_nonneg hfg]
+      apply (toNNReal_le_toNNReal_iff hfg).mpr
       exact (le_add_iff_nonneg_right _).mpr hag
     _ < ⊤ := h_int.2
 
@@ -727,7 +723,7 @@ lemma condKL_compProd_kernel_eq_top [CountablyGenerated γ] {κ₁ η₁ : kerne
     not_iff_not]
   rw [integrable_congr (kl_compProd_kernel_of_ae_ac_of_ae_integrable h_ac h_ae_int), and_comm]
   simp_rw [add_comm (kl (κ₁ _) (η₁ _)).toReal]
-  apply MeasureTheory.integrable_add_iff_of_nonneg
+  apply MeasureTheory.integrable_add_iff_of_nonneg --remove the MeasureTheory. when the lemma is into the right namespace
   · exact StronglyMeasurable.integral_kernel_prod_right' (κ := κ₁)
       ((measurable_kl κ₂ η₂).ereal_toReal.stronglyMeasurable) |>.aestronglyMeasurable
   · filter_upwards with a using integral_nonneg (fun b ↦ EReal.toReal_nonneg (kl_nonneg _ _))
