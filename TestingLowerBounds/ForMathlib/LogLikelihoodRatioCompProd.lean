@@ -3,13 +3,15 @@
 import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+import TestingLowerBounds.ForMathlib.MulLog
+
 
 open Real MeasureTheory MeasurableSpace
 
 namespace ProbabilityTheory
 
-variable {α β : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
-variable {μ ν : Measure α} {κ η : kernel α β}
+variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ}
+  {μ ν : Measure α} {κ η : kernel α β}
 
 
 lemma integrable_rnDeriv_mul_log_iff [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
@@ -140,10 +142,38 @@ lemma integrable_llr_compProd_iff [CountablyGenerated β] [IsMarkovKernel κ]
     [IsMarkovKernel η] [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_ac : μ ⊗ₘ κ ≪ ν ⊗ₘ η) :
     Integrable (llr (μ ⊗ₘ κ) (ν ⊗ₘ η)) (μ ⊗ₘ κ) ↔ (Integrable (llr μ ν) μ
     ∧ Integrable (fun a ↦ ∫ x, llr (κ a) (η a) x ∂(κ a)) μ)
-    ∧ ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a):= by
-  constructor <;> intro h
-  · exact ⟨⟨integrable_llr_of_integrable_llr_compProd h_ac h, integrable_integral_llr_of_integrable_llr_compProd h_ac h⟩,
-      ae_integrable_llr_of_integrable_llr_compProd h_ac h⟩
-  · exact integrable_llr_compProd_of_integrable_llr h_ac h.1.1 h.1.2 h.2
+    ∧ ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a):=
+  ⟨fun h ↦ ⟨⟨integrable_llr_of_integrable_llr_compProd h_ac h,
+    integrable_integral_llr_of_integrable_llr_compProd h_ac h⟩,
+    ae_integrable_llr_of_integrable_llr_compProd h_ac h⟩,
+    fun h ↦ integrable_llr_compProd_of_integrable_llr h_ac h.1.1 h.1.2 h.2⟩
+
+--this lemma actually doesn't pertain the compProd, but for now I am still leaving it here, maybe when we put things in mathlib this could go in the basic file about llr, or maybe it still needs to go in a separate file, since it needs the definition of kernel, which now is not imported in the llr file
+lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β) [IsFiniteKernel κ]
+    [IsFiniteKernel η] :
+    MeasurableSet {a | Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a)} := by
+  simp_rw [llr_def]
+  exact ProbabilityTheory.measurableSet_integrable_f_rnDeriv κ η stronglyMeasurable_mul_log
+
+lemma ae_compProd_integrable_llr_iff [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β}
+    [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_ac : ∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, κ x ≪ η x) :
+    (∀ᵐ (x : α × β) ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x))
+      ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) :=
+  calc (∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x))
+  _ ↔ ∀ᵐ a ∂μ ⊗ₘ ξ, Integrable (fun x ↦ ((∂κ a/∂η a) x).toReal * llr (κ a) (η a) x) (η a) := by
+    apply Filter.eventually_congr
+    filter_upwards [h_ac] with a ha using (integrable_rnDeriv_smul_iff ha).symm
+  _ ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable
+      (fun x ↦ ((∂κ (a, b)/∂η (a, b)) x).toReal * llr (κ (a, b)) (η (a, b)) x) (η (a, b)) :=
+    kernel.ae_compProd_iff (measurableSet_integrable_llr κ η)
+  _ ↔ ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b)) := by
+    apply Filter.eventually_congr
+    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ac
+    filter_upwards [h_ac] with a ha
+    apply Filter.eventually_congr
+    filter_upwards [ha] with b hb using (integrable_rnDeriv_smul_iff hb)
+
+
 
 end ProbabilityTheory
