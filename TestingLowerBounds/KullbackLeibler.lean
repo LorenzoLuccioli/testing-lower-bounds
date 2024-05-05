@@ -14,6 +14,7 @@ import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
 import TestingLowerBounds.ForMathlib.MulLog
 import TestingLowerBounds.ForMathlib.Measurable
+import TestingLowerBounds.ForMathlib.IntegrableNonneg
 
 /-!
 # Kullback-Leibler divergence
@@ -587,38 +588,6 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
-
-
---TODO: put this in the right place and PR to mathlib
-lemma MeasureTheory.integrable_left_of_integrable_add_of_nonneg {f g : α → ℝ}
-    (h_meas : AEStronglyMeasurable f μ) (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g)
-    (h_int : Integrable (f + g) μ) : Integrable f μ := by
-  simp_rw [Integrable, h_meas, true_and]
-  calc
-    (∫⁻ a, ‖f a‖₊ ∂μ) ≤ ∫⁻ a, ‖(f + g) a‖₊ ∂μ := by
-      apply lintegral_mono_ae
-      filter_upwards [hf, hg] with a haf hag
-      have hfg : 0 ≤ f a + g a := by
-        apply add_nonneg <;> assumption
-      simp only [Pi.zero_apply, Pi.add_apply, ENNReal.coe_le_coe] at *
-      rw [← toNNReal_eq_nnnorm_of_nonneg haf, ← toNNReal_eq_nnnorm_of_nonneg hfg]
-      apply (toNNReal_le_toNNReal_iff hfg).mpr ((le_add_iff_nonneg_right _).mpr hag)
-    _ < ⊤ := h_int.2
-
-lemma MeasureTheory.integrable_right_of_integrable_add_of_nonneg {f g : α → ℝ}
-    (h_meas : AEStronglyMeasurable f μ) (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g)
-    (h_int : Integrable (f + g) μ) : Integrable g μ :=
-  integrable_left_of_integrable_add_of_nonneg
-    ((AEStronglyMeasurable_add_iff_integrable_right h_meas).mp h_int.aestronglyMeasurable)
-      hg hf (add_comm f g ▸ h_int)
-
---TODO: it seems that hasFiniteIntegral.add does not exist, in Integrable.add this is proven directly, it should be added to mathlib. This is not the case, there is a good reason for that not to be in mathlib, because it is not true in general if the functions are not measurable, infact in this case we can have functions with integral equal to zero just because they are not measurable, but the sum is measurable and has infinite integral
-lemma MeasureTheory.integrable_add_iff_of_nonneg {f g : α → ℝ} (h_meas : AEStronglyMeasurable f μ)
-    (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g) :
-    Integrable (f + g) μ ↔ Integrable f μ ∧ Integrable g μ :=
-  ⟨fun h ↦ ⟨integrable_left_of_integrable_add_of_nonneg h_meas hf hg h,
-    integrable_right_of_integrable_add_of_nonneg h_meas hf hg h⟩, fun ⟨hf, hg⟩ ↦ hf.add hg⟩
-
 
 
 --TODO: this can be generalized, relaxing the markov kernel hypothesis, it is sufficient that the kernels are finite and that they are not zero, but just stating that is not enough, because the actual hypothesys needed is that `∀ b, NeZero (snd' κ₂ a) b` but this is very ugly to use as an explicit hypothesis, maybe it is worth it to add an instance saying that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`
