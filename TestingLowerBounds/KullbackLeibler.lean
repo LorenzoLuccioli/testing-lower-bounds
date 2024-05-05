@@ -13,6 +13,7 @@ import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
 import TestingLowerBounds.ForMathlib.MulLog
+import TestingLowerBounds.ForMathlib.Measurable
 
 /-!
 # Kullback-Leibler divergence
