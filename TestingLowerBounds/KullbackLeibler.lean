@@ -587,29 +587,6 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
     kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
-#check integrable_add_iff_integrable_right
---This is a generalization of the next lemma, the proof doesn't work, though, there is some kind of type problem
--- lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_right [TopologicalSpace β] [Add β] [ContinuousAdd β] [Neg β] [ContinuousNeg β] [AddCommGroup β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f + g) μ ↔ AEStronglyMeasurable g μ := by
---   constructor <;> intro h
---   · have : g = f + g + (-f) := by
---       ext a
---       simp only [Pi.add_apply, Pi.neg_apply]
---       convert (add_neg_cancel_comm (f a) (g a)).symm using 2
-
---       rw [add_neg_cancel_comm (f a) (g a)]
---       simp [add_neg_cancel_comm, add_zero]
---     rw [this]
---     exact h.add hf.neg
---   · exact hf.add h
-
---TODO: put this in te right place, and PR this to mathlib, moreover write similar results for measurable, aemeasurable ecc...
---TODO: this result shouold not require β to be a NormedAddCommGroup, it should be enough to have a topological space and a few other hypothesys on the  continuity of the sum and the negation, but for some reason it doesn't work, there seems to be some type problem
-lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_right [NormedAddCommGroup β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f + g) μ ↔ AEStronglyMeasurable g μ :=
-  ⟨fun h ↦ show g = f + g + (-f) by simp only [add_neg_cancel_comm] ▸ h.add hf.neg,
-    fun h ↦ hf.add h⟩
-
-lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_left[NormedAddCommGroup β]  {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (g + f) μ ↔ AEStronglyMeasurable g μ := by
-  rw [add_comm, AEStronglyMeasurable_add_iff_integrable_right hf]
 
 --TODO: put this in the right place and PR to mathlib
 lemma MeasureTheory.integrable_left_of_integrable_add_of_nonneg {f g : α → ℝ}
