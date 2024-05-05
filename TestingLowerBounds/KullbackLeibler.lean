@@ -601,8 +601,7 @@ lemma MeasureTheory.integrable_left_of_integrable_add_of_nonneg {f g : α → �
         apply add_nonneg <;> assumption
       simp only [Pi.zero_apply, Pi.add_apply, ENNReal.coe_le_coe] at *
       rw [← toNNReal_eq_nnnorm_of_nonneg haf, ← toNNReal_eq_nnnorm_of_nonneg hfg]
-      apply (toNNReal_le_toNNReal_iff hfg).mpr
-      exact (le_add_iff_nonneg_right _).mpr hag
+      apply (toNNReal_le_toNNReal_iff hfg).mpr ((le_add_iff_nonneg_right _).mpr hag)
     _ < ⊤ := h_int.2
 
 lemma MeasureTheory.integrable_right_of_integrable_add_of_nonneg {f g : α → ℝ}
@@ -610,7 +609,7 @@ lemma MeasureTheory.integrable_right_of_integrable_add_of_nonneg {f g : α → �
     (h_int : Integrable (f + g) μ) : Integrable g μ :=
   integrable_left_of_integrable_add_of_nonneg
     ((AEStronglyMeasurable_add_iff_integrable_right h_meas).mp h_int.aestronglyMeasurable)
-    hg hf (add_comm f g ▸ h_int)
+      hg hf (add_comm f g ▸ h_int)
 
 --TODO: it seems that hasFiniteIntegral.add does not exist, in Integrable.add this is proven directly, it should be added to mathlib. This is not the case, there is a good reason for that not to be in mathlib, because it is not true in general if the functions are not measurable, infact in this case we can have functions with integral equal to zero just because they are not measurable, but the sum is measurable and has infinite integral
 lemma MeasureTheory.integrable_add_iff_of_nonneg {f g : α → ℝ} (h_meas : AEStronglyMeasurable f μ)
