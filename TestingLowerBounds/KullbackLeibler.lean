@@ -669,7 +669,7 @@ lemma condKL_compProd_kernel_eq_top [CountablyGenerated γ] {κ₁ η₁ : kerne
     not_iff_not]
   rw [integrable_congr (kl_compProd_kernel_of_ae_ac_of_ae_integrable h_ac h_ae_int), and_comm]
   simp_rw [add_comm (kl (κ₁ _) (η₁ _)).toReal]
-  apply MeasureTheory.integrable_add_iff_of_nonneg --remove the MeasureTheory. when the lemma is into the right namespace
+  apply integrable_add_iff_of_nonneg
   · exact StronglyMeasurable.integral_kernel_prod_right' (κ := κ₁)
       ((measurable_kl κ₂ η₂).ereal_toReal.stronglyMeasurable) |>.aestronglyMeasurable
   · filter_upwards with a using integral_nonneg (fun b ↦ EReal.toReal_nonneg (kl_nonneg _ _))
