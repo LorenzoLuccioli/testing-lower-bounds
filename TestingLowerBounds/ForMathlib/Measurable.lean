@@ -4,7 +4,6 @@ import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
-import TestingLowerBounds.ForMathlib.MulLog
 
 --PRd to mathlib, when it gets accepted and we bump the mathlib version, we can remove this import
 

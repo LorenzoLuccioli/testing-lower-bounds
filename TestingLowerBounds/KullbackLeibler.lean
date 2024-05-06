@@ -12,7 +12,6 @@ import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
 import TestingLowerBounds.ForMathlib.LogLikelihoodRatioCompProd
 import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
-import TestingLowerBounds.ForMathlib.MulLog
 import TestingLowerBounds.ForMathlib.Measurable
 import TestingLowerBounds.ForMathlib.IntegrableNonneg
 
@@ -133,7 +132,7 @@ lemma measurable_kl {β : Type*} [MeasurableSpace β] [CountablyGenerated β] (�
     [IsFiniteKernel κ] [IsFiniteKernel η] :
     Measurable (fun a ↦ kl (κ a) (η a)) := by
   simp_rw [kl_eq_fDiv]
-  exact measurable_fDiv _ _ stronglyMeasurable_mul_log
+  exact measurable_fDiv _ _ continuous_mul_log.stronglyMeasurable
 
 section kl_nonneg
 
@@ -485,13 +484,13 @@ lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKer
     [IsFiniteKernel η] :
     kl (μ ⊗ₘ κ) (μ ⊗ₘ η) = condKL κ η μ := by
   rw [kl_eq_fDiv, condKL_eq_condFDiv]
-  exact fDiv_compProd_left μ κ η stronglyMeasurable_mul_log convexOn_mul_log
+  exact fDiv_compProd_left μ κ η continuous_mul_log.stronglyMeasurable convexOn_mul_log
 
 lemma kl_compProd_right (κ : kernel α β) [CountablyGenerated β] [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] [IsMarkovKernel κ] :
     kl (μ ⊗ₘ κ) (ν ⊗ₘ κ) = kl μ ν := by
   rw [kl_eq_fDiv, kl_eq_fDiv]
-  exact fDiv_compProd_right μ ν κ stronglyMeasurable_mul_log convexOn_mul_log
+  exact fDiv_compProd_right μ ν κ continuous_mul_log.stronglyMeasurable convexOn_mul_log
 
 
 /--The chain rule for the KL divergence.-/

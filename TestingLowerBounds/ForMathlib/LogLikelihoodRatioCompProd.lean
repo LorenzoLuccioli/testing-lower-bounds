@@ -3,7 +3,6 @@
 import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
-import TestingLowerBounds.ForMathlib.MulLog
 
 
 open Real MeasureTheory MeasurableSpace
@@ -25,7 +24,7 @@ lemma integrable_llr_compProd_of_integrable_llr [CountablyGenerated β] [IsMarko
     (hκη_ae : ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) :
     Integrable (llr (μ ⊗ₘ κ) (ν ⊗ₘ η)) (μ ⊗ₘ κ) := by
   rw [← integrable_rnDeriv_mul_log_iff h_ac]
-  rw [integrable_f_rnDeriv_compProd_iff stronglyMeasurable_mul_log convexOn_mul_log]
+  rw [integrable_f_rnDeriv_compProd_iff continuous_mul_log.stronglyMeasurable convexOn_mul_log]
   simp_rw [ENNReal.toReal_mul]
   have ⟨hμν_ac, hκη_ac⟩ := kernel.Measure.absolutelyContinuous_compProd_iff.mp h_ac
   have hμν_pos := Measure.rnDeriv_toReal_pos hμν_ac
@@ -72,8 +71,9 @@ lemma integrable_llr_of_integrable_llr_compProd [CountablyGenerated β] [IsMarko
     Integrable (llr μ ν) μ := by
   have ⟨hμν_ac, hκη_ac⟩ := kernel.Measure.absolutelyContinuous_compProd_iff.mp h_ac
   rw [← integrable_rnDeriv_mul_log_iff h_ac] at h_int
-  replace h_int := integrable_f_rnDeriv_of_integrable_compProd' μ ν κ η stronglyMeasurable_mul_log
-    convexOn_mul_log continuous_mul_log.continuousOn h_int (fun _ ↦ hκη_ac)
+  replace h_int := integrable_f_rnDeriv_of_integrable_compProd' μ ν κ η
+    continuous_mul_log.stronglyMeasurable convexOn_mul_log continuous_mul_log.continuousOn h_int
+    (fun _ ↦ hκη_ac)
   exact (integrable_rnDeriv_mul_log_iff hμν_ac).mp h_int
 
 lemma ae_integrable_llr_of_integrable_llr_compProd [CountablyGenerated β] [IsMarkovKernel κ]
@@ -82,8 +82,8 @@ lemma ae_integrable_llr_of_integrable_llr_compProd [CountablyGenerated β] [IsMa
     ∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a) := by
   have ⟨hμν_ac, hκη_ac⟩ := kernel.Measure.absolutelyContinuous_compProd_iff.mp h_ac
   have hμν_pos := Measure.rnDeriv_toReal_pos hμν_ac
-  rw [← integrable_rnDeriv_mul_log_iff h_ac,
-    integrable_f_rnDeriv_compProd_iff stronglyMeasurable_mul_log convexOn_mul_log] at h_int
+  rw [← integrable_rnDeriv_mul_log_iff h_ac, integrable_f_rnDeriv_compProd_iff
+    continuous_mul_log.stronglyMeasurable convexOn_mul_log] at h_int
   replace h_int := h_int.1
   simp_rw [ENNReal.toReal_mul, mul_assoc] at h_int
   apply Measure.ae_integrable_of_ae_integrable_mul_rnDeriv hμν_ac at h_int
@@ -127,7 +127,8 @@ lemma integrable_integral_llr_of_integrable_llr_compProd [CountablyGenerated β]
         rw [log_mul hμν_zero hκη_zero]
       _ = _ := (integral_rnDeriv_smul ha).symm
   rw [← integrable_rnDeriv_mul_log_iff h_ac] at h_int
-  rw [integrable_f_rnDeriv_compProd_iff stronglyMeasurable_mul_log convexOn_mul_log] at h_int
+  rw [integrable_f_rnDeriv_compProd_iff continuous_mul_log.stronglyMeasurable convexOn_mul_log]
+    at h_int
   replace h_int := h_int.2
   simp_rw [ENNReal.toReal_mul, mul_assoc, integral_mul_left] at h_int
   apply (integrable_rnDeriv_smul_iff hμν_ac).mp at h_int
@@ -150,7 +151,8 @@ lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β
     [IsFiniteKernel η] :
     MeasurableSet {a | Integrable (fun b ↦ ((∂κ a/∂η a) b).toReal * llr (κ a) (η a) b) (η a)} := by
   simp_rw [llr_def]
-  exact ProbabilityTheory.measurableSet_integrable_f_rnDeriv κ η stronglyMeasurable_mul_log
+  exact ProbabilityTheory.measurableSet_integrable_f_rnDeriv κ η
+    continuous_mul_log.stronglyMeasurable
 
 lemma ae_compProd_integrable_llr_iff [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β}
     [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsFiniteKernel κ] [IsFiniteKernel η]
