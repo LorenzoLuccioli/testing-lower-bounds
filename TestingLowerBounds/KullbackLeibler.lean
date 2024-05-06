@@ -824,3 +824,4 @@ end ProbabilityTheory
 --TODO: check if the EReal are a metrizable space (I think the istance is not there, since using a lemma it says that it failed to sintethize the instance of pseudo metrizable space), if there is not, we could add it, we can metrize the EReal using the metric d(x,y) = |arctg(x)-arctg(y)|. This may be useful to apply some lemmas, for example
 --TODO: define the extended exp and log
 #check Measurable.stronglyMeasurable
+--TODO: bump mathlib, I tried to do it using `lake -R -Kenv=dev update` but it failed, giving me the error `function expected at FetchM`
