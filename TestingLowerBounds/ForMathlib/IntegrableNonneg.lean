@@ -28,7 +28,7 @@ lemma integrable_right_of_integrable_add_of_nonneg {f g : α → ℝ}
     (h_meas : AEStronglyMeasurable f μ) (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g)
     (h_int : Integrable (f + g) μ) : Integrable g μ :=
   integrable_left_of_integrable_add_of_nonneg
-    ((AEStronglyMeasurable_add_iff_integrable_right h_meas).mp h_int.aestronglyMeasurable)
+    ((AEStronglyMeasurable.add_iff_right h_meas).mp h_int.aestronglyMeasurable)
       hg hf (add_comm f g ▸ h_int)
 
 lemma integrable_add_iff_of_nonneg {f g : α → ℝ} (h_meas : AEStronglyMeasurable f μ)
