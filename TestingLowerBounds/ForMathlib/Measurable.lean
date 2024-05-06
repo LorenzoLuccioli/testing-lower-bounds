@@ -1,8 +1,3 @@
-/-
-Copyright (c) 2021 Rémy Degenne. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rémy Degenne, Sébastien Gouëzel
--/
 import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
@@ -15,46 +10,65 @@ open MeasureTheory Filter TopologicalSpace Function Set MeasureTheory.Measure
 
 open ENNReal Topology MeasureTheory NNReal BigOperators
 
-variable {α β γ ι : Type*} [Countable ι]
-
-namespace MeasureTheory
-
-local infixr:25 " →ₛ " => SimpleFunc
 
 open MeasureTheory
 
+variable {α β M : Type*} {mα : MeasurableSpace α} {mM : MeasurableSpace M}  {μ ν : Measure α}
+variable {f g : α → M}
 
+@[to_additive (attr := measurability)]
+theorem Measurable.mul_iff_right [CommGroup M] [MeasurableMul₂ M] [MeasurableInv M]  (hf : Measurable f) :
+    Measurable (f * g) ↔ Measurable g :=
+  ⟨fun h ↦ show g = f * g * f⁻¹ by simp only [mul_inv_cancel_comm] ▸ h.mul hf.inv,
+    fun h ↦ hf.mul h⟩
+
+@[to_additive (attr := measurability)]
+theorem Measurable.mul_iff_left [CommGroup M] [MeasurableMul₂ M] [MeasurableInv M]  (hf : Measurable f) :
+    Measurable (g * f) ↔ Measurable g :=
+  mul_comm g f ▸ Measurable.mul_iff_right hf
+
+
+@[to_additive (attr := measurability)]
+theorem AEMeasurable.mul_iff_right [CommGroup M] [MeasurableMul₂ M] [MeasurableInv M]  (hf : AEMeasurable f μ) :
+    AEMeasurable (f * g) μ ↔ AEMeasurable g μ :=
+  ⟨fun h ↦ show g = f * g * f⁻¹ by simp only [mul_inv_cancel_comm] ▸ h.mul hf.inv,
+    fun h ↦ hf.mul h⟩
+
+@[to_additive (attr := measurability)]
+theorem AEMeasurable.mul_iff_left [CommGroup M] [MeasurableMul₂ M] [MeasurableInv M]  (hf : AEMeasurable f μ) :
+    AEMeasurable (g * f) μ ↔ AEMeasurable g μ :=
+  mul_comm g f ▸ AEMeasurable.mul_iff_right hf
+
+namespace MeasureTheory
 
 variable {f g : α → β}
-variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α}
 
---This is a generalization of the next lemma, the proof doesn't work, though, there is some kind of type problem
--- lemma MeasureTheory.AEStronglyMeasurable_add_iff_integrable_right [TopologicalSpace β] [Add β] [ContinuousAdd β] [Neg β] [ContinuousNeg β] [AddCommGroup β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f + g) μ ↔ AEStronglyMeasurable g μ := by
---   constructor <;> intro h
---   · have : g = f + g + (-f) := by
---       ext a
---       simp only [Pi.add_apply, Pi.neg_apply]
---       convert (add_neg_cancel_comm (f a) (g a)).symm using 2
+@[to_additive (attr := measurability)]
+theorem StronglyMeasurable.mul_iff_right [TopologicalSpace β] [CommGroup β] [ContinuousMul β] [ContinuousInv β] {f g : α → β} (hf : StronglyMeasurable f) : StronglyMeasurable (f * g) ↔ StronglyMeasurable g :=
+  ⟨fun h ↦ show g = f * g * f⁻¹ by simp only [mul_inv_cancel_comm] ▸ h.mul hf.inv,
+    fun h ↦ hf.mul h⟩
 
---       rw [add_neg_cancel_comm (f a) (g a)]
---       simp [add_neg_cancel_comm, add_zero]
---     rw [this]
---     exact h.add hf.neg
---   · exact hf.add h
+@[to_additive (attr := measurability)]
+theorem StronglyMeasurable.mul_iff_left [TopologicalSpace β] [CommGroup β] [ContinuousMul β] [ContinuousInv β] {f g : α → β} (hf : StronglyMeasurable f) : StronglyMeasurable (g * f) ↔ StronglyMeasurable g :=
+  mul_comm g f ▸ StronglyMeasurable.mul_iff_right hf
+
+@[to_additive (attr := measurability)]
+theorem AEStronglyMeasurable.mul_iff_right [TopologicalSpace β] [CommGroup β] [ContinuousMul β] [ContinuousInv β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f * g) μ ↔ AEStronglyMeasurable g μ :=
+  ⟨fun h ↦ show g = f * g * f⁻¹ by simp only [mul_inv_cancel_comm] ▸ h.mul hf.inv,
+    fun h ↦ hf.mul h⟩
+
+@[to_additive (attr := measurability)]
+theorem AEStronglyMeasurable.mul_iff_left [TopologicalSpace β] [CommGroup β] [ContinuousMul β] [ContinuousInv β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (g * f) μ ↔ AEStronglyMeasurable g μ :=
+  mul_comm g f ▸ AEStronglyMeasurable.mul_iff_right hf
 
 --TODO: put this in te right place, and PR this to mathlib, moreover write similar results for measurable, aemeasurable ecc...
---TODO: this result shouold not require β to be a NormedAddCommGroup, it should be enough to have a topological space and a few other hypothesys on the  continuity of the sum and the negation, but for some reason it doesn't work, there seems to be some type problem
-lemma AEStronglyMeasurable_add_iff_integrable_right [NormedAddCommGroup β] {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (f + g) μ ↔ AEStronglyMeasurable g μ :=
-  ⟨fun h ↦ show g = f + g + (-f) by simp only [add_neg_cancel_comm] ▸ h.add hf.neg,
-    fun h ↦ hf.add h⟩
-
-lemma AEStronglyMeasurable_add_iff_integrable_left [NormedAddCommGroup β]  {f g : α → β} (hf : AEStronglyMeasurable f μ) : AEStronglyMeasurable (g + f) μ ↔ AEStronglyMeasurable g μ := by
-  rw [add_comm, AEStronglyMeasurable_add_iff_integrable_right hf]
 
 --decide what to do with this, then do the same for measurable, strongly measurable, aemeasurable ecc...
 
---there is also another question, the lemmas in the strongly_measurable file have the attribute to_additive, should I do the same here? is it even true in the multiplicative case? because I guess I would have to add some commutativity hypothesis
+--there is also another question, the lemmas in the strongly_measurable file have the attribute to_additive, should I do the same here? is it even true in the multiplicative case? because I guess I would have to add some commutativity hypothesis.
 --maybe they can be put in the same section as:
 #check MeasureTheory.AEStronglyMeasurable.mul
+--the ones about measurability can be put in the same section as:
+#check Measurable.add
 
 end MeasureTheory
