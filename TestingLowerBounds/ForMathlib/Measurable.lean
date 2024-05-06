@@ -63,9 +63,6 @@ theorem AEStronglyMeasurable.mul_iff_left [TopologicalSpace β] [CommGroup β] [
 
 --TODO: put this in te right place, and PR this to mathlib, moreover write similar results for measurable, aemeasurable ecc...
 
---decide what to do with this, then do the same for measurable, strongly measurable, aemeasurable ecc...
-
---there is also another question, the lemmas in the strongly_measurable file have the attribute to_additive, should I do the same here? is it even true in the multiplicative case? because I guess I would have to add some commutativity hypothesis.
 --maybe they can be put in the same section as:
 #check MeasureTheory.AEStronglyMeasurable.mul
 --the ones about measurability can be put in the same section as:
