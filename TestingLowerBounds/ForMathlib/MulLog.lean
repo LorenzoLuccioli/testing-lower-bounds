@@ -17,4 +17,3 @@ lemma stronglyMeasurable_mul_log : MeasureTheory.StronglyMeasurable (fun x ↦ x
 #check stronglyMeasurable_mul_log.measurable
 
 end Real
-#minimize_imports
