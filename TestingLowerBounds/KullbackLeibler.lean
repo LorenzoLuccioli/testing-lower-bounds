@@ -467,6 +467,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
         positivity
 
 -- TODO: find a better name
+-- TODO: generalize this to fdiv
 lemma condKL_compProd_meas [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
     {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
     condKL κ η (μ ⊗ₘ ξ) = ∫ x, (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
@@ -478,7 +479,6 @@ lemma condKL_compProd_meas [CountablyGenerated γ] [SFinite μ] {ξ : kernel α 
   filter_upwards [h.1] with a ha
   simp_rw [condKL_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
 
--- TODO: generalize this to fdiv
 
 lemma kl_compProd_left [CountablyGenerated β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
     [IsFiniteKernel η] :
@@ -590,6 +590,8 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
 
 
 --TODO: this can be generalized, relaxing the markov kernel hypothesis, it is sufficient that the kernels are finite and that they are not zero, but just stating that is not enough, because the actual hypothesys needed is that `∀ b, NeZero (snd' κ₂ a) b` but this is very ugly to use as an explicit hypothesis, maybe it is worth it to add an instance saying that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`
+--to fix this maybe we can add the instance that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`, then it should be able to generalize this lemma
+--TODO: these lemmas may be put in another file, decide how to organize the files, about composition of kernels
 lemma kernel.absolutelyContinuous_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁] [IsMarkovKernel κ₂]
     [IsMarkovKernel η₂] (a : α) :
@@ -675,7 +677,8 @@ lemma condKL_compProd_kernel_eq_top [CountablyGenerated γ] {κ₁ η₁ : kerne
   · filter_upwards with a using EReal.toReal_nonneg (kl_nonneg _ _)
 
 
-lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
+lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ}
+    [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
     condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = condKL κ₁ η₁ μ + condKL κ₂ η₂ (μ ⊗ₘ κ₁) := by
   by_cases hp : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
   · rw [hp]
@@ -697,8 +700,6 @@ section Tensorization
 
 variable {β : Type*} {mβ : MeasurableSpace β}
 
-
---TODO: which of the two lemmas should go into the blueprint? or maybe both? for now I put both
 lemma kl_prod_two' [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
@@ -821,4 +822,5 @@ end Tensorization
 
 end ProbabilityTheory
 --TODO: check if the EReal are a metrizable space (I think the istance is not there, since using a lemma it says that it failed to sintethize the instance of pseudo metrizable space), if there is not, we could add it, we can metrize the EReal using the metric d(x,y) = |arctg(x)-arctg(y)|. This may be useful to apply some lemmas, for example
+--TODO: define the extended exp and log
 #check Measurable.stronglyMeasurable
