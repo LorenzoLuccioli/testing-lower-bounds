@@ -471,6 +471,12 @@ lemma condFDiv_zero_measure : condFDiv f κ η 0 = 0 := by
   rw [condFDiv_eq' hf_ae integrable_zero_measure]
   simp only [integral_zero_measure, EReal.coe_zero]
 
+lemma condFDiv_ne_bot (κ η : kernel α β) (μ : Measure α) : condFDiv f κ η μ ≠ ⊥ := by
+  rw [condFDiv]
+  split_ifs with h
+  · simp only [ne_eq, EReal.coe_ne_bot, not_false_eq_true]
+  · norm_num
+
 lemma condFDiv_nonneg [IsMarkovKernel κ] [IsMarkovKernel η]
     (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hf_cont : ContinuousOn f (Set.Ici 0))
     (hf_one : f 1 = 0) : 0 ≤ condFDiv f κ η μ := by
