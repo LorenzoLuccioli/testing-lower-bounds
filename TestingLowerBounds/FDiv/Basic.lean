@@ -246,6 +246,9 @@ lemma fDiv_mul_of_ne_top (c : ℝ) (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (h_top 
 
 -- TODO: in the case where both functions are convex, integrability of the sum is equivalent to
 -- integrability of both, and we don't need hf and hg.
+-- In general it's not true that if the sum is integrable then both are, even if the functions are
+-- convex, take for example f(x) = -x and g(x) = x with the Lebesgue measure. But maybe with some
+-- additional hypothesis it's true.
 lemma fDiv_add [IsFiniteMeasure μ] (hf : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (hg : Integrable (fun x ↦ g ((∂μ/∂ν) x).toReal) ν)
     (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hg_cvx : ConvexOn ℝ (Set.Ici 0) g) :
