@@ -250,9 +250,11 @@ lemma fDiv_ae_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] : (∀ᵐ a ∂
 /--Equivalence between two possible versions of the second condition for the finiteness of the
 conditional f divergence, the second version is the preferred one.-/
 lemma integrable_fDiv_iff [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteKernel κ]
-    [IsFiniteKernel η] (h_fin : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤) :
+    [IsFiniteKernel η] (h_int : ∀ᵐ a ∂μ, Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a))
+    (h_ac : derivAtTop f = ⊤ → ∀ᵐ a ∂μ, κ a ≪ η a) :
     Integrable (fun x ↦ EReal.toReal (fDiv f (κ x) (η x))) μ
       ↔ Integrable (fun a ↦ ∫ b, f ((∂κ a/∂η a) b).toReal ∂η a) μ := by
+  have h_fin : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤ := fDiv_ae_ne_top_iff.mpr ⟨h_int, h_ac⟩
   by_cases h_top : derivAtTop f = ⊤
   · classical
     simp_rw [fDiv_of_derivAtTop_eq_top h_top]
@@ -333,7 +335,7 @@ lemma condFDiv_of_not_integrable' [CountablyGenerated β] [IsFiniteMeasure μ] [
   by_cases h_top : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤
   swap; exact condFDiv_of_not_ae_finite h_top
   apply condFDiv_of_not_integrable
-  rwa [integrable_fDiv_iff h_top]
+  rwa [integrable_fDiv_iff (fDiv_ae_ne_top_iff.mp h_top).1 (fDiv_ae_ne_top_iff.mp h_top).2]
 
 /- Use condFDiv_eq instead: its assumptions are in normal form. -/
 lemma condFDiv_eq' (hf_ae : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤)
@@ -357,7 +359,8 @@ lemma condFDiv_ne_top_iff [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKern
     · filter_upwards [h.1] with a ha
       exact ha.1
     · have h_int := h.2
-      rwa [integrable_fDiv_iff h'.1] at h_int
+      rwa [integrable_fDiv_iff (fDiv_ae_ne_top_iff.mp h'.1).1 (fDiv_ae_ne_top_iff.mp h'.1).2]
+        at h_int
     · intro h_top
       filter_upwards [h.1] with a ha
       exact ha.2 h_top
@@ -371,10 +374,7 @@ lemma condFDiv_ne_top_iff [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKern
     rw [eventually_and] at h
     simp only [hf_int, eventually_all, true_and] at h
     specialize h h_contra
-    have h_top : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤ := by
-      simp only [ne_eq, fDiv_ne_top_iff, eventually_and, eventually_all]
-      exact ⟨hf_int, h_contra⟩
-    rw [integrable_fDiv_iff h_top] at h
+    rw [integrable_fDiv_iff hf_int h_contra] at h
     exact h h_int
 
 lemma condFDiv_eq_top_iff [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
@@ -390,12 +390,9 @@ lemma condFDiv_eq [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
     (hf_ae : ∀ᵐ a ∂μ, Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a))
     (hf : Integrable (fun a ↦ ∫ b, f ((∂κ a/∂η a) b).toReal ∂η a) μ)
     (h_deriv : derivAtTop f = ⊤ → ∀ᵐ a ∂μ, κ a ≪ η a) :
-    condFDiv f κ η μ = ((μ[fun x ↦ (fDiv f (κ x) (η x)).toReal] : ℝ) : EReal) := by
-  have h_ne : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤ := by
-    simp only [ne_eq, fDiv_ne_top_iff, eventually_and, hf_ae, eventually_all, true_and]
-    exact h_deriv
-  refine condFDiv_eq' h_ne ?_
-  rwa [integrable_fDiv_iff h_ne]
+    condFDiv f κ η μ = ((μ[fun x ↦ (fDiv f (κ x) (η x)).toReal] : ℝ) : EReal) :=
+  condFDiv_eq' (fDiv_ae_ne_top_iff.mpr ⟨hf_ae, h_deriv⟩)
+    ((integrable_fDiv_iff hf_ae h_deriv).mpr hf)
 
 lemma condFDiv_ne_top_iff' [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
     condFDiv f κ η μ ≠ ⊤
