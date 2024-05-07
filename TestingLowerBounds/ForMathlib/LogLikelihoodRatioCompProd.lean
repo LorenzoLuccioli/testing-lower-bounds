@@ -151,8 +151,7 @@ lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β
     [IsFiniteKernel η] :
     MeasurableSet {a | Integrable (fun b ↦ ((∂κ a/∂η a) b).toReal * llr (κ a) (η a) b) (η a)} := by
   simp_rw [llr_def]
-  exact ProbabilityTheory.measurableSet_integrable_f_rnDeriv κ η
-    continuous_mul_log.stronglyMeasurable
+  exact measurableSet_integrable_f_rnDeriv κ η continuous_mul_log.stronglyMeasurable
 
 lemma ae_compProd_integrable_llr_iff [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β}
     [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsFiniteKernel κ] [IsFiniteKernel η]
