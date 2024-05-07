@@ -248,7 +248,7 @@ lemma fDiv_ae_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] : (∀ᵐ a ∂
 
 
 /--Equivalence between two possible versions of the second condition for the finiteness of the
-conditional KL divergence, the second version is the preferred one.-/
+conditional f divergence, the second version is the preferred one.-/
 lemma integrable_fDiv_iff [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteKernel κ]
     [IsFiniteKernel η] (h_fin : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤) :
     Integrable (fun x ↦ EReal.toReal (fDiv f (κ x) (η x))) μ
@@ -397,7 +397,7 @@ lemma condFDiv_eq [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
   refine condFDiv_eq' h_ne ?_
   rwa [integrable_fDiv_iff h_ne]
 
-lemma condKL_ne_top_iff' [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
+lemma condFDiv_ne_top_iff' [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
     condFDiv f κ η μ ≠ ⊤
       ↔ condFDiv f κ η μ = ((μ[fun x ↦ (fDiv f (κ x) (η x)).toReal] : ℝ) : EReal) := by
   constructor
@@ -449,7 +449,7 @@ lemma condFDiv_self (κ : kernel α β) (μ : Measure α) (hf_one : f 1 = 0) [Is
     EReal.toReal_zero, integrable_zero, condFDiv_eq', integral_zero, EReal.coe_zero]
 
 @[simp]
-lemma condKL_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
+lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
     condFDiv f 0 η μ = f 0 * ∫ a, ((η a) Set.univ).toReal ∂μ := by
   rw [condFDiv_eq' _ _] <;> simp_rw [kernel.zero_apply, fDiv_zero_measure]
   · simp_rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
