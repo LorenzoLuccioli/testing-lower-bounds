@@ -415,13 +415,12 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       simp_rw [condKL_ne_top_iff, kernel.snd'_apply, eventually_and, not_and_or]
       intro; left; left
       exact h_ae
-    by_cases h_int : ∀ᵐ x ∂μ ⊗ₘ ξ, Integrable (llr (κ x) (η x)) (κ x)
+    by_cases h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (llr (κ (a, b)) (η (a, b))) (κ (a, b))
     swap
-    · rw [ae_compProd_integrable_llr_iff h_ae] at h_int
-      rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
-      simp only [condKL_ne_top_iff, not_eventually, kernel.snd'_apply, eventually_and, h_int,
+    · simp only [condKL_ne_top_iff, not_eventually, kernel.snd'_apply, eventually_and, h_int,
         false_and, and_false, not_false_eq_true, true_or, implies_true]
-    simp only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not, h_ae, h_int]
+    simp only [not_true_eq_false, false_or, ne_eq, not_eventually, not_not, h_ae,
+      (ae_compProd_integrable_llr_iff h_ae).mpr h_int]
     rw [Measure.integrable_compProd_iff
       (measurable_kl κ η).ereal_toReal.stronglyMeasurable.aestronglyMeasurable]
     push_neg
@@ -435,7 +434,6 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       simp only [condKL_ne_top_iff, kernel.snd'_apply] at ha_int2
       exact ha_int2.2.2
     right
-    rw [ae_compProd_integrable_llr_iff h_ae] at h_int
     rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
     apply Integrable.congr.mt
     swap; exact fun a ↦ ∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂(ξ a)
