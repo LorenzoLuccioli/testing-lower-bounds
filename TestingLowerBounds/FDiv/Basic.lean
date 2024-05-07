@@ -791,6 +791,19 @@ lemma measurableSet_integrable_f_rnDeriv [MeasurableSpace.CountablyGenerated β]
   filter_upwards [kernel.rnDeriv_eq_rnDeriv_measure κ η a] with b hb
   rw [hb]
 
+lemma measurable_integral_f_rnDeriv [MeasurableSpace.CountablyGenerated β]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] (hf : StronglyMeasurable f) :
+    Measurable fun a ↦ ∫ x, f ((∂κ a/∂η a) x).toReal ∂(η a) := by
+  have : ∀ a, ∫ x, f ((∂κ a/∂η a) x).toReal ∂η a
+      = ∫ x, f (kernel.rnDeriv κ η a x).toReal ∂η a := by
+    refine fun a ↦ integral_congr_ae ?_
+    filter_upwards [kernel.rnDeriv_eq_rnDeriv_measure κ η a] with x hx
+    rw [hx]
+  simp_rw [this]
+  refine (StronglyMeasurable.integral_kernel_prod_left ?_).measurable
+  refine hf.comp_measurable ?_
+  exact ((kernel.measurable_rnDeriv κ η).comp measurable_swap).ennreal_toReal
+
 lemma measurable_fDiv [MeasurableSpace.CountablyGenerated β]
     (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     (hf : StronglyMeasurable f) :
@@ -809,15 +822,7 @@ lemma measurable_fDiv [MeasurableSpace.CountablyGenerated β]
   rw [h_eq]
   refine Measurable.ite hs ?_ measurable_const
   refine Measurable.add ?_ ?_
-  · have : ∀ a, ∫ x, f ((∂κ a/∂η a) x).toReal ∂η a
-        = ∫ x, f (kernel.rnDeriv κ η a x).toReal ∂η a := by
-      refine fun a ↦ integral_congr_ae ?_
-      filter_upwards [kernel.rnDeriv_eq_rnDeriv_measure κ η a] with x hx
-      rw [hx]
-    simp_rw [this]
-    refine (StronglyMeasurable.integral_kernel_prod_left ?_).measurable.coe_real_ereal
-    refine hf.comp_measurable ?_
-    exact ((kernel.measurable_rnDeriv κ η).comp measurable_swap).ennreal_toReal
+  · exact (measurable_integral_f_rnDeriv _ _ hf).coe_real_ereal
   · refine Measurable.const_mul ?_ _
     exact ((Measure.measurable_coe MeasurableSet.univ).comp
       (kernel.measurable_singularPart κ η)).coe_ereal_ennreal
