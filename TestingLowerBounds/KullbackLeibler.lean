@@ -221,7 +221,7 @@ variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {
 conditional KL divergence, the second version is the preferred one.-/
 lemma kl_ae_ne_top_iff : (∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤) ↔
     (∀ᵐ a ∂μ, κ a ≪ η a) ∧ (∀ᵐ a ∂μ, Integrable (llr (κ a) (η a)) (κ a)) := by
-  simp_rw [ne_eq, kl_eq_top_iff, Classical.not_imp_iff_and_not, Classical.not_not, eventually_and]
+  simp_rw [kl_ne_top_iff, eventually_and]
 
 /--Equivalence between two possible versions of the second condition for the finiteness of the
 conditional KL divergence, the first version is the preferred one.-/
@@ -244,6 +244,8 @@ def condKL (κ η : kernel α β) (μ : Measure α) : EReal :=
     ∧ (Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ)
   then ((μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) : EReal)
   else ⊤
+
+section CondKLEq
 
 lemma condKL_of_ae_ne_top_of_integrable (h1 : ∀ᵐ a ∂μ, kl (κ a) (η a) ≠ ⊤)
     (h2 : Integrable (fun a ↦ (kl (κ a) (η a)).toReal) μ) :
@@ -324,9 +326,10 @@ lemma condKL_ne_top_iff' : condKL κ η μ ≠ ⊤
     ↔ condKL κ η μ = (μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) := by
   constructor
   · rw [condKL_ne_top_iff]
-    rintro ⟨h1, h2, h3⟩
-    rw [condKL_of_ae_ac_of_ae_integrable_of_integrable h1 h2 h3]
+    exact fun ⟨h1, h2, h3⟩ ↦ condKL_of_ae_ac_of_ae_integrable_of_integrable h1 h2 h3
   · simp_all only [ne_eq, EReal.coe_ne_top, not_false_eq_true, implies_true]
+
+end CondKLEq
 
 lemma condKL_eq_condFDiv [IsFiniteKernel κ] [IsFiniteKernel η] :
     condKL κ η μ = condFDiv (fun x ↦ x * log x) κ η μ := by
@@ -380,12 +383,15 @@ lemma condKL_nonneg (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel �
   rw [condKL_eq_condFDiv]
   exact condFDiv_nonneg convexOn_mul_log continuous_mul_log.continuousOn (by norm_num)
 
+@[simp]
 lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     condKL (kernel.const β μ) (kernel.const β ν) ξ = (kl μ ν) * ξ Set.univ := by
   rw [condKL_eq_condFDiv, kl_eq_fDiv]
   exact condFDiv_const
 
---TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is only used to prove that `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true, given that `Integrable (fun x ↦ ∫ (y : β), EReal.toReal (kl (κ (x, y)) (η (x, y))) ∂ξ x` but if the kernels are finite then the kl is bounded from below, so it should be still possible to conclude the integrability of the first function, this would however require more work
+section CompProd
+
+--The following lemma may be generalized, infact the hypothesys of being markov kernels is only used to prove that `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true, given that `Integrable (fun x ↦ ∫ (y : β), EReal.toReal (kl (κ (x, y)) (η (x, y))) ∂ξ x` but if the kernels are finite then the kl is bounded from below, so it should be still possible to conclude the integrability of the first function, this would however require more work. For now we are leaving it as it is.
 --this is to handle the case in `condKL_compProd_meas` when the lhs is ⊤, in this case the rhs is 'morally' also ⊤, so the equality holds, but actually in Lean the equality is not true, because of how we handle the infinities in the integrals, so we have to make a separate lemma for this case
 lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β}
     [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] :
@@ -694,6 +700,8 @@ lemma condKL_compProd_kernel [CountablyGenerated γ] {κ₁ η₁ : kernel α β
   convert integral_add h1.2.2 (Integrable.integral_compProd' h2.2.2) using 1
   exact integral_congr_ae <| kl_compProd_kernel_of_ae_ac_of_ae_integrable hp.1 hp.2.1
 
+end CompProd
+
 end Conditional
 
 section Tensorization
@@ -814,7 +822,11 @@ lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsPro
 end Tensorization
 
 end ProbabilityTheory
---TODO: check if the EReal are a metrizable space (I think the istance is not there, since using a lemma it says that it failed to sintethize the instance of pseudo metrizable space), if there is not, we could add it, we can metrize the EReal using the metric d(x,y) = |arctg(x)-arctg(y)|. This may be useful to apply some lemmas, for example
+--TODO: check if the EReal are a metrizable space (I think the istance is not there, since using a lemma it says that it failed to syntethize the instance of pseudo metrizable space), if there is not, we could add it, we can metrize the EReal using the metric d(x,y) = |arctg(x)-arctg(y)|. This may be useful to apply some lemmas, for example
+-- #synth TopologicalSpace.MetrizableSpace EReal --fails
+#synth TopologicalSpace.MetrizableSpace ENNReal
+#synth SecondCountableTopology EReal
 --TODO: define the extended exp and log
 #check Measurable.stronglyMeasurable
 --TODO: bump mathlib, I tried to do it using `lake -R -Kenv=dev update` but it failed, giving me the error `function expected at FetchM`
+--TODO: now the condition for the RNderiv is more general, see exactly what has changed from the commits in upstream and propagate the generalization to the other lemmas
