@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 -- theorem foo (n : Nat) : 0 ≤ n := by exact? -- trick to make exact? work TODO : erase this when we are done
+import Mathlib.MeasureTheory.Order.Group.Lattice
 import TestingLowerBounds.MeasureCompProd
 import TestingLowerBounds.FDiv.Basic
 import Mathlib.Probability.Kernel.Disintegration.Basic
@@ -713,6 +714,172 @@ lemma fDiv_compProd_right [CountablyGenerated β]
     · rw [← ne_eq, fDiv_ne_top_iff] at h_top
       exact h_top.1
 
+--this example should be automatically solved by measurability or fun:prop, but neither works
+example (g : ℝ → ℝ) (h : Measurable g) : MeasurableSet {x | g x ≠ 0} := by
+  rw [show {x | g x ≠ 0} = g ⁻¹' {x | x ≠ 0} by simp]
+  apply h
+  simp only [ne_eq, Set.compl_ne_eq_singleton, MeasurableSet.compl_iff, MeasurableSet.singleton,
+    MeasurableSet.compl_iff.mp]
+
+
+variable {γ : Type*} [MeasurableSpace γ]
+
+lemma condFDiv_compProd_meas_eq_top [CountablyGenerated γ] [IsFiniteMeasure μ] {ξ : kernel α β}
+    [IsFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (hf_meas : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hf_cont : ContinuousOn f (Set.Ici 0)) (hf_one : f 1 = 0) :
+    condFDiv f κ η (μ ⊗ₘ ξ) = ⊤
+      ↔ ¬ (∀ᵐ a ∂μ, condFDiv f (kernel.snd' κ a) (kernel.snd' η a) (ξ a) ≠ ⊤) ∨
+        ¬ Integrable (fun x ↦ (condFDiv f (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by
+  rw [condFDiv_eq_top_iff]
+  have h_ae_eq (h_ac : derivAtTop f = ⊤ → ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, κ (a, b) ≪ η (a, b))
+      (h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (fun x ↦ f ((∂κ (a, b)/∂η (a, b)) x).toReal) (η (a, b))) (h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a)) :
+      (fun x ↦ EReal.toReal (condFDiv f (kernel.snd' κ x) (kernel.snd' η x) (ξ x)))
+        =ᵐ[μ] fun a ↦ ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a := by
+    simp_rw [← kernel.snd'_apply] at h_int2 h_int h_ac ⊢
+    rw [← eventually_all] at h_ac
+    filter_upwards [h_ac, h_int, h_int2] with a ha_ac ha_int ha_int2
+    rw [condFDiv_eq ha_int ha_int2 ha_ac, EReal.toReal_coe]
+  constructor
+  · by_cases h_ae : derivAtTop f = ⊤ → ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x
+    swap
+    · rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
+      simp_rw [condFDiv_ne_top_iff, kernel.snd'_apply, eventually_and, not_and_or, eventually_all]
+      intro; left; right; right
+      exact h_ae
+    have h_ae' := h_ae
+    rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
+    by_cases h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a,
+      Integrable (fun y ↦ f ((∂κ (a, b)/∂η (a, b)) y).toReal) (η (a, b))
+    swap; simp only [not_eventually, ne_eq, condFDiv_ne_top_iff, kernel.snd'_apply, eventually_and,
+        h_int, eventually_all, false_and, not_false_eq_true, true_or, implies_true]
+    have h_int' := h_int
+    rw [← Measure.ae_compProd_iff (measurableSet_integrable_f_rnDeriv κ η hf_meas)] at h_int'
+    rw [← not_imp]
+    simp_all only [forall_true_left, not_true_eq_false, implies_true, or_false, false_or, ne_eq,
+      not_eventually, not_not]
+    rw [Measure.integrable_compProd_iff (measurable_integral_f_rnDeriv κ η hf_meas).aestronglyMeasurable]
+    push_neg
+    intro h
+
+    by_cases h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a)
+    swap
+    · left
+      contrapose! h_int2
+      simp_rw [not_frequently, condFDiv_ne_top_iff] at h_int2
+      filter_upwards [h_int2] with a ha_int2
+      simp_rw [← kernel.snd'_apply, ha_int2.2.1]
+    have h_int2' : ∀ᵐ a ∂μ, Integrable (fun b ↦ (fDiv f (κ (a, b)) (η (a, b))).toReal) (ξ a) := by
+      filter_upwards [eventually_all.mpr h_ae, h_int, h_int2] with a ha_ae ha_int ha_int2
+      simp_rw [← kernel.snd'_apply] at ha_int2 ha_int ha_ae ⊢
+      exact (integrable_fDiv_iff ha_int ha_ae).mpr ha_int2
+    simp_all only [forall_true_left, norm_eq_abs]
+    right
+    contrapose! h
+    have h' := Integrable.congr h h_ae_eq
+    have h_le : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)| ≤ (fDiv f (κ (a, b)) (η (a, b))).toReal + |(derivAtTop f).toReal| := by
+      filter_upwards [eventually_all.mpr h_ae, h_int, h_int2] with a ha_ae ha_int ha_int2
+      filter_upwards [eventually_all.mpr ha_ae, ha_int] with b hb_ae hb_int
+      calc
+        _ = |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
+            + (derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal
+            - (derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal| := by ring_nf
+        _ ≤ |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
+            + (derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal|
+            + |(derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal| := abs_sub _ _
+        _ = |(∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
+            + derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal|
+            + |(derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal| := by
+          congr
+          nth_rw 1 [← EReal.toReal_coe (∫ _, _ ∂_)]
+          refine EReal.toReal_add ?_ ?_ ?_ ?_ |>.symm
+          · simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true]
+          · simp only [ne_eq, EReal.coe_ne_bot, not_false_eq_true]
+          · by_cases h_deriv : derivAtTop f = ⊤
+            · simp [Measure.singularPart_eq_zero_of_ac <| hb_ae h_deriv]
+            · rw [ne_eq, EReal.mul_eq_top]
+              simp only [derivAtTop_ne_bot, false_and, EReal.coe_ennreal_ne_bot, and_false, h_deriv,
+                EReal.coe_ennreal_pos, Measure.measure_univ_pos, ne_eq,
+                EReal.coe_ennreal_eq_top_iff, false_or, not_and]
+              intro _
+              exact measure_ne_top _ _
+          · by_cases h_deriv : derivAtTop f = ⊤
+            · simp [Measure.singularPart_eq_zero_of_ac <| hb_ae h_deriv]
+            · rw [ne_eq, EReal.mul_eq_bot]
+              simp only [derivAtTop_ne_bot, false_and, EReal.coe_ennreal_ne_bot, and_false, h_deriv,
+                EReal.coe_ennreal_pos, Measure.measure_univ_pos, ne_eq,
+                EReal.coe_ennreal_eq_top_iff, false_or, not_and]
+              intro _
+              exact measure_ne_top _ _
+        _ ≤ (fDiv f (κ (a, b)) (η (a, b))).toReal
+            + |(derivAtTop f).toReal| * ((κ (a, b)) Set.univ).toReal := by
+          gcongr ?_ + ?_
+          · rw [← fDiv_of_integrable hb_int, abs_eq_self.mpr <| EReal.toReal_nonneg (fDiv_nonneg hf_cvx hf_cont hf_one)]
+          · rw [EReal.toReal_mul, abs_mul, EReal.toReal_coe_ennreal, ENNReal.abs_toReal]
+            apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
+            gcongr
+            · exact measure_ne_top (κ (a, b)) Set.univ
+            · exact Measure.singularPart_le (κ (a, b)) (η (a, b)) Set.univ
+        _ = _ := by rw [measure_univ, ENNReal.one_toReal, mul_one]
+    apply Integrable.mono' (g := fun a ↦ ∫ b, ((fDiv f (κ (a, b)) (η (a, b))).toReal + |(derivAtTop f).toReal|) ∂ξ a)
+    rotate_left
+    · refine (StronglyMeasurable.integral_kernel_prod_right ?_).aestronglyMeasurable
+      refine Measurable.abs ?_ |>.stronglyMeasurable
+      exact measurable_integral_f_rnDeriv κ η hf_meas
+    · filter_upwards [h_le, h_int2, h_int2'] with a ha_le ha_int2 ha_int2'
+      rw [norm_eq_abs, abs_eq_self.mpr <| integral_nonneg <| fun _ ↦ abs_nonneg _]
+      exact integral_mono_ae (Integrable.abs ha_int2) (integrable_add_const_iff.mpr ha_int2') ha_le
+    apply Integrable.congr (f := fun a ↦ ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a + ((ξ a) Set.univ).toReal * |(derivAtTop f).toReal|)
+    swap
+    · filter_upwards [h_int2'] with a ha_int2'
+      rw [integral_add ha_int2' (integrable_const _), integral_const, smul_eq_mul]
+    apply Integrable.add h'
+    apply Integrable.mul_const
+    obtain ⟨C, ⟨hC_finite, hC_le⟩⟩ := IsFiniteKernel.exists_univ_le (κ := ξ)
+    apply Integrable.mono' (integrable_const C.toReal)
+    · exact kernel.measurable_coe ξ MeasurableSet.univ |>.ennreal_toReal.aestronglyMeasurable
+    filter_upwards with a
+    rw [norm_eq_abs, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
+    exact hC_le a
+  ·
+    sorry
+    -- rintro h
+    -- contrapose! h
+    -- obtain ⟨h_ae, ⟨h_int1, h_int2⟩⟩ := h
+    -- rw [ae_compProd_integrable_llr_iff h_ae] at h_int1
+    -- rw [Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ae
+    -- have h_meas := (Integrable.integral_compProd' h_int2).aestronglyMeasurable
+    -- rw [Measure.integrable_compProd_iff h_int2.aestronglyMeasurable] at h_int2
+    -- constructor
+    -- · filter_upwards [h_ae, h_int1, h_int2.1] with a ha_ae ha_int ha_int2
+    --   apply condFDiv_ne_top_iff.mpr
+    --   simp only [kernel.snd'_apply]
+    --   exact ⟨ha_ae, ⟨ha_int, ha_int2⟩⟩
+    -- · refine Integrable.congr ?_ (h_ae_eq h_ae h_int1).symm
+    --   replace h_int := h_int2.2
+    --   apply Integrable.mono h_int h_meas
+    --   refine ae_of_all μ ?_
+    --   intro a
+    --   calc ‖∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂ξ a‖
+    --   _ ≤ ∫ b, ‖(kl (κ (a, b)) (η (a, b))).toReal‖ ∂ξ a :=
+    --     norm_integral_le_integral_norm _
+    --   _ = _ := by
+    --     simp only [norm_eq_abs]
+    --     apply (abs_of_nonneg _).symm
+    --     positivity
+
+-- -- TODO: find a better name
+-- -- TODO: generalize this to fdiv
+-- lemma condFDiv_compProd_meas [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
+--     {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (h : condFDiv f κ η (μ ⊗ₘ ξ) ≠ ⊤) :
+--     condFDiv f κ η (μ ⊗ₘ ξ) = ∫ x, (condFDiv f (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
+--   rw [condFDiv_ne_top_iff'.mp h, Measure.integral_compProd (condFDiv_ne_top_iff.mp h).2.2]
+--   replace h := condFDiv_compProd_meas_eq_top.mpr.mt h
+--   push_neg at h
+--   norm_cast
+--   apply integral_congr_ae
+--   filter_upwards [h.1] with a ha
+--   simp_rw [condFDiv_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
+
+-- #exit
 
 end CompProd
 
