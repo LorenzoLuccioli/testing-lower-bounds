@@ -445,7 +445,7 @@ lemma condKL_compProd_meas_eq_top [CountablyGenerated γ] [SFinite μ] {ξ : ker
       convert h with a b
       simp only [norm_eq_abs, abs_eq_self]
       exact EReal.toReal_nonneg (kl_nonneg _ _)
-  · rintro h
+  · intro h
     contrapose! h
     obtain ⟨h_ae, ⟨h_int1, h_int2⟩⟩ := h
     rw [ae_compProd_integrable_llr_iff h_ae] at h_int1
