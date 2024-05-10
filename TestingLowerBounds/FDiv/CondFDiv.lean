@@ -323,7 +323,6 @@ lemma condFDiv_of_not_ae_ac [IsFiniteKernel κ] [IsFiniteKernel η] (h_top : der
   rw [fDiv_ae_ne_top_iff]
   tauto
 
-
 @[simp]
 lemma condFDiv_of_not_integrable
     (hf : ¬ Integrable (fun x ↦ (fDiv f (κ x) (η x)).toReal) μ) :
@@ -918,19 +917,22 @@ lemma condFDiv_compProd_meas_eq_top [CountablyGenerated γ] [IsFiniteMeasure μ]
       exact ⟨ha_int, ⟨ha_int2, ha_ae⟩⟩
 
 -- -- TODO: find a better name
--- -- TODO: generalize this to fdiv
--- lemma condFDiv_compProd_meas [CountablyGenerated γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
---     {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (h : condFDiv f κ η (μ ⊗ₘ ξ) ≠ ⊤) :
---     condFDiv f κ η (μ ⊗ₘ ξ) = ∫ x, (condFDiv f (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
---   rw [condFDiv_ne_top_iff'.mp h, Measure.integral_compProd (condFDiv_ne_top_iff.mp h).2.2]
---   replace h := condFDiv_compProd_meas_eq_top.mpr.mt h
---   push_neg at h
---   norm_cast
---   apply integral_congr_ae
---   filter_upwards [h.1] with a ha
---   simp_rw [condFDiv_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
-
--- #exit
+lemma condFDiv_compProd_meas [CountablyGenerated γ] [IsFiniteMeasure μ] {ξ : kernel α β}
+    [IsFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η]
+    (hf_meas : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Set.Ici 0) f)
+    (hf_cont : ContinuousOn f (Set.Ici 0)) (hf_one : f 1 = 0)
+    (h_top : condFDiv f κ η (μ ⊗ₘ ξ) ≠ ⊤) :
+    condFDiv f κ η (μ ⊗ₘ ξ)
+      = ∫ x, (condFDiv f (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
+  have h := (condFDiv_ne_top_iff.mp h_top)
+  rw [condFDiv_ne_top_iff'.mp h_top,
+    Measure.integral_compProd <| (integrable_fDiv_iff h.1 h.2.2).mpr h.2.1]
+  replace h_top := (condFDiv_compProd_meas_eq_top hf_meas hf_cvx hf_cont hf_one).mpr.mt h_top
+  push_neg at h_top
+  norm_cast
+  apply integral_congr_ae
+  filter_upwards [h_top.1] with a ha
+  simp_rw [condFDiv_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
 
 end CompProd
 
