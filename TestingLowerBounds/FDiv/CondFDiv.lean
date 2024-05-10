@@ -460,39 +460,7 @@ lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
     apply MeasureTheory.Integrable.const_mul
     exact kernel.IsFiniteKernel.integrable μ η MeasurableSet.univ
 
---It is not very easy to prove this lemma, I'm not even sure it's true in this form, maybe it's not
---worth it to waste time on it, for now we don't need it.
--- @[simp]
--- lemma condKL_zero_right (h : ∃ᵐ a ∂μ, κ a ≠ 0) [IsFiniteKernel κ] : condFDiv f κ 0 μ = derivAtTop f * ∫ a, ((κ a) Set.univ).toReal ∂μ := by
---   by_cases h_deriv : derivAtTop f = ⊤
---   · rw [condFDiv_of_not_ae_ac h_deriv, h_deriv, EReal.top_mul_coe_of_pos]
---     ·
---       -- rw []
---       -- apply MeasureTheory.integral_eq_zero_iff_of_nonneg_ae
---       -- contrapose! h
---       -- simp_rw [not_frequently, not_ne_iff]
---       -- rw [← MeasureTheory.integral_eq_zero_iff_of_nonneg_ae]
---       sorry
---     · simp only [kernel.zero_apply, Measure.absolutelyContinuous_zero_iff, not_eventually, h]
---   -- have h_ac : ¬ ∀ᵐ a ∂μ, κ a ≪ 0 := by
---   --   simp only [Measure.absolutelyContinuous_zero_iff, not_eventually, h]
---   -- rw [condFDiv_of_not_ae_ac h_deriv h_ac]
---   by_cases h_int : Integrable (fun x ↦ (fDiv f (κ x) 0).toReal) μ
---   swap
---   ·
---     rw [condFDiv_of_not_integrable (by simp_rw [kernel.zero_apply, h_int, not_false_eq_true])]
---     simp_rw [fDiv_zero_measure_right] at h_int
---     simp_rw [EReal.toReal_coe_ennreal]
---     simp_rw [EReal.toReal_mul, EReal.toReal_coe_ennreal, integral_mul_left, EReal.coe_mul]
---     sorry
-
---     simp only [integrable_const_iff, lt_top_iff_ne_top]
-
-
---   sorry
---   -- rw [condFDiv_eq' _ _] <;> simp_rw [kernel.zero_apply, fDiv_zero_measure_right]
---   -- · simp_rw [EReal.toReal_mul, EReal.toReal_coe_ennreal, integral_mul_left, EReal.coe_mul]
-  -- ·
+--I also wanted to add something like condKL_zero_right, but it turns out it's not so straightforward to state and prove, and since we don't really need it for now I will leave it out.
 
 
 @[simp]
