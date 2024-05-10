@@ -242,8 +242,8 @@ section Conditional
 
 /--Equivalence between two possible versions of the first condition for the finiteness of the
 conditional f divergence, the second version is the preferred one.-/
-lemma fDiv_ae_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] : (∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤) ↔
-    (∀ᵐ a ∂μ, Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a))
+lemma fDiv_ae_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] : (∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤)
+    ↔ (∀ᵐ a ∂μ, Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a))
       ∧ (derivAtTop f = ⊤ → ∀ᵐ a ∂μ, κ a ≪ η a) := by
   simp_rw [fDiv_ne_top_iff, eventually_and, eventually_all]
 
@@ -279,17 +279,14 @@ lemma integrable_fDiv_iff [CountablyGenerated β] [IsFiniteMeasure μ] [IsFinite
       · simp [EReal.mul_eq_bot, derivAtTop_ne_bot, h_top, measure_ne_top]
     rw [integrable_congr this]
     have h_int : Integrable (fun x ↦ (derivAtTop f).toReal
-        * ((κ x).singularPart (η x) Set.univ).toReal) μ := by
-      refine Integrable.const_mul ?_ (derivAtTop f).toReal
-      exact integrable_singularPart
-    refine ⟨fun h ↦ ?_, fun h ↦ h.add h_int⟩
-    have : (fun x ↦ ∫ y, f ((∂κ x/∂η x) y).toReal ∂η x)
+        * ((κ x).singularPart (η x) Set.univ).toReal) μ :=
+      Integrable.const_mul integrable_singularPart (derivAtTop f).toReal
+    have h_eq : (fun x ↦ ∫ y, f ((∂κ x/∂η x) y).toReal ∂η x)
         = (fun x ↦ (∫ y, f ((∂κ x/∂η x) y).toReal ∂η x +
           (derivAtTop f).toReal * ((κ x).singularPart (η x) Set.univ).toReal)
           - (derivAtTop f).toReal * ((κ x).singularPart (η x) Set.univ).toReal) := by
       ext; simp
-    rw [this]
-    exact h.sub h_int
+    exact ⟨fun h ↦ h_eq ▸ h.sub h_int, fun h ↦ h.add h_int⟩
 
 -- TODO: explain that we should not use these hypotheses in lemmas, but equivalent ones.
 open Classical in
@@ -453,15 +450,16 @@ lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
     norm_cast
     exact integral_mul_left (f 0) _
   · filter_upwards with _
-    simp only [EReal.mul_eq_top, EReal.coe_ne_bot, false_and, EReal.coe_neg', EReal.coe_ennreal_ne_bot, and_false,
-      EReal.coe_ne_top, EReal.coe_ennreal_pos, Measure.measure_univ_pos, ne_eq, EReal.coe_pos,
-      EReal.coe_ennreal_eq_top_iff, measure_ne_top, or_self, not_false_eq_true]
+    simp only [ne_eq, EReal.mul_eq_top, EReal.coe_ne_bot, false_and, EReal.coe_neg',
+      EReal.coe_ennreal_ne_bot, and_false, EReal.coe_ne_top, EReal.coe_ennreal_pos,
+      Measure.measure_univ_pos, EReal.coe_pos, EReal.coe_ennreal_eq_top_iff, measure_ne_top,
+      or_self, not_false_eq_true]
   · simp_rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
     apply MeasureTheory.Integrable.const_mul
     exact kernel.IsFiniteKernel.integrable μ η MeasurableSet.univ
 
---I also wanted to add something like condKL_zero_right, but it turns out it's not so straightforward to state and prove, and since we don't really need it for now I will leave it out.
-
+--I also wanted to add something like condKL_zero_right, but it turns out it's not so
+--straightforward to state and prove, and since we don't really need it for now I will leave it out.
 
 @[simp]
 lemma condFDiv_zero_measure : condFDiv f κ η 0 = 0 := by
@@ -498,8 +496,8 @@ lemma condFDiv_const' {ξ : Measure β} [IsFiniteMeasure ξ] (h_ne_bot : fDiv f 
   by_cases h_zero : fDiv f μ ν = 0
   · simp only [h_zero, zero_mul]
     rw [condFDiv_eq'] <;>
-      simp only [kernel.const_apply, h_zero, EReal.toReal_zero, integral_zero, EReal.coe_zero, ne_eq,
-        EReal.zero_ne_top, not_false_eq_true, eventually_true, integrable_zero]
+      simp only [kernel.const_apply, h_zero, EReal.toReal_zero, integral_zero, EReal.coe_zero,
+        ne_eq, EReal.zero_ne_top, not_false_eq_true, eventually_true, integrable_zero]
   by_cases h_top : fDiv f μ ν = ⊤
   · rw [h_top, EReal.top_mul_of_pos _]
     · simp only [condFDiv_of_not_ae_finite, kernel.const_apply, h_top, ne_eq, not_true_eq_false,
@@ -856,20 +854,21 @@ lemma condFDiv_compProd_meas_eq_top [CountablyGenerated γ] [IsFiniteMeasure μ]
     rw [← not_imp]
     simp_all only [forall_true_left, not_true_eq_false, implies_true, or_false, false_or, ne_eq,
       not_eventually, not_not]
-    rw [Measure.integrable_compProd_iff (measurable_integral_f_rnDeriv κ η hf_meas).aestronglyMeasurable]
+    rw [Measure.integrable_compProd_iff
+      (measurable_integral_f_rnDeriv κ η hf_meas).aestronglyMeasurable]
     push_neg
     intro h
-    by_cases h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a)
-    swap
+    by_cases h_int2 :
+      ∀ᵐ a ∂μ, Integrable (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a)
+    · simp_all only [forall_true_left, norm_eq_abs]
+      right
+      exact (condFDiv_kernel_snd'_integrable_iff
+        h_ac h_int h_int2 hf_meas hf_cvx hf_cont hf_one).mp.mt h
     · left
       contrapose! h_int2
       simp_rw [not_frequently, condFDiv_ne_top_iff] at h_int2
       filter_upwards [h_int2] with a ha_int2
       simp_rw [← kernel.snd'_apply, ha_int2.2.1]
-    simp_all only [forall_true_left, norm_eq_abs]
-    right
-    contrapose! h
-    exact (condFDiv_kernel_snd'_integrable_iff h_ac h_int h_int2 hf_meas hf_cvx hf_cont hf_one).mp h
   · intro h
     contrapose! h
     rcases h with ⟨h_int1, ⟨h_int2, h_ac⟩⟩
@@ -879,10 +878,9 @@ lemma condFDiv_compProd_meas_eq_top [CountablyGenerated γ] [IsFiniteMeasure μ]
     simp_all only [implies_true, forall_true_left, norm_eq_abs]
     refine ⟨?_, condFDiv_kernel_snd'_integrable_iff h_ac h_int1 h_int2.1 hf_meas hf_cvx hf_cont
       hf_one |>.mpr h_int2.2⟩
-    · filter_upwards [eventually_all.mpr h_ac, h_int1, h_int2.1] with a ha_ae ha_int ha_int2
-      apply condFDiv_ne_top_iff.mpr
-      simp only [kernel.snd'_apply]
-      exact ⟨ha_int, ⟨ha_int2, ha_ae⟩⟩
+    filter_upwards [eventually_all.mpr h_ac, h_int1, h_int2.1] with a ha_ae ha_int ha_int2
+    apply condFDiv_ne_top_iff.mpr
+    exact ⟨ha_int, ⟨ha_int2, ha_ae⟩⟩
 
 -- -- TODO: find a better name
 lemma condFDiv_compProd_meas [CountablyGenerated γ] [IsFiniteMeasure μ] {ξ : kernel α β}
@@ -1166,11 +1164,10 @@ lemma integral_f_rnDeriv_le_integral_add [CountablyGenerated β]
   simp_rw [mul_assoc]
   rw [integral_mul_left]
 
-lemma le_fDiv_compProd [CountablyGenerated β]
-    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η]
-    (hf : StronglyMeasurable f)
-    (hf_cvx : ConvexOn ℝ (Set.Ici 0) f) (hf_cont : ContinuousOn f (Set.Ici 0)) :
+lemma le_fDiv_compProd [CountablyGenerated β] (μ ν : Measure α) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η]
+    (hf : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Set.Ici 0) f)
+    (hf_cont : ContinuousOn f (Set.Ici 0)) :
     fDiv f μ ν ≤ fDiv f (μ ⊗ₘ κ) (ν ⊗ₘ η) := by
   by_cases h_top : fDiv f (μ ⊗ₘ κ) (ν ⊗ₘ η) = ⊤
   · simp [h_top]
@@ -1258,8 +1255,7 @@ lemma fDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α]
   simp_rw [Measure.comp_eq_snd_compProd]
   exact fDiv_snd_le _ _ hf hf_cvx hf_cont
 
-lemma fDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
-    [CountablyGenerated β]
+lemma fDiv_comp_left_le [Nonempty α] [StandardBorelSpace α] [CountablyGenerated β]
     (μ : Measure α) [IsFiniteMeasure μ]
     (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η]
     (hf : StronglyMeasurable f)
@@ -1269,8 +1265,7 @@ lemma fDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
     ≤ fDiv f (μ ⊗ₘ κ) (μ ⊗ₘ η) := fDiv_comp_le_compProd μ μ κ η hf hf_cvx hf_cont
   _ = condFDiv f κ η μ := fDiv_compProd_left μ κ η hf hf_cvx
 
-lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α]
-    [CountablyGenerated β]
+lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] [CountablyGenerated β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ : kernel α β) [IsMarkovKernel κ]
     (hf : StronglyMeasurable f)
