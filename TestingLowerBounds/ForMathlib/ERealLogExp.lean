@@ -230,4 +230,8 @@ lemma _root_.Measurable.ereal_exp {α : Type*} {_ : MeasurableSpace α}
 
 end LogExp
 
+--Maybe this belongs to a more general file about EReal, but I cannot put it in the other EReal file in this project, since it needs results from this file, but this file imports the other EReal file.
+instance : TopologicalSpace.MetrizableSpace EReal :=
+  logOrderIso.symm.toHomeomorph.embedding.metrizableSpace
+
 end EReal
