@@ -5,6 +5,8 @@ Authors: Rémy Degenne
 -/
 import Mathlib.Probability.Kernel.MeasureCompProd
 import Mathlib.Probability.Kernel.RadonNikodym
+import TestingLowerBounds.ForMathlib.KernelFstSnd
+
 
 /-!
 # Radon-Nikodym derivative and Lebesgue decomposition for kernels
@@ -508,5 +510,13 @@ lemma Measure.absolutelyContinuous_compProd_right_iff
   ⟨absolutelyContinuous_kernel_of_compProd, Measure.absolutelyContinuous_compProd_right _⟩
 
 end MeasureCompProd
+
+--for now I am leaving it here, but n the future it should be moved to a more appropriate place, some file about absolute continuity, together with the other lemmas about absolute continuity, i.e. the lemmas directly above this one and some lemmas at the beginning of this file
+lemma absolutelyContinuous_compProd_iff {β : Type*} [MeasurableSpace β] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁] [IsFiniteKernel κ₂]
+    [IsFiniteKernel η₂] (a : α) [∀ b, NeZero (κ₂ (a, b))] :
+    (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a ↔ κ₁ a ≪ η₁ a ∧ ∀ᵐ b ∂κ₁ a, κ₂ (a, b) ≪ η₂ (a, b) := by
+  simp_rw [kernel.compProd_apply_eq_compProd_snd', kernel.Measure.absolutelyContinuous_compProd_iff,
+    kernel.snd'_apply]
 
 end ProbabilityTheory.kernel

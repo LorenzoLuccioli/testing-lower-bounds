@@ -146,6 +146,22 @@ lemma integrable_llr_compProd_iff [CountablyGenerated β] [IsMarkovKernel κ]
     ae_integrable_llr_of_integrable_llr_compProd h_ac h⟩,
     fun h ↦ integrable_llr_compProd_of_integrable_llr h_ac h.1.1 h.1.2 h.2⟩
 
+lemma kernel.integrable_llr_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
+    [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
+    Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
+      ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
+        ∧ Integrable (fun b ↦ ∫ x, (llr (κ₂ (a, b)) (η₂ (a, b)) x) ∂(κ₂ (a, b))) (κ₁ a)
+        ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
+  simp_rw [kernel.compProd_apply_eq_compProd_snd'] at h_ac
+  simp_rw [kernel.compProd_apply_eq_compProd_snd',
+    ProbabilityTheory.integrable_llr_compProd_iff h_ac, kernel.snd'_apply]
+  by_cases h_int₁ : Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
+  swap; tauto
+  by_cases h_int₂ : ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b))
+  swap; tauto
+  simp only [h_int₁, true_and, h_int₂, and_true]
+
 --this lemma actually doesn't pertain the compProd, but for now I am still leaving it here, maybe when we put things in mathlib this could go in the basic file about llr, or maybe it still needs to go in a separate file, since it needs the definition of kernel, which now is not imported in the llr file
 lemma measurableSet_integrable_llr [CountablyGenerated β] (κ η : kernel α β) [IsFiniteKernel κ]
     [IsFiniteKernel η] :
