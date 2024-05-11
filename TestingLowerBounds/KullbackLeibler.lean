@@ -590,16 +590,13 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
     kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
-
---TODO: this can be generalized, relaxing the markov kernel hypothesis, it is sufficient that the kernels are finite and that they are not zero, but just stating that is not enough, because the actual hypothesys needed is that `∀ b, NeZero (snd' κ₂ a) b` but this is very ugly to use as an explicit hypothesis, maybe it is worth it to add an instance saying that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`
---to fix this maybe we can add the instance that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`, then it should be able to generalize this lemma
 --TODO: these lemmas may be put in another file, decide how to organize the files, about composition of kernels
 lemma kernel.absolutelyContinuous_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] (a : α) :
+    {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁] [IsFiniteKernel κ₂]
+    [IsFiniteKernel η₂] (a : α) [∀ b, NeZero (κ₂ (a, b))] :
     (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a ↔ κ₁ a ≪ η₁ a ∧ ∀ᵐ b ∂κ₁ a, κ₂ (a, b) ≪ η₂ (a, b) := by
-  simp_rw [kernel.compProd_apply_eq_compProd_snd',
-    kernel.Measure.absolutelyContinuous_compProd_iff, kernel.snd'_apply]
+  simp_rw [kernel.compProd_apply_eq_compProd_snd', kernel.Measure.absolutelyContinuous_compProd_iff,
+    kernel.snd'_apply]
 
 lemma kernel.integrable_llr_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
