@@ -806,13 +806,10 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
     rw [Fintype.sum_option, h, add_comm, ← ind_h]
     convert kl_prod_two <;> tauto <;> infer_instance
 
-
--- is it ok to state it like this or should we use a specific fintype like Fin n, so we have the cardinality defined in the statement?
 lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsProbabilityMeasure μ]
     [IsProbabilityMeasure ν] :
     kl (Measure.pi (fun (_ : ι) ↦ μ)) (Measure.pi (fun (_ : ι) ↦ ν)) = hι.card * kl μ ν := by
   rw [kl_pi, Finset.sum_const, (Finset.card_eq_iff_eq_univ _).mpr rfl, EReal.nsmul_eq_mul]
-
 
 end Tensorization
 
@@ -825,3 +822,4 @@ end ProbabilityTheory
 #check Measurable.stronglyMeasurable
 --TODO: bump mathlib, I tried to do it using `lake -R -Kenv=dev update` but it failed, giving me the error `function expected at FetchM`
 --TODO: now the condition for the RNderiv is more general, see exactly what has changed from the commits in upstream and propagate the generalization to the other lemmas
+--TODO: update the blueprint
