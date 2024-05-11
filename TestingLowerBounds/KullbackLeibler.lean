@@ -696,18 +696,6 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
   simp only [kl_prod_two', measure_univ, EReal.coe_ennreal_one, mul_one]
 
---TODO: I would like the hypothesys of being countably generated not on all the spaces, but on all the spaces except the first one
---if the general case turns out to be very hard to write and also to use, consider making a corollary where all the measures are probability measures and all the spaces are countabily generated
-
---TODO: look into the implementation of product of kernels and measure spaces in the RD_it branch of mathlib, there is a structure for the product of measure spaces and some API that may be useful to generalize the chain rule
-
---TODO: measurability should be able to solve something like this, maybe I should write this on zulip, see the file test_measurability
-example {ι : Type*} [Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
-    (s : (i : ι) → Set (β i)) (h : ∀ i, MeasurableSet (s i)) :
-    MeasurableSet (Set.pi Set.univ s) := by
-  -- measurability
-  exact MeasurableSet.univ_pi h
-
 --TODO: find a place for this, and a better name
 --the hypothesis hι and hι' are not needed both, we can do with just one of them, but then the statement complains that it doesn't find the instance for the other, should we just leave it like this or find some way to circumvent it?
 --should μ be an explicit argument?
