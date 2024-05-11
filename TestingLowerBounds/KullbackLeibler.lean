@@ -814,12 +814,7 @@ lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsPro
 end Tensorization
 
 end ProbabilityTheory
---TODO: check if the EReal are a metrizable space (I think the istance is not there, since using a lemma it says that it failed to syntethize the instance of pseudo metrizable space), if there is not, we could add it, we can metrize the EReal using the metric d(x,y) = |arctg(x)-arctg(y)|. This may be useful to apply some lemmas, for example
--- #synth TopologicalSpace.MetrizableSpace EReal --fails
-#synth TopologicalSpace.MetrizableSpace ENNReal
-#synth SecondCountableTopology EReal
---TODO: define the extended exp and log
-#check Measurable.stronglyMeasurable
+
 --TODO: bump mathlib, I tried to do it using `lake -R -Kenv=dev update` but it failed, giving me the error `function expected at FetchM`
 --TODO: now the condition for the RNderiv is more general, see exactly what has changed from the commits in upstream and propagate the generalization to the other lemmas
 --TODO: update the blueprint
