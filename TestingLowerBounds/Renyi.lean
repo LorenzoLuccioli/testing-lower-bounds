@@ -34,7 +34,7 @@ namespace ProbabilityTheory
 
 variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α} {a : ℝ}
 
-open Classical in
+open Classical in --why do we need this? the rest seems to compile even without `Classical`
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
   else if a = 1 then kl μ ν
@@ -297,5 +297,34 @@ def renyiMeasure (a : ℝ) (μ ν : Measure α) : Measure α :=
   (μ + ν).withDensity (renyiDensity a μ ν)
 
 end RenyiMeasure
+
+section Conditional
+
+variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {κ η : kernel α β}
+
+-- open Classical in
+-- noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
+--   if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
+--   else if a = 1 then kl μ ν
+--   else if hellingerDiv a μ ν ≠ ⊤
+--     then (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal)
+--     else ⊤
+
+--TODO: what convention should we adopt for the names of the variables? we cannot use `a` for the element of `α`, so we cannot adopt the same convention as for kl, on the other hand using `x`for the element of `α` may be confusing and we may need `x` for other cases, such that an element of the product space, or some other mute variable. Shall we change the convention for the parameter then? in this case a possibilty would be `λ`. but it is problematic because of the lambda calculus notation, so could we call the parameter `l`? For now I leave it as `x` but I think we should change it at some point.
+
+open Classical in
+/--
+Rényi divergence between two kernels κ and η conditional to a measure μ.
+It is defined as Rₐ(κ, η | μ) := (a - 1)⁻¹ * log (1 + (a - 1) * Hₐ(κ, η | μ)),
+-/
+noncomputable
+def condRenyiDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
+  if (∀ᵐ x ∂μ, renyiDiv a (κ x) (η x) ≠ ⊤)
+    ∧ (Integrable (fun x ↦ (kl (κ a) (η a)).toReal) μ)
+  then ((μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) : EReal)
+  else ⊤
+
+
+end Conditional
 
 end ProbabilityTheory
