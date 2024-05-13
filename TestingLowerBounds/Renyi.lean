@@ -26,7 +26,7 @@ import Mathlib.Probability.Moments
 
 -/
 
-open Real MeasureTheory Filter
+open Real MeasureTheory Filter MeasurableSpace
 
 open scoped ENNReal NNReal Topology
 
@@ -34,7 +34,6 @@ namespace ProbabilityTheory
 
 variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α} {a : ℝ}
 
-open Classical in --why do we need this? the rest seems to compile even without `Classical`
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
   else if a = 1 then kl μ ν
@@ -302,27 +301,135 @@ section Conditional
 
 variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {κ η : kernel α β}
 
--- open Classical in
--- noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
---   if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
---   else if a = 1 then kl μ ν
---   else if hellingerDiv a μ ν ≠ ⊤
---     then (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal)
---     else ⊤
-
 --TODO: what convention should we adopt for the names of the variables? we cannot use `a` for the element of `α`, so we cannot adopt the same convention as for kl, on the other hand using `x`for the element of `α` may be confusing and we may need `x` for other cases, such that an element of the product space, or some other mute variable. Shall we change the convention for the parameter then? in this case a possibilty would be `λ`. but it is problematic because of the lambda calculus notation, so could we call the parameter `l`? For now I leave it as `x` but I think we should change it at some point.
 
-open Classical in
 /--
 Rényi divergence between two kernels κ and η conditional to a measure μ.
 It is defined as Rₐ(κ, η | μ) := (a - 1)⁻¹ * log (1 + (a - 1) * Hₐ(κ, η | μ)),
 -/
 noncomputable
 def condRenyiDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
-  if (∀ᵐ x ∂μ, renyiDiv a (κ x) (η x) ≠ ⊤)
-    ∧ (Integrable (fun x ↦ (kl (κ a) (η a)).toReal) μ)
-  then ((μ[fun a ↦ (kl (κ a) (η a)).toReal] : ℝ) : EReal)
-  else ⊤
+  renyiDiv a (μ ⊗ₘ κ) (μ ⊗ₘ η)
+
+--Maybe this can be stated in a nicer way, but I didn't find a way to do it.
+@[simp]
+lemma condRenyiDiv_zero (κ η : kernel α β) (μ : Measure α) :
+    condRenyiDiv 0 κ η μ = - log ((μ ⊗ₘ η) {x | 0 < (∂μ ⊗ₘ κ/∂μ ⊗ₘ η) x}).toReal := if_pos rfl
+
+@[simp]
+lemma condRenyiDiv_one (κ η : kernel α β) (μ : Measure α) [CountablyGenerated β] [IsFiniteMeasure μ]
+    [IsMarkovKernel κ] [IsFiniteKernel η] : condRenyiDiv 1 κ η μ = condKL κ η μ := by
+  rw [condRenyiDiv, renyiDiv_one, kl_compProd_left]
+
+-- might be useful:
+#check kernel.rnDeriv_measure_compProd_right'
+#check kernel.Measure.absolutelyContinuous_compProd_iff
+
+section TopAndBounds
+
+lemma condRenyiDiv_eq_top_iff_of_one_lt [CountablyGenerated β] (ha : 1 < a) (κ η : kernel α β) (μ : Measure α)
+    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
+    condRenyiDiv a κ η μ = ⊤
+      ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∨ ¬Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ
+        ∨ ¬ ∀ᵐ x ∂μ, κ x ≪ η x := by
+  rw [condRenyiDiv, renyiDiv_eq_top_iff_of_one_lt ha,
+    kernel.Measure.absolutelyContinuous_compProd_right_iff, integrable_f_rnDeriv_compProd_right_iff
+      (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))]
+  tauto
+
+lemma condRenyiDiv_ne_top_iff_of_one_lt [CountablyGenerated β] (ha : 1 < a) (κ η : kernel α β) (μ : Measure α)
+    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
+    condRenyiDiv a κ η μ ≠ ⊤
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∧ Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ
+        ∧ ∀ᵐ x ∂μ, κ x ≪ η x := by
+  rw [ne_eq, condRenyiDiv_eq_top_iff_of_one_lt ha]
+  push_neg
+  rfl
+
+lemma condRenyiDiv_eq_top_iff_of_lt_one [CountablyGenerated β] (ha_pos : 0 < a) (ha : a < 1)
+    (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
+    condRenyiDiv a κ η μ = ⊤
+    ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+      ∨ ¬Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ := by
+  rw [condRenyiDiv, renyiDiv_eq_top_iff_of_lt_one ha_pos ha, integrable_f_rnDeriv_compProd_right_iff
+      (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))]
+  tauto
+
+lemma condRenyiDiv_ne_top_iff_of_lt_one [CountablyGenerated β] (ha_pos : 0 < a) (ha : a < 1)
+    (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
+    condRenyiDiv a κ η μ ≠ ⊤
+    ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+      ∧ Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ := by
+  rw [ne_eq, condRenyiDiv_eq_top_iff_of_lt_one ha_pos ha]
+  push_neg
+  rfl
+
+lemma condRenyiDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
+    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
+    condRenyiDiv a κ η μ ≠ ⊤ := by
+  rw [condRenyiDiv, ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne]
+  exact hellingerDiv_ne_top_of_lt_one ha_pos ha _ _
+
+lemma condRenyiDiv_of_not_ae_integrable [CountablyGenerated β] [IsFiniteKernel κ] [IsFiniteKernel η]
+    [IsFiniteMeasure μ] (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+    (h_int : ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))) :
+    condRenyiDiv a κ η μ = ⊤ := by
+  by_cases ha : a < 1
+  · have := integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha (μ := μ ⊗ₘ κ) (ν := μ ⊗ₘ η)
+    rw [integrable_f_rnDeriv_compProd_right_iff
+      (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))] at this
+    exfalso
+    exact h_int this.1
+  · have : 1 < a := by exact lt_of_le_of_ne (not_lt.mp ha) ha_ne_one.symm
+    rw [condRenyiDiv_eq_top_iff_of_one_lt this]
+    left
+    exact h_int
+
+lemma condRenyiDiv_of_not_integrable [CountablyGenerated β] [IsFiniteKernel κ] [IsFiniteKernel η]
+    [IsFiniteMeasure μ] (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+    (h_int : ¬Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ) :
+    condRenyiDiv a κ η μ = ⊤ := by
+  by_cases ha : a < 1
+  · have := integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha (μ := μ ⊗ₘ κ) (ν := μ ⊗ₘ η)
+    rw [integrable_f_rnDeriv_compProd_right_iff
+      (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))] at this
+    exfalso
+    exact h_int this.2
+  · have : 1 < a := by exact lt_of_le_of_ne (not_lt.mp ha) ha_ne_one.symm
+    rw [condRenyiDiv_eq_top_iff_of_one_lt this]
+    right; left
+    exact h_int
+
+-- lemma condRenyiDiv_of_lt_one' [IsFiniteMeasure μ] [SigmaFinite ν]
+--     (ha_pos : 0 < a) (ha_lt_one : a < 1)
+--     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
+--     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
+--   rw [renyiDiv, if_neg ha_pos.ne', if_neg ha_lt_one.ne,
+--     if_pos ((hellingerDiv_ne_top_iff_of_lt_one ha_pos ha_lt_one _ _).mpr h_int)]
+
+-- lemma condRenyiDiv_of_lt_one (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+--     (ha_pos : 0 < a) (ha_lt_one : a < 1) :
+--     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
+--   rw [renyiDiv_of_lt_one' ha_pos ha_lt_one]
+--   exact integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha_lt_one
+
+-- lemma condRenyiDiv_of_one_lt_of_ac [IsFiniteMeasure μ] [SigmaFinite ν] (ha_one_lt : 1 < a)
+--     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) (hμν : μ ≪ ν) :
+--     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
+--   rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne',
+--     if_pos ((hellingerDiv_ne_top_iff_of_one_lt ha_one_lt _ _).mpr ⟨h_int, hμν⟩)]
+
+-- lemma condRenyiDiv_of_one_lt_of_not_ac [IsFiniteMeasure μ] [SigmaFinite ν]
+--     (ha_one_lt : 1 < a) (hμν : ¬ μ ≪ ν) :
+--     condRenyiDiv a μ ν = ⊤ := by
+--   rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne', if_neg]
+--   rw [hellingerDiv_ne_top_iff_of_one_lt ha_one_lt]
+--   push_neg
+--   exact fun _ ↦ hμν
+
+end TopAndBounds
 
 
 end Conditional
