@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import TestingLowerBounds.FDiv.Basic
+import TestingLowerBounds.FDiv.CondFDiv
 
 /-!
 # Helliger divergence
@@ -284,5 +285,16 @@ lemma hellingerDiv_symm (ha_pos : 0 < a) (ha : a < 1)
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
     (1 - a) * hellingerDiv a μ ν = a * hellingerDiv (1 - a) ν μ :=
   hellingerDiv_symm' ha_pos ha (by simp)
+
+section Conditional
+
+variable {β : Type*} {mβ : MeasurableSpace β}
+
+noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
+  condFDiv (hellingerFun a) κ η μ
+
+--TODO: add some API and the blueprint
+
+end Conditional
 
 end ProbabilityTheory
