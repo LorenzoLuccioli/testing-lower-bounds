@@ -402,6 +402,8 @@ lemma condRenyiDiv_of_not_integrable [CountablyGenerated β] [IsFiniteKernel κ]
     right; left
     exact h_int
 
+-- TODO: before proceding here I have to define the conditional Hellinger divergence
+
 -- lemma condRenyiDiv_of_lt_one' [IsFiniteMeasure μ] [SigmaFinite ν]
 --     (ha_pos : 0 < a) (ha_lt_one : a < 1)
 --     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
