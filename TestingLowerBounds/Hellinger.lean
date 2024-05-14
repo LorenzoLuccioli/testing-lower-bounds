@@ -88,6 +88,7 @@ lemma integral_rpow_rnDeriv (ha_pos : 0 < a) (ha : a ≠ 1) [SigmaFinite μ] [Si
 
 section HellingerFun
 
+/--Hellinger function, defined as `x ↦ (a - 1)⁻¹ * (x ^ a - 1)` for `a : ℝ`.-/
 noncomputable
 def hellingerFun (a : ℝ) : ℝ → ℝ := fun x ↦ (a - 1)⁻¹ * (x ^ a - 1)
 
@@ -140,8 +141,7 @@ lemma derivAtTop_hellingerFun_of_lt_one (ha_pos : 0 < a) (ha : a < 1) :
     derivAtTop (hellingerFun a) = 0 :=
   derivAtTop_of_tendsto (tendsto_hellingerFun_div_atTop_of_lt_one ha_pos ha)
 
-lemma integrable_hellingerFun_iff_integrable_rpow [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (ha : a ≠ 1) :
+lemma integrable_hellingerFun_iff_integrable_rpow [IsFiniteMeasure ν] (ha : a ≠ 1) :
     Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν
       ↔ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν := by
   simp_rw [hellingerFun]
@@ -354,6 +354,7 @@ lemma integrable_hellingerDiv_iff'_of_lt_one [IsFiniteMeasure μ] [IsFiniteKerne
   integrable_hellingerDiv_iff' ha_pos ha.ne (eventually_of_forall
     (fun _ ↦ integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha)) (not_lt_of_gt ha).elim
 
+/-- Conditional Hellinger divergence of order `a`. Meaningful for `a ∈ (0, 1) ∪ (1, ∞)`. -/
 noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   condFDiv (hellingerFun a) κ η μ
 
