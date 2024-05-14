@@ -34,6 +34,7 @@ namespace ProbabilityTheory
 
 variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α} {a : ℝ}
 
+/-- Rényi divergence of order `a`.-/
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
   else if a = 1 then kl μ ν
@@ -51,8 +52,7 @@ lemma renyiDiv_one (μ ν : Measure α) : renyiDiv 1 μ ν = kl μ ν := by
 
 section TopAndBounds
 
-lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top [IsFiniteMeasure μ] [SigmaFinite ν]
-    (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) :
+lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) :
     renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
   simp only [renyiDiv, ha_pos.ne', ↓reduceIte, ha_ne_one, ne_eq, ite_not, ite_eq_left_iff]
   rw [← EReal.coe_mul]
