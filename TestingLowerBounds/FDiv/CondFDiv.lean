@@ -253,7 +253,7 @@ conditional f divergence, the second version is the preferred one.-/
 lemma integrable_fDiv_iff [CountablyGenerated β] [IsFiniteMeasure μ] [IsFiniteKernel κ]
     [IsFiniteKernel η] (h_int : ∀ᵐ a ∂μ, Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a))
     (h_ac : derivAtTop f = ⊤ → ∀ᵐ a ∂μ, κ a ≪ η a) :
-    Integrable (fun x ↦ EReal.toReal (fDiv f (κ x) (η x))) μ
+    Integrable (fun x ↦ (fDiv f (κ x) (η x)).toReal) μ
       ↔ Integrable (fun a ↦ ∫ b, f ((∂κ a/∂η a) b).toReal ∂η a) μ := by
   have h_fin : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤ := fDiv_ae_ne_top_iff.mpr ⟨h_int, h_ac⟩
   by_cases h_top : derivAtTop f = ⊤
