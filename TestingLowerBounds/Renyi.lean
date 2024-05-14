@@ -94,13 +94,12 @@ lemma renyiDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure �
   rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne]
   exact hellingerDiv_ne_top_of_lt_one ha_pos ha _ _
 
-lemma renyiDiv_of_not_integrable [IsFiniteMeasure μ] [SigmaFinite ν]
-    (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+lemma renyiDiv_of_not_integrable (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
     (h_int : ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
     renyiDiv a μ ν = ⊤ := by
   rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha_ne_one]
   by_contra h
-  exact h (hellingerDiv_of_not_integrable ha_pos ha_ne_one h_int)
+  exact h (hellingerDiv_of_not_integrable h_int)
 
 lemma renyiDiv_of_lt_one' [IsFiniteMeasure μ] [SigmaFinite ν]
     (ha_pos : 0 < a) (ha_lt_one : a < 1)
