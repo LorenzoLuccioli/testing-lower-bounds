@@ -354,6 +354,25 @@ lemma integrable_hellingerDiv_iff'_of_lt_one [IsFiniteMeasure μ] [IsFiniteKerne
 noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   condFDiv (hellingerFun a) κ η μ
 
+lemma condHellingerDiv_of_not_ae_finite (h_ae : ¬ ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤) :
+    condHellingerDiv a κ η μ = ⊤ := by
+  simp_rw [hellingerDiv] at h_ae
+  rw [condHellingerDiv, condFDiv_of_not_ae_finite h_ae]
+
+lemma condHellingerDiv_of_not_integrable
+    (h_int : ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
+    condHellingerDiv a κ η μ = ⊤ := by
+  simp_rw [hellingerDiv] at h_int
+  rw [condHellingerDiv, condFDiv_of_not_integrable h_int]
+
+lemma condHellingerDiv_of_ae_finite_of_integrable (h_ae : ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
+    (h_int : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
+    condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ := by
+  simp_rw [hellingerDiv] at h_ae h_int
+  rw [condHellingerDiv, condFDiv_eq' h_ae h_int]
+  norm_cast
+
+
 --TODO: add some API and the blueprint
 
 end Conditional
