@@ -263,6 +263,8 @@ lemma hellingerDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a ≤ 1) (μ ν : Mea
   exact integrable_hellingerFun_rnDeriv_of_le_one ha_pos ha
 
 --TODO: write something like this for the conditional one
+--TODO: reorganize these lemmas, just the order and the section, delete this section and make
+--another one named something like 'hellingerEq', put there all the lemmas about being ⊤ or not, being equal to the integral or not
 lemma hellingerDiv_le_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν ≤ (1 - a)⁻¹ * ν Set.univ := by
