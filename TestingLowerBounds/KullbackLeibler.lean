@@ -61,7 +61,9 @@ lemma kl_of_not_ac (h : ¬ μ ≪ ν) : kl μ ν = ⊤ := if_neg (not_and_of_not
 lemma kl_of_not_integrable (h : ¬ Integrable (llr μ ν) μ) : kl μ ν = ⊤ :=
   if_neg (not_and_of_not_right _ h)
 
---This lemma is to make some proof a bit easier, since we can avoid repeating the integrability hypothesis if we have a cast to the reals. Unfortunately this cannot be used if we don't have the absolute continuity, since in that case the integral may still be finite but not zero.
+/-- If `μ ≪ ν`, then `toReal` of the Kullback-Leibler divergence is equal to an integral,
+without any integrability condition. Not true in general without `μ ≪ ν`, as the integral might be
+finite but non-zero. -/
 lemma kl_toReal_of_ac (h : μ ≪ ν) : (kl μ ν).toReal = ∫ a, llr μ ν a ∂μ := by
   by_cases h_int : Integrable (llr μ ν) μ
   · rw [kl_of_ac_of_integrable h h_int, EReal.toReal_coe]
@@ -696,13 +698,16 @@ lemma kl_prod_two [CountablyGenerated β] {ξ ψ : Measure β} [IsProbabilityMea
     kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ := by
   simp only [kl_prod_two', measure_univ, EReal.coe_ennreal_one, mul_one]
 
---TODO: find a place for this, and a better name
---the hypothesis hι and hι' are not needed both, we can do with just one of them, but then the statement complains that it doesn't find the instance for the other, should we just leave it like this or find some way to circumvent it?
---should μ be an explicit argument?
-lemma Measure.pi_map_CongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fintype ι'] (e : ι ≃ ι')
-    {β : ι' → Type*} [∀ i, MeasurableSpace (β i)] {μ : (i : ι') → Measure (β i)}
+--TODO: put this in the right place, maybe PR to mathlib, just after MeasurableEquiv.piCongrLeft?
+lemma MeasurableEquiv.piCongrLeft_apply_apply {ι ι' : Type*} (e : ι ≃ ι') {β : ι' → Type*}
+    [∀ i', MeasurableSpace (β i')] (x : (i : ι) → β (e i)) (i : ι) :
+    (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
+  rw [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk, Equiv.piCongrLeft_apply_apply]
+
+lemma Measure.pi_map_piCongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fintype ι'] (e : ι ≃ ι')
+    {β : ι' → Type*} [∀ i, MeasurableSpace (β i)] (μ : (i : ι') → Measure (β i))
     [∀ i, SigmaFinite (μ i)] :
-    Measure.map (MeasurableEquiv.piCongrLeft (fun i ↦ β i) e) (Measure.pi fun i ↦ μ (e i))
+    (Measure.pi fun i ↦ μ (e i)).map (MeasurableEquiv.piCongrLeft (fun i ↦ β i) e)
     = Measure.pi μ := by
   let e_meas : ((b : ι) → β (e b)) ≃ᵐ ((a : ι') → β a) :=
     MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
@@ -715,17 +720,32 @@ lemma Measure.pi_map_CongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Finty
     apply (e.forall_congr _).symm
     intro i
     convert Iff.rfl
-    have piCongrLeft_apply_apply' :
-        (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
-      simp only [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk,
-        Equiv.piCongrLeft_apply_apply]
-    rw [piCongrLeft_apply_apply']
+    exact MeasurableEquiv.piCongrLeft_apply_apply e x i
   rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
   · simp only [Finset.mem_univ, implies_true]
   intro i _
   simp only [s']
   congr
   all_goals rw [e.apply_symm_apply]
+
+lemma _root_.MeasureTheory.Measure.pi_map_piOptionEquivProd {ι : Type*} [hι : Fintype ι]
+    {β : Option ι → Type*} [∀ i, MeasurableSpace (β i)] (ξ : (i : Option ι) → Measure (β i))
+    [∀ (i : Option ι), SigmaFinite (ξ i)] :
+    ((Measure.pi fun i ↦ ξ (some i)).prod (ξ none)).map --TODO: when we bump mathlib remove the explicit universe level
+      (MeasurableEquiv.piOptionEquivProd.{_, _, u_3} β).symm = Measure.pi ξ := by
+  refine Measure.pi_eq (fun s _ ↦ ?_) |>.symm
+  let e_meas : ((i : ι) → β (some i)) × β none ≃ᵐ ((i : Option ι) → β i) :=
+        MeasurableEquiv.piOptionEquivProd.{_, _, u_3} β |>.symm --TODO: when we bump mathlib remove the explicit universe level
+  have me := MeasurableEquiv.measurableEmbedding e_meas
+  have : e_meas ⁻¹' Set.pi Set.univ s
+      = (Set.pi Set.univ (fun i ↦ s (some i))) ×ˢ (s none) := by
+    ext x
+    simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
+    constructor; tauto
+    intro h i
+    rcases i <;> tauto
+  simp only [me.map_apply, univ_option, Finset.le_eq_subset, Finset.prod_insertNone, this,
+    Measure.prod_prod, Measure.pi_pi, mul_comm]
 
 lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, MeasurableSpace (β i)]
     [∀ i, CountablyGenerated (β i)] {μ ν : (i : ι) → Measure (β i)}
@@ -744,35 +764,22 @@ lemma kl_pi {ι : Type*} [hι : Fintype ι] {β : ι → Type*} [∀ i, Measurab
       MeasurableEquiv.piCongrLeft (fun i ↦ β i) e
     have me := MeasurableEquiv.measurableEmbedding e_meas.symm
     convert (fDiv_map_measurableEmbedding me).symm
-    <;> try {rw [← Measure.pi_map_CongrLeft e, MeasurableEquiv.map_symm_map]}
-    <;> infer_instance
+      <;> try {rw [← Measure.pi_map_piCongrLeft e, MeasurableEquiv.map_symm_map]}
+      <;> infer_instance
     intro i
     rw [Equiv.apply_symm_apply]
   · intro β _ _ μ ν _ _
     rw [Measure.pi_of_empty, Measure.pi_of_empty, kl_self, Finset.univ_eq_empty, Finset.sum_empty]
   · intro ι hι ind_h β _ _ μ ν _ _
     specialize ind_h (β := fun i ↦ β i) (μ := fun i ↦ μ i) (ν := fun i ↦ ν i)
-    have h : kl (Measure.pi μ) (Measure.pi ν) = kl (Measure.prod (Measure.pi (fun (i : ι) ↦ μ i))
-        (μ none)) (Measure.prod (Measure.pi (fun (i : ι) ↦ ν i)) (ν none)) := by
+    have h : kl (Measure.pi μ) (Measure.pi ν) = kl ((Measure.pi (fun (i : ι) ↦ μ i)).prod
+        (μ none)) ((Measure.pi (fun (i : ι) ↦ ν i)).prod (ν none)) := by
       rw [kl_eq_fDiv, kl_eq_fDiv]
       let e_meas : ((i : ι) → β (some i)) × β none ≃ᵐ ((i : Option ι) → β i) :=
         MeasurableEquiv.piOptionEquivProd.{_, _, u_3} β |>.symm --TODO: when we bump mathlib remove the explicit universe level
       have me := MeasurableEquiv.measurableEmbedding e_meas
-      have hh (ξ : (i : Option ι) → Measure (β i)) [∀ (i : Option ι), IsProbabilityMeasure (ξ i)] :
-      Measure.pi ξ = Measure.map (⇑e_meas) (Measure.prod (Measure.pi fun i ↦ ξ (some i)) (ξ none))
-          := by
-        refine Measure.pi_eq (fun s _ ↦ ?_)
-        have : e_meas ⁻¹' Set.pi Set.univ s = (Set.pi Set.univ (fun i => s (some i))) ×ˢ (s none)
-            := by
-          ext x
-          simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, Set.mem_prod]
-          constructor; tauto
-          intro h i
-          rcases i <;> tauto
-        simp only [me.map_apply, univ_option, Finset.le_eq_subset, Finset.prod_insertNone, this,
-          Measure.prod_prod, Measure.pi_pi, mul_comm]
       convert fDiv_map_measurableEmbedding me
-      <;> try {exact hh _} <;> infer_instance
+        <;> try {exact Measure.pi_map_piOptionEquivProd _ |>.symm} <;> infer_instance
     rw [Fintype.sum_option, h, add_comm, ← ind_h]
     convert kl_prod_two <;> tauto <;> infer_instance
 
@@ -784,7 +791,3 @@ lemma kl_pi_const {ι : Type*} [hι : Fintype ι] [CountablyGenerated α] [IsPro
 end Tensorization
 
 end ProbabilityTheory
-
---TODO: bump mathlib, I tried to do it using `lake -R -Kenv=dev update` but it failed, giving me the error `function expected at FetchM`
---TODO: now the condition for the RNderiv is more general, see exactly what has changed from the commits in upstream and propagate the generalization to the other lemmas
---TODO: update the blueprint

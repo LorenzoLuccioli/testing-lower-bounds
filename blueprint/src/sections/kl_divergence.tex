@@ -238,7 +238,7 @@ For the case where $\mu \otimes \kappa \ll \nu \otimes \eta$ and $p \mapsto \log
   Then $\KL(\mu, \nu) = \KL(\mu_X, \nu_X) + \KL(\mu_{Y|X}, \nu_{Y|X} \mid \mu_X)$.
 \end{theorem}
 
-\begin{proof}
+\begin{proof} \leanok
 \uses{thm:kl_compProd}
 Write $\mu = \mu_X \otimes \mu_{Y|X}$ and $\nu = \nu_X \otimes \nu_{Y|X}$, then use Theorem~\ref{thm:kl_compProd}.
 \end{proof}
@@ -248,41 +248,45 @@ Write $\mu = \mu_X \otimes \mu_{Y|X}$ and $\nu = \nu_X \otimes \nu_{Y|X}$, then 
   \lean{ProbabilityTheory.kl_prod_two'}
   \leanok
   \uses{def:KL}
-  Let $\mu, \nu, \xi, \psi$ be measures on $\mathcal X$ such that $\xi, \psi$ are probability measures and $\mu, \nu$ are finite. Then
-  $$\KL(\mu \times \xi, \nu \times \psi) = \KL(\mu, \nu) + \KL(\xi, \psi) \mu (\mathcal X) \: .$$
+  Let $\mu_1, \nu_1$ be finite measures on $\mathcal X$ and $\mu_2, \nu_2$ probability measures on $\mathcal{Y}$. Then
+  $$\KL(\mu_1\times \mu_2, \nu_1 \times \nu_2) = \KL(\mu_1, \nu_1) + \KL(\mu_2, \nu_2) \mu_1 (\mathcal X) \: .$$
 \end{lemma}
 
 \begin{proof}
 \uses{thm:kl_compProd, lem:condKL_const}
-Write $\mu \times \xi$ and $\nu \times \psi$ as composition product of a measure and a constant kernel, then apply the chain rule (Theorem~\ref{thm:kl_compProd}) and Lemma~\ref{lem:condKL_const}.
+Write $\mu_1 \times \mu_2$ and $\nu_1 \times \nu_2$ as composition products of a measure and a constant kernel, then apply the chain rule (Theorem~\ref{thm:kl_compProd}) and Lemma~\ref{lem:condKL_const}.
 \end{proof}
-
-\begin{lemma}[Tensorization]
-  \label{lem:kl_prod_two}
+\begin{theorem}[Tensorization]
+  \label{thm:kl_prod_two}
   \lean{ProbabilityTheory.kl_prod_two}
   \leanok
   \uses{def:KL}
-  Let $\mu, \nu, \xi, \psi$ be measures on $\mathcal X$ such that $\mu, \xi, \psi$ are probability measures and $\nu$ is finite. Then
-  $$\KL(\mu \times \xi, \nu \times \psi) = \KL(\mu, \nu) + \KL(\xi, \psi) \: .$$
-\end{lemma}
+  For $\mu_1$ probability measure on $\mathcal X$, $\nu_1$ finite measure on $\mathcal{X}$ and $\mu_2, \nu_2$ two probability measures on $\mathcal Y$,
+  \begin{align*}
+  \KL(\mu_1 \times \mu_2, \nu_1 \times \nu_2) = \KL(\mu_1, \nu_1) + \KL(\mu_2 \times \nu_2) \: .
+  \end{align*}
+\end{theorem}
 
-\begin{proof}
+\begin{proof} \leanok
 \uses{lem:kl_prod_two'}
-Apply Lemma~\ref{lem:kl_prod_two'}.
+This is a particular case of Lemma~\ref{lem:kl_prod_two'}.
 \end{proof}
 
-\begin{lemma}[Tensorization - finite product]
-  \label{lem:kl_prod}
-  \lean{ProbabilityTheory.kl_prod}
+\begin{theorem}[Tensorization - finite product]
+  \label{thm:kl_pi}
+  \lean{ProbabilityTheory.kl_pi}
   \leanok
   \uses{def:KL}
-  Let $I$ be a finite index set. Let $(\mu_i)_{i \in I}$ and $(\nu_i)_{i \in I}$ be probability measures on measurable spaces $(\mathcal X_i)_{i \in I}$. Then
-  $$\KL\left(\prod_{i \in I} \mu_i, \prod_{i \in I} \nu_i\right) = \sum_{i \in I} \KL(\mu_i, \nu_i) \: .$$
-\end{lemma}
+  Let $I$ be a finite index set. Let $(\mu_i)_{i \in I}, (\nu_i)_{i \in I}$ be probability measures on spaces $(\mathcal X_i)_{i \in I}$. Then
+  \begin{align*}
+  \KL(\prod_{i \in I} \mu_i, \prod_{i \in I} \nu_i) = \sum_{i \in I} \KL(\mu_i, \nu_i)
+  \: .
+  \end{align*}
+\end{theorem}
 
-\begin{proof}
-\uses{lem:kl_prod_two'}
-Apply Lemma~\ref{lem:kl_prod_two'} and use induction on the cardinality of $I$.
+\begin{proof} \leanok
+\uses{thm:kl_prod_two}
+Induction on the size of $I$, using Theorem~\ref{thm:kl_prod_two}.
 \end{proof}
 
 \begin{lemma}

@@ -38,6 +38,7 @@ variable {α β : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β}
   {μ ν : Measure α} {κ η : kernel α β} {f g : ℝ → ℝ}
 
 section IntegralRnDeriv
+
 -- todo name
 lemma lintegral_measure_prod_mk_left {f : α → Set β → ℝ≥0∞} (hf : ∀ a, f a ∅ = 0)
     {s : Set α} (hs : MeasurableSet s) (t : Set β) :
@@ -242,11 +243,11 @@ section Conditional
 
 /--Equivalence between two possible versions of the first condition for the finiteness of the
 conditional f divergence, the second version is the preferred one.-/
-lemma fDiv_ae_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] : (∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤)
+lemma fDiv_ae_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
+    (∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤)
     ↔ (∀ᵐ a ∂μ, Integrable (fun x ↦ f ((∂κ a/∂η a) x).toReal) (η a))
       ∧ (derivAtTop f = ⊤ → ∀ᵐ a ∂μ, κ a ≪ η a) := by
   simp_rw [fDiv_ne_top_iff, eventually_and, eventually_all]
-
 
 /--Equivalence between two possible versions of the second condition for the finiteness of the
 conditional f divergence, the second version is the preferred one.-/
@@ -456,6 +457,12 @@ lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
   · simp_rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
     apply MeasureTheory.Integrable.const_mul
     exact kernel.IsFiniteKernel.integrable μ η MeasurableSet.univ
+
+@[simp]
+lemma condFDiv_zero_left' [IsProbabilityMeasure μ] [IsMarkovKernel η] :
+    condFDiv f 0 η μ = f 0 := by
+  simp_rw [condFDiv_zero_left, measure_univ, integral_const, measure_univ]
+  norm_num
 
 --I also wanted to add something like condKL_zero_right, but it turns out it's not so
 --straightforward to state and prove, and since we don't really need it for now I will leave it out.
