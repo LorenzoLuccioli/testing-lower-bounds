@@ -192,6 +192,12 @@ end HellingerFun
 /-- Hellinger divergence of order `a`. Meaningful for `a ∈ (0, 1) ∪ (1, ∞)`. -/
 noncomputable def hellingerDiv (a : ℝ) (μ ν : Measure α) : EReal := fDiv (hellingerFun a) μ ν
 
+@[simp]
+lemma hellingerDiv_one (μ ν : Measure α) : hellingerDiv 1 μ ν = 0 := by
+  rw [hellingerDiv, hellingerFun_one, fDiv_zero]
+
+section HellingerEq
+
 /--If `a ≤ 1` use `hellingerDiv_eq_integral_of_integrable_of_le_one` or
 `hellingerDiv_eq_integral_of_le_one`, as they have fewer hypotheses.-/
 lemma hellingerDiv_eq_integral_of_integrable_of_ac
