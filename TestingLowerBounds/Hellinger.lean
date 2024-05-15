@@ -315,7 +315,7 @@ lemma hellingerDiv_eq_integral_of_lt_one' (ha_pos : 0 < a) (ha : a < 1) (μ ν :
 
 end HellingerEq
 
---TODO: write something like this for the conditional one
+--Maybe we could write something like this for the conditional case? Would it be useful?
 lemma hellingerDiv_le_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν ≤ (1 - a)⁻¹ * ν Set.univ := by
@@ -430,7 +430,6 @@ lemma condHellingerDiv_of_ae_finite_of_integrable (h_ae : ∀ᵐ x ∂μ, hellin
     (h_int : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
     condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
   condFDiv_eq' h_ae h_int
-
 
 
 --TODO: add some API and the blueprint
