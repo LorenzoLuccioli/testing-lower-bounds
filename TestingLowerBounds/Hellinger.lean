@@ -269,7 +269,7 @@ lemma hellingerDiv_ne_top_iff_of_le_one (ha : a ≤ 1) (μ ν : Measure α) :
     hellingerDiv a μ ν ≠ ⊤ ↔ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
   rw [ne_eq, hellingerDiv_eq_top_iff_of_le_one ha, not_not]
 
-lemma hellingerDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a ≤ 1) (μ ν : Measure α)
+lemma hellingerDiv_ne_top_of_le_one (ha_pos : 0 < a) (ha : a ≤ 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν ≠ ⊤ := by
   rw [hellingerDiv_ne_top_iff_of_le_one ha]
@@ -322,7 +322,7 @@ lemma hellingerDiv_eq_integral_of_ne_top'' [IsFiniteMeasure μ] [IsProbabilityMe
 lemma hellingerDiv_eq_integral_of_lt_one' (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ *  ν Set.univ :=
-  hellingerDiv_eq_integral_of_ne_top' ha.ne (hellingerDiv_ne_top_of_lt_one ha_pos ha.le μ ν)
+  hellingerDiv_eq_integral_of_ne_top' ha.ne (hellingerDiv_ne_top_of_le_one ha_pos ha.le μ ν)
 
 lemma hellingerDiv_symm' (ha_pos : 0 < a) (ha : a < 1) (h_eq : μ Set.univ = ν Set.univ)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
@@ -383,7 +383,7 @@ lemma integrable_hellingerDiv_iff' [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsF
   have h_fin : ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤ := by
     filter_upwards [h_int, eventually_all.mpr h_ac] with x hx_int hx_ac
     rcases lt_or_gt_of_ne ha_ne_one with h_lt | h_gt
-    · exact hellingerDiv_ne_top_of_lt_one ha_pos h_lt.le _ _
+    · exact hellingerDiv_ne_top_of_le_one ha_pos h_lt.le _ _
     · exact hellingerDiv_ne_top_iff_of_one_lt h_gt _ _ |>.mpr ⟨hx_int, hx_ac h_gt⟩
   have h_eq_eq : ∀ᵐ x ∂μ, (hellingerDiv a (κ x) (η x)).toReal =
       (a - 1)⁻¹ * ((∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) - ((η x) Set.univ).toReal) := by
