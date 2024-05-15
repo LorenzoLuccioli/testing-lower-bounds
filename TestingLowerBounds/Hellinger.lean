@@ -435,10 +435,14 @@ lemma condHellingerDiv_of_not_ae_finite (h_ae : ¬ ∀ᵐ x ∂μ, hellingerDiv 
 
 lemma condHellingerDiv_of_not_ae_integrable [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int : ¬ ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)) :
+    condHellingerDiv a κ η μ = ⊤ := condFDiv_of_not_ae_integrable h_int
+
+lemma condHellingerDiv_of_not_ae_integrable_of_le_one (ha : a ≤ 1)
+    (h_int : ¬ ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)) :
     condHellingerDiv a κ η μ = ⊤ := by
   apply condHellingerDiv_of_not_ae_finite
-  rw [hellingerDiv_ae_ne_top_iff]
-  tauto
+  rw [hellingerDiv_ae_ne_top_iff_of_le_one ha]
+  exact h_int
 
 lemma condHellingerDiv_of_not_ae_ac_of_one_lt [IsFiniteKernel κ] [IsFiniteKernel η] (ha : 1 < a)
     (h_ac : ¬ ∀ᵐ x ∂μ, (κ x) ≪ (η x)) :
@@ -448,21 +452,47 @@ lemma condHellingerDiv_of_not_ae_ac_of_one_lt [IsFiniteKernel κ] [IsFiniteKerne
   tauto
 
 
-
-
-
 lemma condHellingerDiv_of_not_integrable
     (h_int : ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
     condHellingerDiv a κ η μ = ⊤ := condFDiv_of_not_integrable h_int
+
+lemma condHellingerDiv_of_not_integrable' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
+    [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_int : ¬ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    condHellingerDiv a κ η μ = ⊤ := by
+  by_cases h_int2 : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)
+  swap; exact condHellingerDiv_of_not_ae_integrable h_int2
+  by_cases h_ac : 1 < a → ∀ᵐ x ∂μ, κ x ≪ η x
+  swap
+  · push_neg at h_ac
+    exact condHellingerDiv_of_not_ae_ac_of_one_lt h_ac.1 h_ac.2
+  apply condHellingerDiv_of_not_integrable
+  rwa [integrable_hellingerDiv_iff' ha_pos ha_ne_one h_int2 h_ac]
+
 
 lemma condHellingerDiv_of_ae_finite_of_integrable (h_ae : ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
     (h_int : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
     condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
   condFDiv_eq' h_ae h_int
 
+lemma condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+    (h_ac : 1 < a → ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+    (h_int2 : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
+    condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
+  condHellingerDiv_of_ae_finite_of_integrable
+    ((hellingerDiv_ae_ne_top_iff _ _ _).mpr ⟨h_int, h_ac⟩) h_int2
+
+lemma condHellingerDiv_of_ae_integrable_of_integrable_of_le_one (ha : a ≤ 1)
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+    (h_int2 : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
+    condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
+  condHellingerDiv_of_ae_finite_of_integrable
+    ((hellingerDiv_ae_ne_top_iff_of_le_one ha _ _).mpr h_int) h_int2
 
 --TODO: add some API and the blueprint
 
 end Conditional
 
 end ProbabilityTheory
+--TODO: propagate the generalization from ContablyGenerated to CountableOrCountablyGenerated
