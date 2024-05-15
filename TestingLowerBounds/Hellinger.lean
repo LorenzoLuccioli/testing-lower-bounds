@@ -353,6 +353,17 @@ section Conditional
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
 
+lemma hellingerDiv_ae_ne_top_iff (a : ℝ) (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
+    (∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∧ (1 < a → ∀ᵐ x ∂μ, (κ x) ≪ (η x)) := by
+  simp_rw [hellingerDiv_ne_top_iff, eventually_and, eventually_all]
+
+lemma hellingerDiv_ae_ne_top_iff_of_le_one (ha : a ≤ 1) (κ η : kernel α β) :
+    (∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)) := by
+  simp_rw [hellingerDiv_ne_top_iff_of_le_one ha]
+
 /--Use this version only for the case `1 < a` or when one of the kernels is not finite, otherwise
 use `integrable_hellingerDiv_iff_of_lt_one`, as it is strictly more general.-/
 lemma integrable_hellingerDiv_iff
@@ -421,6 +432,24 @@ noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measur
 
 lemma condHellingerDiv_of_not_ae_finite (h_ae : ¬ ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤) :
     condHellingerDiv a κ η μ = ⊤ := condFDiv_of_not_ae_finite h_ae
+
+lemma condHellingerDiv_of_not_ae_integrable [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_int : ¬ ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)) :
+    condHellingerDiv a κ η μ = ⊤ := by
+  apply condHellingerDiv_of_not_ae_finite
+  rw [hellingerDiv_ae_ne_top_iff]
+  tauto
+
+lemma condHellingerDiv_of_not_ae_ac_of_one_lt [IsFiniteKernel κ] [IsFiniteKernel η] (ha : 1 < a)
+    (h_ac : ¬ ∀ᵐ x ∂μ, (κ x) ≪ (η x)) :
+    condHellingerDiv a κ η μ = ⊤ := by
+  apply condHellingerDiv_of_not_ae_finite
+  rw [hellingerDiv_ae_ne_top_iff]
+  tauto
+
+
+
+
 
 lemma condHellingerDiv_of_not_integrable
     (h_int : ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
