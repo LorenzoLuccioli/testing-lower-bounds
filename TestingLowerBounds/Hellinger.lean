@@ -192,8 +192,9 @@ end HellingerFun
 /-- Hellinger divergence of order `a`. Meaningful for `a ∈ (0, 1) ∪ (1, ∞)`. -/
 noncomputable def hellingerDiv (a : ℝ) (μ ν : Measure α) : EReal := fDiv (hellingerFun a) μ ν
 
-@[simp]
-lemma hellingerDiv_one (μ ν : Measure α) : hellingerDiv 1 μ ν = 0 := by
+/--Note that the correct definition of Hellinger divergence at `a = 1` would be to be equal to the
+KL divergence, not the f divergence with `f = fun x ↦ 0`. -/
+@[simp] lemma hellingerDiv_one (μ ν : Measure α) : hellingerDiv 1 μ ν = 0 := by
   rw [hellingerDiv, hellingerFun_one, fDiv_zero]
 
 section HellingerEq
