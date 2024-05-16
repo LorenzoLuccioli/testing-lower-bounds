@@ -453,7 +453,6 @@ lemma condHellingerDiv_of_not_ae_ac_of_one_lt [IsFiniteKernel κ] [IsFiniteKerne
   rw [hellingerDiv_ae_ne_top_iff]
   tauto
 
-
 lemma condHellingerDiv_of_not_integrable
     (h_int : ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
     condHellingerDiv a κ η μ = ⊤ := condFDiv_of_not_integrable h_int
@@ -470,7 +469,6 @@ lemma condHellingerDiv_of_not_integrable' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
     exact condHellingerDiv_of_not_ae_ac_of_one_lt h_ac.1 h_ac.2
   apply condHellingerDiv_of_not_integrable
   rwa [integrable_hellingerDiv_iff' ha_pos ha_ne_one h_int2 h_ac]
-
 
 lemma condHellingerDiv_of_ae_finite_of_integrable (h_ae : ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
     (h_int : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
@@ -491,7 +489,6 @@ lemma condHellingerDiv_of_ae_integrable_of_integrable_of_le_one (ha : a ≤ 1)
     condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff_of_le_one ha _ _).mpr h_int) h_int2
-
 
 lemma condHellingerDiv_eq_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
     condHellingerDiv a κ η μ = ⊤
@@ -529,10 +526,6 @@ lemma condHellingerDiv_eq_top_iff_of_le_one (ha : a ≤ 1) [IsFiniteKernel κ] [
         ∧ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ := by
   simp only [condHellingerDiv_ne_top_iff, ha.not_lt, false_implies, true_and]
 
-
-
-
---TODO: add some lemmas like eq_top_iff
 
 --TODO: add some API and the blueprint
 end CondHellingerEq
