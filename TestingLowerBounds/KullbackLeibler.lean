@@ -601,7 +601,14 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
     kl μ.fst ν.fst + condKL μ.condKernel ν.condKernel μ.fst = kl μ ν := by
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
---TODO: this is just a thin wrapper around kernel.integrable_llr_compProd_iff, so that that lemma could be put in an outside file. But I have realised that the choice of having 2 instead of 2' as the hp of choice about integrability here may be a bad one, because for one in cases like this one it does not allow to move stuff outside this file, because it relies on the definition of kl. Moreover in general it is the opposite choice to what is done in fDiv, and in fDiv the other choice is much more convenient, because it allows to disregard the singular part inside the definition of fDiv when talking about integrability. So I think it may be better to reverse this choice here, changing the lemmas like condKL_ne_top_iff from 2 to 2'
+/-TODO: this is just a thin wrapper around kernel.integrable_llr_compProd_iff, so that that lemma
+could be put in an outside file. But I have realised that the choice of having 2 instead of 2' as
+the hp of choice about integrability here may be a bad one, because in cases like this one
+it does not allow to move stuff outside this file, as it relies on the definition of kl.
+Moreover in general it is the opposite choice to what is done in fDiv, and in fDiv the other choice
+is much more convenient, because it allows to disregard the singular part inside the definition of
+fDiv when talking about integrability. So I think it may be better to reverse this choice here,
+changing the lemmas like condKL_ne_top_iff from 2 to 2'-/
 lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated (α × β) γ] [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
     [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
