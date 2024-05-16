@@ -146,7 +146,8 @@ lemma integrable_llr_compProd_iff [CountableOrCountablyGenerated α β] [IsMarko
     ae_integrable_llr_of_integrable_llr_compProd h_ac h⟩,
     fun h ↦ integrable_llr_compProd_of_integrable_llr h_ac h.1.1 h.1.2 h.2⟩
 
-lemma kernel.integrable_llr_compProd_iff [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+lemma kernel.integrable_llr_compProd_iff [CountableOrCountablyGenerated (α × β) γ]
+    [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
     [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
     Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)

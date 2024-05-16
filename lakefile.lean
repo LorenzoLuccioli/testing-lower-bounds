@@ -10,10 +10,10 @@ package «testing_lower_bounds» where
     ⟨`relaxedAutoImplicit, false⟩
   ]
   -- add any additional package configuration options here
-  moreLinkArgs := #[
-      "-L./.lake/packages/LeanCopilot/.lake/build/lib",
-      "-lctranslate2"
-    ]
+  -- moreLinkArgs := #[
+  --     "-L./.lake/packages/LeanCopilot/.lake/build/lib",
+  --     "-lctranslate2"
+  --   ]
 
 require mathlib from git
   "https://github.com/leanprover-community/mathlib4.git"
@@ -22,7 +22,7 @@ require mathlib from git
 lean_lib TestingLowerBounds where
   -- add any library configuration options here
 
-require LeanCopilot from git "https://github.com/lean-dojo/LeanCopilot.git" @ "v1.2.0"
+-- require LeanCopilot from git "https://github.com/lean-dojo/LeanCopilot.git" @ "v1.2.0"
 
 require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
 

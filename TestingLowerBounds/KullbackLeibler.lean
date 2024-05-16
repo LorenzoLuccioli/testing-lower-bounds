@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 -- theorem foo (n : Nat) : 0 ≤ n := by exact? -- trick to make exact? work TODO : erase this when we are done
-import LeanCopilot
+-- import LeanCopilot
 
 import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
@@ -602,7 +602,7 @@ lemma kl_fst_add_condKL [StandardBorelSpace β] [Nonempty β] {μ ν : Measure (
   rw [← kl_compProd, μ.compProd_fst_condKernel, ν.compProd_fst_condKernel]
 
 --TODO: this is just a thin wrapper around kernel.integrable_llr_compProd_iff, so that that lemma could be put in an outside file. But I have realised that the choice of having 2 instead of 2' as the hp of choice about integrability here may be a bad one, because for one in cases like this one it does not allow to move stuff outside this file, because it relies on the definition of kl. Moreover in general it is the opposite choice to what is done in fDiv, and in fDiv the other choice is much more convenient, because it allows to disregard the singular part inside the definition of fDiv when talking about integrability. So I think it may be better to reverse this choice here, changing the lemmas like condKL_ne_top_iff from 2 to 2'
-lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
+lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated (α × β) γ] [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
     [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
     Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
@@ -614,7 +614,7 @@ lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated β γ] 
   have h_ac' := kernel.absolutelyContinuous_compProd_iff a |>.mp h_ac |>.2
   exact integrable_kl_iff h_ac'
 
-lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountablyGenerated γ] {κ₁ η₁ : kernel α β}
+lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountableOrCountablyGenerated (α × β) γ] [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
     [IsMarkovKernel η₂] (h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a)
     (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)) :
@@ -634,7 +634,7 @@ lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountablyGenerated γ] {κ�
     (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
     condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
 
--- todo: can we avoid the two different `CountableOrCountablyGenerated` assumptions?
+-- todo: can we avoid the two different `CountableOrCountablyGenerated` assumptions? we could add an instance for `CountableOrCountablyGenerated β γ` if it holds for `(α × β) γ`
 lemma condKL_compProd_kernel_eq_top [CountableOrCountablyGenerated (α × β) γ]
     [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
@@ -692,121 +692,6 @@ lemma condKL_compProd_kernel [CountableOrCountablyGenerated (α × β) γ]
   exact integral_congr_ae <| kl_compProd_kernel_of_ae_ac_of_ae_integrable hp.1 hp.2.1
 
 end CompProd
-
-/- TODO: this can be generalized, relaxing the markov kernel hypothesis, it is sufficient that
-the kernels are finite and that they are not zero, but just stating that is not enough, because
-the actual hypothesys needed is that `∀ b, NeZero (snd' κ₂ a) b` but this is very ugly to use as
-an explicit hypothesis, maybe it is worth it to add an instance saying that if `NeZero κ (a, b)`
-then `NeZero (snd' κ a) b`.
-To fix this maybe we can add the instance that if `NeZero κ (a, b)` then `NeZero (snd' κ a) b`,
-then it should be able to generalize this lemma.
-TODO: these lemmas may be put in another file, decide how to organize the files, about composition
-of kernels. -/
-lemma kernel.absolutelyContinuous_compProd_iff [CountableOrCountablyGenerated β γ]
-    {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁]
-    [IsMarkovKernel κ₂] [IsMarkovKernel η₂] (a : α) :
-    (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a ↔ κ₁ a ≪ η₁ a ∧ ∀ᵐ b ∂κ₁ a, κ₂ (a, b) ≪ η₂ (a, b) := by
-  simp_rw [kernel.compProd_apply_eq_compProd_snd',
-    kernel.Measure.absolutelyContinuous_compProd_iff, kernel.snd'_apply]
-
-lemma kernel.integrable_llr_compProd_iff [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
-    Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
-      ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
-        ∧ Integrable (fun b ↦ (kl (κ₂ (a, b)) (η₂ (a, b))).toReal) (κ₁ a)
-        ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
-  have h_ac' := kernel.absolutelyContinuous_compProd_iff a |>.mp h_ac |>.2
-  simp_rw [kernel.compProd_apply_eq_compProd_snd'] at h_ac
-  simp_rw [kernel.compProd_apply_eq_compProd_snd',
-    ProbabilityTheory.integrable_llr_compProd_iff h_ac, kernel.snd'_apply]
-  by_cases h_int₁ : Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
-  swap; tauto
-  by_cases h_int₂ : ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b))
-  swap; tauto
-  simp only [h_int₁, true_and, h_int₂, and_true]
-  apply integrable_congr
-  filter_upwards [h_ac'] with b hb_ac
-  rw [kl_toReal_of_ac hb_ac]
-
-lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountableOrCountablyGenerated β γ]
-    {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁]
-    [IsMarkovKernel κ₂] [IsMarkovKernel η₂]
-    (h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a)
-    (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)) :
-    ∀ᵐ a ∂μ, (kl ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)).toReal
-      = (kl (κ₁ a) (η₁ a)).toReal + ∫ b, (kl (κ₂ (a, b)) (η₂ (a, b))).toReal ∂κ₁ a := by
-  simp only [eventually_congr (h_ac.mono (fun a h ↦ (kernel.integrable_llr_compProd_iff a h))),
-    eventually_and] at h_ae_int
-  simp only [kernel.absolutelyContinuous_compProd_iff, eventually_and] at h_ac
-  filter_upwards [h_ac.1, h_ac.2, h_ae_int.1, h_ae_int.2.1, h_ae_int.2.2] with a ha_ac₁ ha_ac₂
-    ha_int₁ ha_int_kl₂ ha_int₂
-  have h_snd_ne_top : condKL (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a) ≠ ⊤ := by
-    apply condKL_ne_top_iff.mpr
-    simp_rw [kernel.snd'_apply]
-    exact ⟨ha_ac₂, ⟨ha_int₂, ha_int_kl₂⟩⟩
-  simp_rw [kernel.compProd_apply_eq_compProd_snd', kl_compProd,
-    EReal.toReal_add (kl_ne_top_iff.mpr ⟨ha_ac₁, ha_int₁⟩) (kl_ne_bot (κ₁ a) (η₁ a)) h_snd_ne_top
-    (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
-    condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
-
--- todo: can we avoid the two different `CountableOrCountablyGenerated` assumptions?
-lemma condKL_compProd_kernel_eq_top [CountableOrCountablyGenerated (α × β) γ]
-    [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] [SFinite μ] :
-    condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤ ↔ condKL κ₁ η₁ μ = ⊤ ∨ condKL κ₂ η₂ (μ ⊗ₘ κ₁) = ⊤ := by
-  simp_rw [condKL_eq_top_iff,
-    Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)]
-  by_cases h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a
-    <;> have h_ac' := h_ac
-    <;> simp only [kernel.absolutelyContinuous_compProd_iff, eventually_and, not_and_or] at h_ac'
-    <;> simp only [h_ac, h_ac', not_false_eq_true, true_or, not_true, true_iff, false_or]
-  swap; tauto
-  rw [← Measure.ae_compProd_iff (kernel.measurableSet_absolutelyContinuous _ _)] at h_ac'
-  by_cases h_ae_int : ∀ᵐ a ∂μ, Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
-    <;> have h_ae_int' := h_ae_int
-    <;> simp only [eventually_congr
-        (h_ac.mono (fun a h ↦ (kernel.integrable_llr_compProd_iff a h))),
-      eventually_and, not_and_or] at h_ae_int'
-    <;> simp only [h_ae_int, h_ae_int', not_false_eq_true, true_or, true_and, not_true, true_iff,
-      false_or, not_and_or, ae_compProd_integrable_llr_iff h_ac'.2, Measure.integrable_compProd_iff
-      (measurable_kl _ _).ereal_toReal.stronglyMeasurable.aestronglyMeasurable]
-  swap
-  · by_cases h_int₁ : ∀ᵐ x ∂μ, Integrable (llr (κ₁ x) (η₁ x)) (κ₁ x)
-    swap; tauto
-    by_cases h_int₂ : ∀ᵐ a ∂μ, ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b))
-    swap; tauto
-    simp only [h_int₁, h_int₂, not_true_eq_false, false_or, or_false] at h_ae_int'
-    right; right; left
-    exact h_ae_int'
-  simp only [norm_eq_abs, EReal.toReal_nonneg (kl_nonneg _ _), abs_of_nonneg, ← not_and_or,
-    not_iff_not]
-  rw [integrable_congr (kl_compProd_kernel_of_ae_ac_of_ae_integrable h_ac h_ae_int), and_comm]
-  simp_rw [add_comm (kl (κ₁ _) (η₁ _)).toReal]
-  apply integrable_add_iff_of_nonneg
-  · exact StronglyMeasurable.integral_kernel_prod_right' (κ := κ₁)
-      ((measurable_kl κ₂ η₂).ereal_toReal.stronglyMeasurable) |>.aestronglyMeasurable
-  · filter_upwards with a using integral_nonneg (fun b ↦ EReal.toReal_nonneg (kl_nonneg _ _))
-  · filter_upwards with a using EReal.toReal_nonneg (kl_nonneg _ _)
-
-lemma condKL_compProd_kernel [CountableOrCountablyGenerated (α × β) γ]
-    [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ}
-    [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
-    condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = condKL κ₁ η₁ μ + condKL κ₂ η₂ (μ ⊗ₘ κ₁) := by
-  by_cases hp : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
-  · rw [hp]
-    rw [condKL_compProd_kernel_eq_top] at hp
-    rcases hp with (h | h) <;> rw [h]
-    · exact (EReal.top_add_of_ne_bot (condKL_ne_bot _ _ _)).symm
-    · exact (EReal.add_top_of_ne_bot (condKL_ne_bot _ _ _)).symm
-  obtain ⟨h1, h2⟩ := not_or.mp <| condKL_compProd_kernel_eq_top.mpr.mt hp
-  rw [condKL_ne_top_iff'.mp hp, condKL_ne_top_iff'.mp h1, condKL_ne_top_iff'.mp h2]
-  rw [← ne_eq, condKL_ne_top_iff] at h1 h2 hp
-  rw [Measure.integral_compProd h2.2.2]
-  norm_cast
-  convert integral_add h1.2.2 (Integrable.integral_compProd' h2.2.2) using 1
-  exact integral_congr_ae <| kl_compProd_kernel_of_ae_ac_of_ae_integrable hp.1 hp.2.1
 
 end Conditional
 
