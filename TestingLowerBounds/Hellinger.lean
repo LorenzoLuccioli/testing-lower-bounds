@@ -430,6 +430,8 @@ lemma integrable_hellingerDiv_iff'_of_lt_one [IsFiniteMeasure μ] [IsFiniteKerne
 noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   condFDiv (hellingerFun a) κ η μ
 
+section CondHellingerEq
+
 lemma condHellingerDiv_of_not_ae_finite (h_ae : ¬ ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤) :
     condHellingerDiv a κ η μ = ⊤ := condFDiv_of_not_ae_finite h_ae
 
@@ -491,6 +493,7 @@ lemma condHellingerDiv_of_ae_integrable_of_integrable_of_le_one (ha : a ≤ 1)
     ((hellingerDiv_ae_ne_top_iff_of_le_one ha _ _).mpr h_int) h_int2
 
 --TODO: add some API and the blueprint
+end CondHellingerEq
 
 end Conditional
 
