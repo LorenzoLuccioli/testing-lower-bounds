@@ -492,6 +492,48 @@ lemma condHellingerDiv_of_ae_integrable_of_integrable_of_le_one (ha : a ≤ 1)
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff_of_le_one ha _ _).mpr h_int) h_int2
 
+
+lemma condHellingerDiv_eq_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ = ⊤
+      ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∨ (1 < a ∧ ¬ ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+        ∨ ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ := by
+  constructor
+  · contrapose!
+    rintro ⟨h_int, h_ac, h_int2⟩
+    rw [condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable h_int h_ac h_int2]
+    exact EReal.coe_ne_top _
+  · rintro (h | ⟨ha, h_ac⟩ | h_int)
+    · exact condHellingerDiv_of_not_ae_integrable h
+    · exact condHellingerDiv_of_not_ae_ac_of_one_lt ha h_ac
+    · exact condHellingerDiv_of_not_integrable h_int
+
+lemma condHellingerDiv_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ ≠ ⊤
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∧ (1 < a →  ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+        ∧ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ := by
+  rw [ne_eq, condHellingerDiv_eq_top_iff]
+  push_neg
+  rfl
+
+lemma condHellingerDiv_ne_top_iff_of_le_one (ha : a ≤ 1) [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ = ⊤
+      ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∨ ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ := by
+  simp only [condHellingerDiv_eq_top_iff, not_eventually, ha.not_lt, false_and, false_or]
+
+lemma condHellingerDiv_eq_top_iff_of_le_one (ha : a ≤ 1) [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ ≠ ⊤
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∧ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ := by
+  simp only [condHellingerDiv_ne_top_iff, ha.not_lt, false_implies, true_and]
+
+
+
+
+--TODO: add some lemmas like eq_top_iff
+
 --TODO: add some API and the blueprint
 end CondHellingerEq
 
