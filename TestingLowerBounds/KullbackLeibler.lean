@@ -14,6 +14,7 @@ import TestingLowerBounds.ForMathlib.IntegralCongr2
 import TestingLowerBounds.ForMathlib.KernelFstSnd
 import TestingLowerBounds.ForMathlib.Measurable
 import TestingLowerBounds.ForMathlib.IntegrableNonneg
+import TestingLowerBounds.ForMathlib.CountableOrCountablyGenerated
 
 /-!
 # Kullback-Leibler divergence
@@ -611,13 +612,18 @@ Moreover in general it is the opposite choice to what is done in fDiv, and in fD
 is much more convenient, because it allows to disregard the singular part inside the definition of
 fDiv when talking about integrability. So I think it may be better to reverse this choice here,
 changing the lemmas like condKL_ne_top_iff from 2 to 2'-/
-lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated (α × β) γ] [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
+lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated (α × β) γ]
+    {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁]
+    [IsMarkovKernel κ₂] [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
     Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
       ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
         ∧ Integrable (fun b ↦ (kl (κ₂ (a, b)) (η₂ (a, b))).toReal) (κ₁ a)
         ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
+  by_cases h_empty : IsEmpty α --TODO: this is a hack to avoid putting the hp CountableOrCountablyGenerated twice, decide if it is good enough as it is or if it should be polished more, then use the same technique for the other cases where this happens
+  · exact (IsEmpty.false a).elim
+  have :=
+    instOrIsEmptyCountableOrCountablyGeneratedOfProd_testingLowerBounds_1 (α := α) (β := β) (γ := γ)
+  have : CountableOrCountablyGenerated β γ := by tauto
   convert kernel.integrable_llr_compProd_iff a h_ac using 3
   simp_rw [← kernel.snd'_apply]
   have h_ac' := kernel.absolutelyContinuous_compProd_iff a |>.mp h_ac |>.2
