@@ -404,8 +404,9 @@ the integrability of the first function, this would however require more work. -
 /-- This is to handle the case in `condKL_compProd_meas` when the lhs is ⊤, in this case the rhs is
 'morally' also ⊤, so the equality holds, but actually in Lean the equality is not true, because of
 how we handle the infinities in the integrals, so we have to make a separate lemma for this case. -/
-lemma condKL_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ] [SFinite μ] {ξ : kernel α β}
-    [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] :
+lemma condKL_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ] [SFinite μ]
+    {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ]
+    [IsMarkovKernel η] :
     condKL κ η (μ ⊗ₘ ξ) = ⊤
       ↔ ¬ (∀ᵐ a ∂μ, condKL (kernel.snd' κ a) (kernel.snd' η a) (ξ a) ≠ ⊤)
         ∨ ¬ Integrable (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by
@@ -482,8 +483,9 @@ lemma condKL_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ] 
         positivity
 
 -- TODO: find a better name
-lemma condKL_compProd_meas [CountableOrCountablyGenerated (α × β) γ] [SFinite μ] {ξ : kernel α β} [IsSFiniteKernel ξ]
-    {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η] (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
+lemma condKL_compProd_meas [CountableOrCountablyGenerated (α × β) γ] [SFinite μ] {ξ : kernel α β}
+    [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ] [IsMarkovKernel η]
+    (h : condKL κ η (μ ⊗ₘ ξ) ≠ ⊤) :
     condKL κ η (μ ⊗ₘ ξ) = ∫ x, (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal ∂μ := by
   rw [condKL_ne_top_iff'.mp h, Measure.integral_compProd (condKL_ne_top_iff.mp h).2.2]
   replace h := condKL_compProd_meas_eq_top.mpr.mt h
@@ -641,7 +643,8 @@ lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountableOrCountablyGenerate
     (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
     condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
 
--- todo: can we avoid the two different `CountableOrCountablyGenerated` assumptions? we could add an instance for `CountableOrCountablyGenerated β γ` if it holds for `(α × β) γ`
+-- todo: can we avoid the two different `CountableOrCountablyGenerated` assumptions?
+-- We could add an instance for `CountableOrCountablyGenerated β γ` if it holds for `(α × β) γ`, but it is not true in general, in particular it's not true if `α` is empty. In that case, however, the result is trivial, so we could prove that case separately.
 lemma condKL_compProd_kernel_eq_top [CountableOrCountablyGenerated (α × β) γ]
     [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
