@@ -534,3 +534,4 @@ end Conditional
 
 end ProbabilityTheory
 --TODO: propagate the generalization from ContablyGenerated to CountableOrCountablyGenerated
+--TODO: try to make latex workshop work, try putting in the settings the exact thing to run: xelatex -synctex=1  -recorder -output-directory="/Users/lorenzo/LEAN/testing-lower-bounds/blueprint/print"  "print.tex"
