@@ -349,6 +349,11 @@ lemma hellingerDiv_symm (ha_pos : 0 < a) (ha : a < 1)
     (1 - a) * hellingerDiv a μ ν = a * hellingerDiv (1 - a) ν μ :=
   hellingerDiv_symm' ha_pos ha (by simp)
 
+lemma hellingerDiv_nonneg (ha_pos : 0 < a) (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
+    0 ≤ hellingerDiv a μ ν :=
+  fDiv_nonneg (convexOn_hellingerFun ha_pos) (continuous_hellingerFun ha_pos).continuousOn
+    hellingerFun_one_eq_zero
+
 section Conditional
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
