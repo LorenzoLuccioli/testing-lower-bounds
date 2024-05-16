@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2024 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Rémy Degenne
+Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import Mathlib.Probability.Kernel.MeasureCompProd
 import Mathlib.Probability.Kernel.RadonNikodym
@@ -513,7 +513,7 @@ lemma Measure.absolutelyContinuous_compProd_right_iff
 end MeasureCompProd
 
 --for now I am leaving it here, but in the future it should be moved to a more appropriate place, some file about absolute continuity, together with the other lemmas about absolute continuity, i.e. the lemmas directly above this one and some lemmas at the beginning of this file
---TODO: add ain instance for `CountableOrCountablyGenerated β γ` if it holds for `(α × β) γ`
+--TODO: add an instance for `CountableOrCountablyGenerated β γ` if it holds for `(α × β) γ`
 lemma absolutelyContinuous_compProd_iff {β : Type*} [MeasurableSpace β]
     [MeasurableSpace.CountableOrCountablyGenerated β γ] [MeasurableSpace.CountableOrCountablyGenerated (α × β) γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsSFiniteKernel κ₁] [IsSFiniteKernel η₁] [IsFiniteKernel κ₂]
