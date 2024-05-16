@@ -531,8 +531,6 @@ lemma condHellingerDiv_eq_top_iff_of_le_one (ha : a ≤ 1) [IsFiniteKernel κ] [
         ∧ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ := by
   simp only [condHellingerDiv_ne_top_iff, ha.not_lt, false_implies, true_and]
 
-
---TODO: add some API and the blueprint
 end CondHellingerEq
 
 end Conditional
