@@ -466,7 +466,7 @@ lemma condHellingerDiv_of_not_integrable
 
 lemma condHellingerDiv_of_not_integrable' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsFiniteKernel η]
-    (h_int : ¬ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    (h_int' : ¬ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = ⊤ := by
   by_cases h_int2 : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)
   swap; exact condHellingerDiv_of_not_ae_integrable h_int2
@@ -478,9 +478,9 @@ lemma condHellingerDiv_of_not_integrable' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
   rwa [integrable_hellingerDiv_iff' ha_pos ha_ne_one h_int2 h_ac]
 
 lemma condHellingerDiv_of_ae_finite_of_integrable (h_ae : ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
-    (h_int : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
+    (h_int2 : Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
     condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
-  condFDiv_eq' h_ae h_int
+  condFDiv_eq' h_ae h_int2
 
 lemma condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
@@ -494,11 +494,11 @@ lemma condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable' (ha_pos : 0 < a)
     [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
     (h_ac : 1 < a → ∀ᵐ x ∂μ, (κ x) ≪ (η x))
-    (h_int2 : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff _ _ _).mpr ⟨h_int, h_ac⟩)
-    (integrable_hellingerDiv_iff' ha_pos ha_ne_one h_int h_ac |>.mpr h_int2)
+    (integrable_hellingerDiv_iff' ha_pos ha_ne_one h_int h_ac |>.mpr h_int')
 
 lemma condHellingerDiv_of_ae_integrable_of_integrable_of_le_one (ha : a ≤ 1)
     (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
@@ -507,14 +507,14 @@ lemma condHellingerDiv_of_ae_integrable_of_integrable_of_le_one (ha : a ≤ 1)
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff_of_le_one ha _ _).mpr h_int) h_int2
 
-lemma condHellingerDiv_of_ae_integrable_of_integrable'_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
+lemma condHellingerDiv_of_integrable'_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
     [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
-    (h_int2 : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ :=
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff_of_le_one ha.le _ _).mpr
       (eventually_of_forall <| fun _ ↦ integrable_hellingerFun_rnDeriv_of_le_one ha_pos ha.le))
-    (integrable_hellingerDiv_iff'_of_lt_one ha_pos ha |>.mpr h_int2)
+    (integrable_hellingerDiv_iff'_of_lt_one ha_pos ha |>.mpr h_int')
 
 lemma condHellingerDiv_eq_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
     condHellingerDiv a κ η μ = ⊤
@@ -526,10 +526,10 @@ lemma condHellingerDiv_eq_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
     rintro ⟨h_int, h_ac, h_int2⟩
     rw [condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable h_int h_ac h_int2]
     exact EReal.coe_ne_top _
-  · rintro (h | ⟨ha, h_ac⟩ | h_int)
-    · exact condHellingerDiv_of_not_ae_integrable h
+  · rintro (h_int | ⟨ha, h_ac⟩ | h_int2)
+    · exact condHellingerDiv_of_not_ae_integrable h_int
     · exact condHellingerDiv_of_not_ae_ac_of_one_lt ha h_ac
-    · exact condHellingerDiv_of_not_integrable h_int
+    · exact condHellingerDiv_of_not_integrable h_int2
 
 lemma condHellingerDiv_ne_top_iff [IsFiniteKernel κ] [IsFiniteKernel η] :
     condHellingerDiv a κ η μ ≠ ⊤
