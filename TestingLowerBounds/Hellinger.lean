@@ -587,6 +587,30 @@ lemma condHellingerDiv_ne_top_iff_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
     condHellingerDiv a κ η μ ≠ ⊤ ↔ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ := by
   rw [ne_eq, condHellingerDiv_eq_top_iff_of_lt_one ha_pos ha, not_not]
 
+lemma condHellingerDiv_eq_integral_iff_ne_top (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ ≠ ⊤
+      ↔ condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ := by
+  refine ⟨fun h ↦ ?_, fun h ↦ h ▸ EReal.coe_ne_top _⟩
+  rw [condHellingerDiv_ne_top_iff' ha_pos ha_ne_one] at h
+  exact condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable' ha_pos ha_ne_one h.1 h.2.1 h.2.2
+
+lemma condHellingerDiv_eq_integral_iff (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∧ (1 < a → ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+        ∧ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ :=
+  (condHellingerDiv_eq_integral_iff_ne_top ha_pos ha_ne_one).symm.trans
+    (condHellingerDiv_ne_top_iff' ha_pos ha_ne_one)
+
+lemma condHellingerDiv_eq_integral_iff_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ
+      ↔ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ :=
+  (condHellingerDiv_eq_integral_iff_ne_top ha_pos ha.ne).symm.trans
+    (condHellingerDiv_ne_top_iff_of_lt_one ha_pos ha)
+
 end CondHellingerEq
 
 lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated α β]
