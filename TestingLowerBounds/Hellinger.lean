@@ -534,6 +534,13 @@ lemma condHellingerDiv_eq_top_iff_of_le_one (ha : a ≤ 1) [IsFiniteKernel κ] [
 
 end CondHellingerEq
 
+lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+    (μ : Measure α) [IsFiniteMeasure μ] (κ η : kernel α β) [IsFiniteKernel κ] [∀ a, NeZero (κ a)]
+    [IsFiniteKernel η] :
+    hellingerDiv a (μ ⊗ₘ κ) (μ ⊗ₘ η) = condHellingerDiv a κ η μ := by
+  rw [hellingerDiv, condHellingerDiv, fDiv_compProd_left _ _ _
+    (stronglyMeasurable_hellingerFun ha_pos) (convexOn_hellingerFun ha_pos)]
+
 end Conditional
 
 end ProbabilityTheory
