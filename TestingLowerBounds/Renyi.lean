@@ -425,18 +425,11 @@ lemma condRenyiDiv_of_not_integrable [CountableOrCountablyGenerated α β] (ha_p
 
 -- TODO: before proceding here I have to define the conditional Hellinger divergence
 
--- lemma condRenyiDiv_of_lt_one' [IsFiniteMeasure μ] [SigmaFinite ν]
---     (ha_pos : 0 < a) (ha_lt_one : a < 1)
---     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
---     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
---   rw [renyiDiv, if_neg ha_pos.ne', if_neg ha_lt_one.ne,
---     if_pos ((hellingerDiv_ne_top_iff_of_lt_one ha_pos ha_lt_one _ _).mpr h_int)]
-
--- lemma condRenyiDiv_of_lt_one (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
---     (ha_pos : 0 < a) (ha_lt_one : a < 1) :
---     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
---   rw [renyiDiv_of_lt_one' ha_pos ha_lt_one]
---   exact integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha_lt_one
+lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+    (ha_lt_one : a < 1) (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
+    [IsFiniteKernel η] [IsFiniteMeasure μ] :
+    condRenyiDiv a κ η μ = (a - 1)⁻¹ * log (1 + (a - 1) * (condHellingerDiv a κ η μ).toReal) := by
+  rw [condRenyiDiv, renyiDiv_of_lt_one ha_pos ha_lt_one, hellingerDiv_compProd_left ha_pos _]
 
 -- lemma condRenyiDiv_of_one_lt_of_ac [IsFiniteMeasure μ] [SigmaFinite ν] (ha_one_lt : 1 < a)
 --     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) (hμν : μ ≪ ν) :
