@@ -437,7 +437,7 @@ lemma integrable_hellingerDiv_iff'_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsFi
 noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   condFDiv (hellingerFun a) κ η μ
 
-/- There are multiple combinations of hypotheses that give rise to slightly different versions of
+/-! There are multiple combinations of hypotheses that give rise to slightly different versions of
 the following lemmas. The ones we will consider as a normal form are when we assume that `μ`, `κ`
 and `η` are all finite and `a ∈ (0, 1) ∪ (1, +∞)`.
 
@@ -447,15 +447,21 @@ Consider the following conditions:
 3.a `∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)` (`h_int`)
 3.b `∀ᵐ x ∂μ, (κ x) ≪ (η x)` (`h_ac`)
 3.c `Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ` (`h_int'`)
+4. `condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ - (a - 1)⁻¹ * ∫ x, ((η x) Set.univ).toReal ∂μ`
 
-Then the following equivalences hold:
+Then the following hold:
 - 1. ↔ 2. (`condHellingerDiv_eq_integral_iff_ne_top`)
 - if `1 < a`:
   - 1. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_ne_top_iff_of_one_lt`)
   - 2. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_eq_integral_iff_of_one_lt`)
+  - 3.a ∧ 3.b ∧ 3.c → 4. (`condHellingerDiv_eq_integral'_of_one_lt`)
 - if `a < 1`:
   - 1. ↔ 3.c (`condHellingerDiv_ne_top_iff_of_lt_one`)
   - 2. ↔ 3.c (`condHellingerDiv_eq_integral_iff_of_lt_one`)
+  - 3.c → 4. (`condHellingerDiv_eq_integral'_of_lt_one`)
+
+The implications 4. → 1./2./3. are not explicitely stated but, if needed, it should be immediate to
+prove by 4. → 1. and then have all the other implications for free.
 -/
 section CondHellingerEq
 
@@ -740,7 +746,6 @@ lemma condHellingerDiv_eq_integral'_of_lt_one'' (ha_pos : 0 < a) (ha : a < 1)
       - (a - 1)⁻¹ := by
   rw [condHellingerDiv_eq_integral'_of_lt_one' ha_pos ha h_int', measure_univ,
     ENNReal.one_toReal, EReal.coe_one, mul_one]
-
 
 end CondHellingerEq
 
