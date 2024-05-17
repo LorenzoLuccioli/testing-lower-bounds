@@ -672,6 +672,26 @@ lemma condHellingerDiv_eq_integral'_of_one_lt (ha : 1 < a) [IsFiniteMeasure μ]
     _ = _ := by
       rw [integral_mul_left, integral_mul_left]
 
+lemma condHellingerDiv_eq_integral'_of_one_lt' (ha : 1 < a) [IsFiniteMeasure μ]
+    [IsFiniteKernel κ] [IsMarkovKernel η]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+    (h_ac : ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+    (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
+      - (a - 1)⁻¹ * (μ Set.univ).toReal := by
+  simp_rw [condHellingerDiv_eq_integral'_of_one_lt ha h_int h_ac h_int', measure_univ,
+    ENNReal.one_toReal, integral_const, smul_eq_mul, mul_one]
+
+lemma condHellingerDiv_eq_integral'_of_one_lt'' (ha : 1 < a) [IsProbabilityMeasure μ]
+    [IsFiniteKernel κ] [IsMarkovKernel η]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+    (h_ac : ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+    (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
+      - (a - 1)⁻¹ := by
+  rw [condHellingerDiv_eq_integral'_of_one_lt' ha h_int h_ac h_int', measure_univ,
+    ENNReal.one_toReal, EReal.coe_one, mul_one]
+
 end CondHellingerEq
 
 lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated α β]
