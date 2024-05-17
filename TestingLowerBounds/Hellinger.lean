@@ -293,7 +293,7 @@ lemma hellingerDiv_eq_integral_of_ne_top (ha_ne_one : a ≠ 1) [IsFiniteMeasure 
 
 lemma hellingerDiv_eq_integral_of_ne_top' (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] (h : hellingerDiv a μ ν ≠ ⊤) :
-    hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ *  ν Set.univ := by
+    hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * ν Set.univ := by
   rw [hellingerDiv_eq_integral_of_ne_top ha_ne_one h]
   simp_rw [hellingerFun, integral_mul_left]
   rw [integral_sub _ (integrable_const _),
@@ -311,7 +311,7 @@ lemma hellingerDiv_eq_integral_of_ne_top'' (ha_ne_one : a ≠ 1) [IsFiniteMeasur
 
 lemma hellingerDiv_eq_integral_of_lt_one' (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
-    hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ *  ν Set.univ :=
+    hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * ν Set.univ :=
   hellingerDiv_eq_integral_of_ne_top' ha.ne (hellingerDiv_ne_top_of_le_one ha_pos ha.le μ ν)
 
 end HellingerEq
