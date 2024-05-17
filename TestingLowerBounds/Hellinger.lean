@@ -437,6 +437,26 @@ lemma integrable_hellingerDiv_iff'_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsFi
 noncomputable def condHellingerDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   condFDiv (hellingerFun a) κ η μ
 
+/- There are multiple combinations of hypotheses that give rise to slightly different versions of
+the following lemmas. The ones we will consider as a normal form are when we assume that `μ`, `κ`
+and `η` are all finite and `a ∈ (0, 1) ∪ (1, +∞)`.
+
+Consider the following conditions:
+1. `condHellingerDiv a κ η μ ≠ ⊤`
+2. `condHellingerDiv a κ η μ = ∫ x, (hellingerDiv a (κ x) (η x)).toReal ∂μ`
+3.a `∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)` (`h_int`)
+3.b `∀ᵐ x ∂μ, (κ x) ≪ (η x)` (`h_ac`)
+3.c `Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ` (`h_int'`)
+
+Then the following equivalences hold:
+- 1. ↔ 2. (`condHellingerDiv_eq_integral_iff_ne_top`)
+- if `1 < a`:
+  - 1. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_ne_top_iff'`)
+  - 2. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_eq_integral_iff`)
+- if `a < 1`:
+  - 1. ↔ 3.c (`condHellingerDiv_ne_top_iff_of_lt_one`)
+  - 2. ↔ 3.c (`condHellingerDiv_eq_integral_iff_of_lt_one`)
+-/
 section CondHellingerEq
 
 lemma condHellingerDiv_of_not_ae_finite (h_ae : ¬ ∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤) :
