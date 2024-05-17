@@ -636,6 +636,42 @@ lemma condHellingerDiv_eq_integral_iff_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
   (condHellingerDiv_eq_integral_iff_ne_top ha_pos ha.ne).symm.trans
     (condHellingerDiv_ne_top_iff_of_lt_one ha_pos ha)
 
+lemma condHellingerDiv_eq_integral'_of_one_lt (ha : 1 < a) [IsFiniteMeasure μ]
+    [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+    (h_ac : ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+    (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
+      - (a - 1)⁻¹ * ∫ x, ((η x) Set.univ).toReal ∂μ := by
+  rw [condHellingerDiv_eq_integral_iff_of_one_lt ha |>.mpr ⟨h_int, h_ac, h_int'⟩]
+  norm_cast
+  calc
+    _ = ∫ x, ((a - 1)⁻¹ * ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x
+        - (a - 1)⁻¹ * ((η x) Set.univ).toEReal).toReal ∂μ := by
+      apply integral_congr_ae
+      filter_upwards [h_int, h_ac] with x hx_int hx_ac
+      congr
+      exact hellingerDiv_eq_integral_of_ne_top' ha.ne.symm <|
+        hellingerDiv_ne_top_iff_of_one_lt ha _ _ |>.mpr ⟨hx_int, hx_ac⟩
+    _ = ∫ x, ((a - 1)⁻¹ * ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x
+        - (a - 1)⁻¹ * ((η x) Set.univ).toReal) ∂μ := by
+      refine integral_congr_ae (eventually_of_forall fun x ↦ ?_)
+      dsimp
+      rw [EReal.toReal_sub (ne_of_beq_false (by rfl)) (ne_of_beq_false (by rfl))]
+      congr
+      rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
+      all_goals
+        simp only [ne_eq, EReal.mul_eq_top, EReal.mul_eq_bot, EReal.coe_ne_bot, false_and,
+          EReal.coe_neg', EReal.coe_ennreal_ne_bot, and_false, EReal.coe_ne_top,
+          EReal.coe_ennreal_pos, Measure.measure_univ_pos, EReal.coe_pos,
+          EReal.coe_ennreal_eq_top_iff, measure_ne_top, or_self, not_false_eq_true]
+    _ = ∫ x, ((a - 1)⁻¹ * ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) ∂μ
+        - ∫ x, ((a - 1)⁻¹ * ((η x) Set.univ).toReal) ∂μ :=
+      integral_sub (Integrable.const_mul h_int' _)
+        (Integrable.const_mul (Integrable.kernel _ MeasurableSet.univ) _)
+    _ = _ := by
+      rw [integral_mul_left, integral_mul_left]
+
 end CondHellingerEq
 
 lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated α β]
