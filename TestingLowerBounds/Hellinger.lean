@@ -762,3 +762,4 @@ end ProbabilityTheory
 --TODO: propagate the generalization from ContablyGenerated to CountableOrCountablyGenerated
 --TODO: try to make latex workshop work, try putting in the settings the exact thing to run: xelatex -synctex=1  -recorder -output-directory="/Users/lorenzo/LEAN/testing-lower-bounds/blueprint/print"  "print.tex"
 --TODO: generalize the definition of hellinger to 0, 1 and maybe infinity. at 1 it should be kl, at 0 see the renyi div, at ∞ see if there is anything useful in the renyi divergence paper
+--there are some results that we will have to show for `a < 1` and `a > 1` separately and then propagate to the general case by continuity

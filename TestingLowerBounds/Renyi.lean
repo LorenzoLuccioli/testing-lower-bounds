@@ -431,7 +431,10 @@ lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_pos : 0 <
     condRenyiDiv a κ η μ = (a - 1)⁻¹ * log (1 + (a - 1) * (condHellingerDiv a κ η μ).toReal) := by
   rw [condRenyiDiv, renyiDiv_of_lt_one ha_pos ha_lt_one, hellingerDiv_compProd_left ha_pos _]
 
--- lemma condRenyiDiv_of_one_lt_of_ac [IsFiniteMeasure μ] [SigmaFinite ν] (ha_one_lt : 1 < a)
+-- lemma condRenyiDiv_of_one_lt_of_ac [CountableOrCountablyGenerated α β] (ha_one_lt : 1 < a)
+--     (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
+--     [IsFiniteKernel η] [IsFiniteMeasure μ] :
+--     [IsFiniteMeasure μ] [SigmaFinite ν]
 --     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) (hμν : μ ≪ ν) :
 --     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
 --   rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne',
