@@ -406,8 +406,8 @@ the integrability of the first function, this would however require more work. -
 'morally' also ⊤, so the equality holds, but actually in Lean the equality is not true, because of
 how we handle the infinities in the integrals, so we have to make a separate lemma for this case. -/
 lemma condKL_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ] [SFinite μ]
-    {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ]
-    [IsMarkovKernel η] :
+    {ξ : kernel α β} [IsSFiniteKernel ξ] {κ η : kernel (α × β) γ}
+    [IsMarkovKernel κ] [IsMarkovKernel η] :
     condKL κ η (μ ⊗ₘ ξ) = ⊤
       ↔ ¬ (∀ᵐ a ∂μ, condKL (kernel.snd' κ a) (kernel.snd' η a) (ξ a) ≠ ⊤)
         ∨ ¬ Integrable (fun x ↦ (condKL (kernel.snd' κ x) (kernel.snd' η x) (ξ x)).toReal) μ := by

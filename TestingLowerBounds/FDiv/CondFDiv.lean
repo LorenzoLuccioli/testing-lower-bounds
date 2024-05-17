@@ -457,11 +457,9 @@ lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
     apply MeasureTheory.Integrable.const_mul
     exact kernel.IsFiniteKernel.integrable μ η MeasurableSet.univ
 
-@[simp]
 lemma condFDiv_zero_left' [IsProbabilityMeasure μ] [IsMarkovKernel η] :
     condFDiv f 0 η μ = f 0 := by
-  simp_rw [condFDiv_zero_left, measure_univ, integral_const, measure_univ]
-  norm_num
+  simp
 
 --I also wanted to add something like condKL_zero_right, but it turns out it's not so
 --straightforward to state and prove, and since we don't really need it for now I will leave it out.
@@ -683,14 +681,53 @@ lemma fDiv_compProd_right [CountableOrCountablyGenerated α β]
     · rw [← ne_eq, fDiv_ne_top_iff] at h_top
       exact h_top.1
 
---this example should be automatically solved by measurability or fun_prop, but neither works
-example (g : ℝ → ℝ) (h : Measurable g) : MeasurableSet {x | g x ≠ 0} := by
-  rw [show {x | g x ≠ 0} = g ⁻¹' {x | x ≠ 0} by simp]
-  apply h
-  simp only [ne_eq, Set.compl_ne_eq_singleton, MeasurableSet.compl_iff, MeasurableSet.singleton,
-    MeasurableSet.compl_iff.mp]
-
 variable {γ : Type*} [MeasurableSpace γ]
+
+lemma condFDiv_snd'_toReal_eq_ae [CountablyGenerated γ] {ξ : kernel α β}
+    [IsFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_ac : derivAtTop f = ⊤ → ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, κ (a, b) ≪ η (a, b))
+    (h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (fun x ↦ f ((∂κ (a, b)/∂η (a, b)) x).toReal) (η (a, b)))
+    (h_int2 : ∀ᵐ a ∂μ, Integrable
+      (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a)) :
+    ∀ᵐ a ∂μ, (condFDiv f (kernel.snd' κ a) (kernel.snd' η a) (ξ a)).toReal =
+      ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a := by
+  simp_rw [← kernel.snd'_apply] at h_int2 h_int h_ac ⊢
+  rw [← eventually_all] at h_ac
+  filter_upwards [h_ac, h_int, h_int2] with a ha_ac ha_int ha_int2
+  rw [condFDiv_eq ha_int ha_int2 ha_ac, EReal.toReal_coe]
+
+lemma fDiv_toReal_eq_ae {ξ : kernel α β} {κ η : kernel (α × β) γ} [IsFiniteKernel κ]
+    (h_ac : derivAtTop f = ⊤ → ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, κ (a, b) ≪ η (a, b))
+    (h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a,
+      Integrable (fun x ↦ f ((∂κ (a, b)/∂η (a, b)) x).toReal) (η (a, b))) :
+    ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, (fDiv f (κ (a, b)) (η (a, b))).toReal =
+      ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
+      + (derivAtTop f).toReal * (((κ (a, b)).singularPart (η (a, b)) Set.univ)).toReal := by
+  filter_upwards [eventually_all.mpr h_ac, h_int] with a ha_ae ha_int
+  filter_upwards [eventually_all.mpr ha_ae, ha_int] with b hb_ae hb_int
+  rw [← EReal.toReal_coe (∫ _, _ ∂_), fDiv_of_integrable hb_int, ← EReal.toReal_coe_ennreal,
+    ← EReal.toReal_mul]
+  refine EReal.toReal_add ?_ ?_ ?_ ?_
+  · simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true]
+  · simp only [ne_eq, EReal.coe_ne_bot, not_false_eq_true]
+  all_goals
+  · by_cases h_deriv : derivAtTop f = ⊤
+    · simp [Measure.singularPart_eq_zero_of_ac <| hb_ae h_deriv]
+    · simp only [ne_eq, EReal.mul_eq_top, EReal.mul_eq_bot, derivAtTop_ne_bot, false_and,
+        EReal.coe_ennreal_ne_bot, and_false, h_deriv, EReal.coe_ennreal_pos,
+        Measure.measure_univ_pos, ne_eq, EReal.coe_ennreal_eq_top_iff, false_or, not_and]
+      exact fun _ ↦ measure_ne_top _ _
+
+--Maybe there is already something like this in mathlib? I couldn't find it.
+--Is this name (`ProbabilityTheory.Integrable.kernel`) ok?
+lemma Integrable.kernel [IsFiniteKernel κ] [IsFiniteMeasure μ] (s : Set β) (hs : MeasurableSet s) :
+  Integrable (fun x ↦ ((κ x) s).toReal) μ := by
+obtain ⟨C, ⟨hC_finite, hC_le⟩⟩ := IsFiniteKernel.exists_univ_le (κ := κ)
+apply (integrable_const C.toReal).mono'
+· exact kernel.measurable_coe κ hs |>.ennreal_toReal.aestronglyMeasurable
+simp_rw [norm_eq_abs, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal
+  (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
+exact eventually_of_forall <| fun x ↦ (κ x).mono (Set.subset_univ s) |>.trans (hC_le x)
 
 lemma condFDiv_kernel_snd'_integrable_iff [CountablyGenerated γ] [IsFiniteMeasure μ]
     {ξ : kernel α β}  [IsFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ]
@@ -701,68 +738,23 @@ lemma condFDiv_kernel_snd'_integrable_iff [CountablyGenerated γ] [IsFiniteMeasu
     (hf_cont : ContinuousOn f (Set.Ici 0)) (hf_one : f 1 = 0) :
     Integrable (fun a ↦ (condFDiv f (kernel.snd' κ a) (kernel.snd' η a) (ξ a)).toReal) μ ↔
       Integrable (fun a ↦ ∫ b, |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)| ∂ξ a) μ := by
-  have h_ae_eq :
-      (fun x ↦ EReal.toReal (condFDiv f (kernel.snd' κ x) (kernel.snd' η x) (ξ x)))
-        =ᵐ[μ] fun a ↦ ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a := by
-    simp_rw [← kernel.snd'_apply] at h_int2 h_int h_ac ⊢
-    rw [← eventually_all] at h_ac
-    filter_upwards [h_ac, h_int, h_int2] with a ha_ac ha_int ha_int2
-    rw [condFDiv_eq ha_int ha_int2 ha_ac, EReal.toReal_coe]
-  have h_ereal_add : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
-      + (derivAtTop f * ((κ (a, b)).singularPart (η (a, b)) Set.univ)).toReal
-      = (fDiv f (κ (a, b)) (η (a, b))).toReal := by
-    filter_upwards [eventually_all.mpr h_ac, h_int] with a ha_ae ha_int
-    filter_upwards [eventually_all.mpr ha_ae, ha_int] with b hb_ae hb_int
-    rw [← EReal.toReal_coe (∫ _, _ ∂_), fDiv_of_integrable hb_int]
-    refine EReal.toReal_add ?_ ?_ ?_ ?_ |>.symm
-    · simp only [ne_eq, EReal.coe_ne_top, not_false_eq_true]
-    · simp only [ne_eq, EReal.coe_ne_bot, not_false_eq_true]
-    all_goals
-    · by_cases h_deriv : derivAtTop f = ⊤
-      · simp [Measure.singularPart_eq_zero_of_ac <| hb_ae h_deriv]
-      · simp only [ne_eq, EReal.mul_eq_top, EReal.mul_eq_bot, derivAtTop_ne_bot, false_and,
-          EReal.coe_ennreal_ne_bot, and_false, h_deriv, EReal.coe_ennreal_pos,
-          Measure.measure_univ_pos, ne_eq, EReal.coe_ennreal_eq_top_iff, false_or, not_and]
-        exact fun _ ↦ measure_ne_top _ _
-  have h_le : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
-      ≤ (fDiv f (κ (a, b)) (η (a, b))).toReal + |(derivAtTop f).toReal| := by
-    filter_upwards [h_ereal_add] with a ha_ereal_add
+  have h_le : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
+        - (fDiv f (κ (a, b)) (η (a, b))).toReal ≤ |(derivAtTop f).toReal|
+      ∧ (fDiv f (κ (a, b)) (η (a, b))).toReal - |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
+        ≤ |(derivAtTop f).toReal| := by
+    filter_upwards [fDiv_toReal_eq_ae h_ac h_int] with a ha_ereal_add
     filter_upwards [ha_ereal_add] with b hb_ereal_add
+    apply abs_sub_le_iff.mp
     calc
-      _ = |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
-          + (derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal
-          - (derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal| := by ring_nf
+      _ = |(|∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
+          - |(fDiv f (κ (a, b)) (η (a, b))).toReal|)| := by
+        rw [abs_eq_self.mpr <| EReal.toReal_nonneg (fDiv_nonneg hf_cvx hf_cont hf_one)]
       _ ≤ |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
-          + (derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal|
-          + |(derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal| := abs_sub _ _
-      _ = |(fDiv f (κ (a, b)) (η (a, b))).toReal|
-          + |(derivAtTop f * (κ (a, b)).singularPart (η (a, b)) Set.univ).toReal| := by congr
-      _ ≤ (fDiv f (κ (a, b)) (η (a, b))).toReal
-          + |(derivAtTop f).toReal| * ((κ (a, b)) Set.univ).toReal := by
-        gcongr ?_ + ?_
-        · rw [abs_eq_self.mpr <| EReal.toReal_nonneg (fDiv_nonneg hf_cvx hf_cont hf_one)]
-        · rw [EReal.toReal_mul, abs_mul, EReal.toReal_coe_ennreal, ENNReal.abs_toReal]
-          apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-          gcongr
-          · exact measure_ne_top (κ (a, b)) Set.univ
-          · exact Measure.singularPart_le (κ (a, b)) (η (a, b)) Set.univ
-      _ = _ := by rw [measure_univ, ENNReal.one_toReal, mul_one]
-  have h_le' : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, (fDiv f (κ (a, b)) (η (a, b))).toReal
-      ≤ |∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)| + |(derivAtTop f).toReal| := by
-    filter_upwards [h_ereal_add] with a ha_ereal_add
-    filter_upwards [ha_ereal_add] with b hb_ereal_add
-    calc
-      _ = |(fDiv f (κ (a, b)) (η (a, b))).toReal| :=
-        (abs_eq_self.mpr <| EReal.toReal_nonneg <| fDiv_nonneg hf_cvx hf_cont hf_one).symm
-      _ = |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)
-          + (derivAtTop f * ((κ (a, b)).singularPart (η (a, b)) Set.univ)).toReal| := by
-        rw [hb_ereal_add]
-      _ ≤ |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
-          + |(derivAtTop f * ((κ (a, b)).singularPart (η (a, b)) Set.univ)).toReal| := abs_add _ _
-      _ ≤ |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
-          + |(derivAtTop f).toReal| * ((κ (a, b)) Set.univ).toReal := by
-        gcongr
-        rw [EReal.toReal_mul, abs_mul, EReal.toReal_coe_ennreal, ENNReal.abs_toReal]
+          - (fDiv f (κ (a, b)) (η (a, b))).toReal| := by
+        exact abs_abs_sub_abs_le_abs_sub _ _
+      _ = |(derivAtTop f).toReal| * ((κ (a, b)).singularPart (η (a, b)) Set.univ).toReal := by
+        rw [hb_ereal_add, sub_add_cancel_left, abs_neg, abs_mul, ENNReal.abs_toReal]
+      _ ≤ |(derivAtTop f).toReal| * ((κ (a, b)) Set.univ).toReal := by
         apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
         gcongr
         · exact measure_ne_top (κ (a, b)) Set.univ
@@ -772,9 +764,10 @@ lemma condFDiv_kernel_snd'_integrable_iff [CountablyGenerated γ] [IsFiniteMeasu
     filter_upwards [eventually_all.mpr h_ac, h_int, h_int2] with a ha_ae ha_int ha_int2
     simp_rw [← kernel.snd'_apply] at ha_int2 ha_int ha_ae ⊢
     exact (integrable_fDiv_iff ha_int ha_ae).mpr ha_int2
-  rw [integrable_congr h_ae_eq]
+  rw [integrable_congr <| condFDiv_snd'_toReal_eq_ae h_ac h_int h_int2]
   refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · apply Integrable.mono'
+  · --using `h_le` we reduce the problem to the integrability of a sum of an integral and `f'(∞) * (ξ x) (univ)`
+    apply Integrable.mono'
       (g := fun a ↦ ∫ b, ((fDiv f (κ (a, b)) (η (a, b))).toReal + |(derivAtTop f).toReal|) ∂ξ a)
     rotate_left
     · refine (StronglyMeasurable.integral_kernel_prod_right ?_).aestronglyMeasurable
@@ -782,43 +775,34 @@ lemma condFDiv_kernel_snd'_integrable_iff [CountablyGenerated γ] [IsFiniteMeasu
       exact measurable_integral_f_rnDeriv κ η hf_meas
     · filter_upwards [h_le, h_int2, h_int2'] with a ha_le ha_int2 ha_int2'
       rw [norm_eq_abs, abs_eq_self.mpr <| integral_nonneg <| fun _ ↦ abs_nonneg _]
-      exact integral_mono_ae ha_int2.abs (integrable_add_const_iff.mpr ha_int2') ha_le
+      refine integral_mono_ae ha_int2.abs (integrable_add_const_iff.mpr ha_int2') ?_
+      filter_upwards [ha_le] with a hb_le using by linarith
     apply Integrable.congr (f := fun a ↦ ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a
         + ((ξ a) Set.univ).toReal * |(derivAtTop f).toReal|)
     swap
     · filter_upwards [h_int2'] with a ha_int2'
       rw [integral_add ha_int2' (integrable_const _), integral_const, smul_eq_mul]
-    apply h.add
-    apply Integrable.mul_const
-    obtain ⟨C, ⟨hC_finite, hC_le⟩⟩ := IsFiniteKernel.exists_univ_le (κ := ξ)
-    apply (integrable_const C.toReal).mono'
-    · exact kernel.measurable_coe ξ MeasurableSet.univ |>.ennreal_toReal.aestronglyMeasurable
-    filter_upwards with a
-    rw [norm_eq_abs, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal
-      (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
-    exact hC_le a
-  · apply Integrable.mono' (g := fun a ↦ ∫ b,
+    --we already know the integrability of the integral (hp `h`) and the other part is just a
+    --constant times a finite kernel applied to a fixed set, so it's easy to show that it's integrable
+    exact h.add (Integrable.kernel _ MeasurableSet.univ |>.mul_const _)
+  · --using `h_le'` we reduce the problem to the integrability of a sum of an integral and `f'(∞) * (ξ x) (univ)`
+    apply Integrable.mono' (g := fun a ↦ ∫ b,
       (|∫ (x : γ), f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)| + |(derivAtTop f).toReal|) ∂ξ a)
     rotate_left
     · refine (StronglyMeasurable.integral_kernel_prod_right ?_).aestronglyMeasurable
       exact (measurable_fDiv _ _ hf_meas).ereal_toReal.stronglyMeasurable
-    · filter_upwards [h_le', h_int2, h_int2'] with a ha_le ha_int2 ha_int2'
+    · filter_upwards [h_le, h_int2, h_int2'] with a ha_le ha_int2 ha_int2'
       rw [norm_eq_abs, abs_eq_self.mpr <| integral_nonneg <| fun _ ↦ EReal.toReal_nonneg <|
         fDiv_nonneg hf_cvx hf_cont hf_one]
-      apply integral_mono_ae ha_int2' (integrable_add_const_iff.mpr <| ha_int2.abs) ha_le
+      refine integral_mono_ae ha_int2' (integrable_add_const_iff.mpr <| ha_int2.abs) ?_
+      filter_upwards [ha_le] with a hb_le using by linarith
     apply Integrable.congr (f := fun a ↦ ∫ b, |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)|
       ∂ξ a + ((ξ a) Set.univ).toReal * |(derivAtTop f).toReal|)
     swap
     · filter_upwards [h_int2] with a ha_int2
       rw [integral_add ha_int2.abs (integrable_const _), integral_const, smul_eq_mul]
-    apply h.add
-    apply Integrable.mul_const
-    obtain ⟨C, ⟨hC_finite, hC_le⟩⟩ := IsFiniteKernel.exists_univ_le (κ := ξ)
-    apply (integrable_const C.toReal).mono'
-    · exact kernel.measurable_coe ξ MeasurableSet.univ |>.ennreal_toReal.aestronglyMeasurable
-    simp_rw [norm_eq_abs, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal
-      (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
-    exact eventually_of_forall hC_le
+    -- same as above
+    exact h.add (Integrable.kernel _ MeasurableSet.univ |>.mul_const _)
 
 lemma condFDiv_kernel_fst'_integrable_iff [CountablyGenerated γ] {μ : Measure β} [IsFiniteMeasure μ]
     {ξ : kernel β α} [IsFiniteKernel ξ] {κ η : kernel (α × β) γ} [IsMarkovKernel κ]
