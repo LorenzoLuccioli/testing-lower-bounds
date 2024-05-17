@@ -451,8 +451,8 @@ Consider the following conditions:
 Then the following equivalences hold:
 - 1. ↔ 2. (`condHellingerDiv_eq_integral_iff_ne_top`)
 - if `1 < a`:
-  - 1. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_ne_top_iff'`)
-  - 2. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_eq_integral_iff`)
+  - 1. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_ne_top_iff_of_one_lt`)
+  - 2. ↔ 3.a ∧ 3.b ∧ 3.c (`condHellingerDiv_eq_integral_iff_of_one_lt`)
 - if `a < 1`:
   - 1. ↔ 3.c (`condHellingerDiv_ne_top_iff_of_lt_one`)
   - 2. ↔ 3.c (`condHellingerDiv_eq_integral_iff_of_lt_one`)
@@ -566,20 +566,25 @@ lemma condHellingerDiv_ne_top_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFin
       ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
         ∧ (1 < a → ∀ᵐ x ∂μ, (κ x) ≪ (η x))
         ∧ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ := by
-  rw [condHellingerDiv_ne_top_iff]
-  apply and_congr_right
-  intro h_int
-  apply and_congr_right
-  intro h_ac
+  simp_rw [condHellingerDiv_ne_top_iff]
+  refine and_congr_right (fun h_int ↦ and_congr_right (fun h_ac ↦ ?_))
   rw [integrable_hellingerDiv_iff' ha_pos ha_ne_one h_int h_ac]
 
-lemma condHellingerDiv_eq_top_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
+lemma condHellingerDiv_ne_top_iff_of_one_lt (ha : 1 < a) [IsFiniteMeasure μ]
+    [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condHellingerDiv a κ η μ ≠ ⊤
+      ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+        ∧ (∀ᵐ x ∂μ, (κ x) ≪ (η x))
+        ∧ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ := by
+  simp_rw [condHellingerDiv_ne_top_iff' (zero_lt_one.trans ha) ha.ne.symm, ha, true_implies]
+
+lemma condHellingerDiv_eq_top_iff_of_one_lt (ha : 1 < a) [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsFiniteKernel η] :
     condHellingerDiv a κ η μ = ⊤
       ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
         ∨ (1 < a ∧ ¬ ∀ᵐ x ∂μ, (κ x) ≪ (η x))
         ∨ ¬ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ := by
-  rw [← not_not (a := _ = ⊤), ← ne_eq, condHellingerDiv_ne_top_iff' ha_pos ha_ne_one]
+  rw [← not_not (a := _ = ⊤), ← ne_eq, condHellingerDiv_ne_top_iff_of_one_lt ha]
   tauto
 
 lemma condHellingerDiv_eq_top_iff_of_le_one (ha : a ≤ 1) [IsFiniteKernel κ] [IsFiniteKernel η] :
