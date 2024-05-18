@@ -326,8 +326,8 @@ lemma condFDiv_of_not_integrable
 
 @[simp]
 lemma condFDiv_of_not_integrable' [CountableOrCountablyGenerated α β] [IsFiniteMeasure μ]
-    [IsFiniteKernel κ]
-    [IsFiniteKernel η] (hf : ¬ Integrable (fun a ↦ ∫ b, f ((∂κ a/∂η a) b).toReal ∂η a) μ) :
+    [IsFiniteKernel κ] [IsFiniteKernel η]
+    (hf : ¬ Integrable (fun a ↦ ∫ b, f ((∂κ a/∂η a) b).toReal ∂η a) μ) :
     condFDiv f κ η μ = ⊤ := by
   by_cases h_top : ∀ᵐ a ∂μ, fDiv f (κ a) (η a) ≠ ⊤
   swap; exact condFDiv_of_not_ae_finite h_top

@@ -4,7 +4,7 @@ namespace MeasurableSpace
 
 variable {α β γ : Type*} [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
 
-/--I'm not sure this is the right way to state those facts, maybe they should just be lemmas?
+/-I'm not sure this is the right way to state those facts, maybe they should just be lemmas?
 I cannot put the Nonempty α as a hypothesis because then α would not be mentioned in the thesis
 and that is not allowed in a typeclass instance. Anyway I feel that in this way they are not very
 useful because it seems that the typeclass inference is not able to use them.-/
