@@ -626,22 +626,20 @@ lemma kernel.integrable_llr_compProd_iff' [CountableOrCountablyGenerated (α × 
       ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
         ∧ Integrable (fun b ↦ (kl (κ₂ (a, b)) (η₂ (a, b))).toReal) (κ₁ a)
         ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
-  by_cases h_empty : IsEmpty α --TODO: this is a hack to avoid putting the hp CountableOrCountablyGenerated twice, decide if it is good enough as it is or if it should be polished more, then use the same technique for the other cases where this happens
-  · exact (IsEmpty.false a).elim
-  have :=
-    instOrIsEmptyCountableOrCountablyGeneratedOfProd_testingLowerBounds_1 (α := α) (β := β) (γ := γ)
-  have : CountableOrCountablyGenerated β γ := by tauto
   convert kernel.integrable_llr_compProd_iff a h_ac using 3
   simp_rw [← kernel.snd'_apply]
   have h_ac' := kernel.absolutelyContinuous_compProd_iff a |>.mp h_ac |>.2
   exact integrable_kl_iff h_ac'
 
-lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountableOrCountablyGenerated (α × β) γ] [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] (h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a)
+lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountableOrCountablyGenerated (α × β) γ]
+    {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁]
+    [IsMarkovKernel κ₂] [IsMarkovKernel η₂] (h_ac : ∀ᵐ a ∂μ, (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a)
     (h_ae_int : ∀ᵐ a ∂μ, Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)) :
     ∀ᵐ a ∂μ, (kl ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)).toReal
       = (kl (κ₁ a) (η₁ a)).toReal + ∫ b, (kl (κ₂ (a, b)) (η₂ (a, b))).toReal ∂κ₁ a := by
+  by_cases h_empty : Nonempty α
+  swap; simp only [not_nonempty_iff.mp h_empty, IsEmpty.forall_iff, eventually_of_forall]
+  have := countableOrCountablyGenerated_right_of_prod_left_of_nonempty (α := α) (β := β) (γ := γ)
   simp only [eventually_congr (h_ac.mono (fun a h ↦ (kernel.integrable_llr_compProd_iff' a h))),
     eventually_and] at h_ae_int
   simp only [kernel.absolutelyContinuous_compProd_iff, eventually_and] at h_ac
@@ -656,10 +654,7 @@ lemma kl_compProd_kernel_of_ae_ac_of_ae_integrable [CountableOrCountablyGenerate
     (condKL_ne_bot (kernel.snd' κ₂ a) (kernel.snd' η₂ a) (κ₁ a)),
     condKL_ne_top_iff'.mp h_snd_ne_top, EReal.toReal_coe, kernel.snd'_apply]
 
--- todo: can we avoid the two different `CountableOrCountablyGenerated` assumptions?
--- We could add an instance for `CountableOrCountablyGenerated β γ` if it holds for `(α × β) γ`, but it is not true in general, in particular it's not true if `α` is empty. In that case, however, the result is trivial, so we could prove that case separately.
-lemma condKL_compProd_kernel_eq_top [CountableOrCountablyGenerated (α × β) γ]
-    [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
+lemma condKL_compProd_kernel_eq_top [CountableOrCountablyGenerated (α × β) γ] {κ₁ η₁ : kernel α β}
     {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
     [IsMarkovKernel η₂] [SFinite μ] :
     condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤ ↔ condKL κ₁ η₁ μ = ⊤ ∨ condKL κ₂ η₂ (μ ⊗ₘ κ₁) = ⊤ := by
@@ -696,9 +691,9 @@ lemma condKL_compProd_kernel_eq_top [CountableOrCountablyGenerated (α × β) γ
   · filter_upwards with a using integral_nonneg (fun b ↦ EReal.toReal_nonneg (kl_nonneg _ _))
   · filter_upwards with a using EReal.toReal_nonneg (kl_nonneg _ _)
 
-lemma condKL_compProd_kernel [CountableOrCountablyGenerated (α × β) γ]
-    [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β} {κ₂ η₂ : kernel (α × β) γ}
-    [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂] [IsMarkovKernel η₂] [SFinite μ] :
+lemma condKL_compProd_kernel [CountableOrCountablyGenerated (α × β) γ] {κ₁ η₁ : kernel α β}
+    {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₁] [IsMarkovKernel η₁] [IsMarkovKernel κ₂]
+    [IsMarkovKernel η₂] [SFinite μ] :
     condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = condKL κ₁ η₁ μ + condKL κ₂ η₂ (μ ⊗ₘ κ₁) := by
   by_cases hp : condKL (κ₁ ⊗ₖ κ₂) (η₁ ⊗ₖ η₂) μ = ⊤
   · rw [hp]

@@ -1,6 +1,7 @@
 import Mathlib.MeasureTheory.Measure.LogLikelihoodRatio
 import TestingLowerBounds.FDiv.CondFDiv
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+import TestingLowerBounds.ForMathlib.CountableOrCountablyGenerated
 
 open Real MeasureTheory MeasurableSpace
 
@@ -146,13 +147,16 @@ lemma integrable_llr_compProd_iff [CountableOrCountablyGenerated α β] [IsMarko
     fun h ↦ integrable_llr_compProd_of_integrable_llr h_ac h.1.1 h.1.2 h.2⟩
 
 lemma kernel.integrable_llr_compProd_iff [CountableOrCountablyGenerated (α × β) γ]
-    [CountableOrCountablyGenerated β γ] {κ₁ η₁ : kernel α β}
-    {κ₂ η₂ : kernel (α × β) γ} [IsFiniteKernel κ₁] [IsFiniteKernel η₁] [IsMarkovKernel κ₂]
-    [IsMarkovKernel η₂] (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
+    {κ₁ η₁ : kernel α β} [IsFiniteKernel κ₁] [IsFiniteKernel η₁]
+    {κ₂ η₂ : kernel (α × β) γ} [IsMarkovKernel κ₂] [IsMarkovKernel η₂]
+    (a : α) (h_ac : (κ₁ ⊗ₖ κ₂) a ≪ (η₁ ⊗ₖ η₂) a) :
     Integrable (llr ((κ₁ ⊗ₖ κ₂) a) ((η₁ ⊗ₖ η₂) a)) ((κ₁ ⊗ₖ κ₂) a)
       ↔ Integrable (llr (κ₁ a) (η₁ a)) (κ₁ a)
         ∧ Integrable (fun b ↦ ∫ x, (llr (κ₂ (a, b)) (η₂ (a, b)) x) ∂(κ₂ (a, b))) (κ₁ a)
         ∧ ∀ᵐ b ∂κ₁ a, Integrable (llr (κ₂ (a, b)) (η₂ (a, b))) (κ₂ (a, b)) := by
+  by_cases h_empty : Nonempty α
+  swap; exact (not_nonempty_iff.mp h_empty |>.false a).elim
+  have := countableOrCountablyGenerated_right_of_prod_left_of_nonempty (α := α) (β := β) (γ := γ)
   simp_rw [kernel.compProd_apply_eq_compProd_snd'] at h_ac
   simp_rw [kernel.compProd_apply_eq_compProd_snd',
     ProbabilityTheory.integrable_llr_compProd_iff h_ac, kernel.snd'_apply]
