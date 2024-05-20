@@ -471,6 +471,13 @@ lemma condFDiv_zero_measure : condFDiv f κ η 0 = 0 := by
   rw [condFDiv_eq' hf_ae integrable_zero_measure]
   simp only [integral_zero_measure, EReal.coe_zero]
 
+@[simp]
+lemma condFDiv_isEmpty_left [IsEmpty α] : condFDiv f κ η μ = 0 := by
+  have h : μ = 0 := by
+    ext s
+    exact Set.eq_empty_of_isEmpty s ▸ measure_empty
+  exact h ▸ condFDiv_zero_measure
+
 lemma condFDiv_ne_bot (κ η : kernel α β) (μ : Measure α) : condFDiv f κ η μ ≠ ⊥ := by
   rw [condFDiv]
   split_ifs with h
