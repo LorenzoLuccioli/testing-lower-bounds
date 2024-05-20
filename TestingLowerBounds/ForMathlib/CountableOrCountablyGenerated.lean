@@ -67,3 +67,23 @@ lemma countableOrCountablyGenerated_left_of_prod_right_of_nonempty [Nonempty γ]
   · infer_instance
   · have := countablyGenerated_left_of_prod_of_nonempty h
     infer_instance
+
+
+instance [Countable (α × β)] : Countable (β × α) :=
+  Countable.of_equiv _ (Equiv.prodComm α β)
+
+instance [h : CountableOrCountablyGenerated (α × β) γ] :
+    CountableOrCountablyGenerated (β × α) γ := by
+  rcases h with (h | h)
+  · exact ⟨Or.inl inferInstance⟩
+  · exact ⟨Or.inr h⟩
+
+--TODO: prove this, it may be useful to prove the analogous of Countable.of_equiv for CountablyGenerated, this may require a measurable equivalence. It should be a useful result to have in mathlib anyway.
+instance [CountablyGenerated (α × β)] : CountablyGenerated (β × α) := by
+  sorry
+
+instance [h : CountableOrCountablyGenerated (α × β) γ] :
+    CountableOrCountablyGenerated (β × α) γ := by
+  rcases h with (h | h)
+  · exact ⟨Or.inl inferInstance⟩
+  · exact ⟨Or.inr h⟩
