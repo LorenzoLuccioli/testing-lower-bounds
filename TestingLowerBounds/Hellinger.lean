@@ -461,7 +461,7 @@ Then the following hold:
   - 3.c → 4. (`condHellingerDiv_eq_integral'_of_lt_one`)
 
 The implications 4. → 1./2./3. are not explicitely stated but, if needed, it should be immediate to
-prove by 4. → 1. and then have all the other implications for free.
+prove 4. → 1. and then have all the other implications for free.
 -/
 section CondHellingerEq
 

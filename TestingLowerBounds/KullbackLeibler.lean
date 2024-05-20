@@ -481,7 +481,6 @@ lemma condKL_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ] 
       replace h_int := h_int2.2
       apply Integrable.mono h_int h_meas
       refine ae_of_all μ fun a ↦ ?_
-
       calc ‖∫ b, (kl (κ (a, b)) (η (a, b))).toReal ∂ξ a‖
       _ ≤ ∫ b, ‖(kl (κ (a, b)) (η (a, b))).toReal‖ ∂ξ a :=
         norm_integral_le_integral_norm _
