@@ -267,8 +267,8 @@ lemma hellingerDiv_zero (μ ν : Measure α) :
     hellingerDiv 0 μ ν = ν {x | ((∂μ/∂ν) x).toReal = 0} := by
   have h_eq : (fun x ↦ Set.indicator {0} 1 (μ.rnDeriv ν x).toReal)
       = {y | ((∂μ/∂ν) y).toReal = 0}.indicator (1 : α → ℝ) := by
-    simp_rw [← Set.indicator_comp_right fun x ↦ ((∂μ/∂ν) x).toReal]
-    simp only [Set.preimage, Set.mem_singleton_iff, Pi.one_comp]
+    simp_rw [← Set.indicator_comp_right fun x ↦ ((∂μ/∂ν) x).toReal, Set.preimage,
+      Set.mem_singleton_iff, Pi.one_comp]
   have h_meas : MeasurableSet {y | (μ.rnDeriv ν y).toReal = 0} := by
     apply measurableSet_eq_fun <;> fun_prop
   by_cases h_int : Integrable (fun x ↦ hellingerFun 0 (μ.rnDeriv ν x).toReal) ν
@@ -329,11 +329,11 @@ lemma hellingerDiv_eq_integral_of_integrable_of_lt_one (ha : a < 1)
   hellingerDiv_eq_integral_of_integrable_of_ac h_int ha.not_le.elim
 
 
-lemma hellingerDiv_eq_integral_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+lemma hellingerDiv_eq_integral_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν = ∫ x, hellingerFun a ((∂μ/∂ν) x).toReal ∂ν :=
   hellingerDiv_eq_integral_of_integrable_of_ac
-    (integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha) ha.not_le.elim
+    (integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha) ha.not_le.elim
 
 lemma hellingerDiv_of_not_integrable
     (h : ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
@@ -389,11 +389,11 @@ lemma hellingerDiv_ne_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α) :
     hellingerDiv a μ ν ≠ ⊤ ↔ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
   rw [ne_eq, hellingerDiv_eq_top_iff_of_lt_one ha, not_not]
 
-lemma hellingerDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+lemma hellingerDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν ≠ ⊤ := by
   rw [hellingerDiv_ne_top_iff_of_lt_one ha]
-  exact integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha
+  exact integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha
 
 lemma hellingerDiv_eq_integral_of_ne_top [IsFiniteMeasure μ] [SigmaFinite ν]
     (h : hellingerDiv a μ ν ≠ ⊤) :
@@ -414,7 +414,7 @@ lemma hellingerDiv_eq_integral_of_ne_top' (ha_ne_zero : a ≠ 0) (ha_ne_one : a 
   rw [integral_sub _ (integrable_const _),
     integral_const, smul_eq_mul, mul_one, mul_sub, EReal.coe_sub, EReal.coe_mul, EReal.coe_mul,
     EReal.coe_ennreal_toReal (measure_ne_top _ _)]
-  rw [← integrable_hellingerFun_iff_integrable_rpow ha_ne_zero ha_ne_one]
+  rw [← integrable_hellingerFun_iff_integrable_rpow ha_ne_one]
   by_contra h_not_int
   exact h (hellingerDiv_of_not_integrable h_not_int)
 
@@ -428,19 +428,23 @@ lemma hellingerDiv_eq_integral_of_lt_one' (ha_pos : 0 < a) (ha : a < 1) (μ ν :
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * ν Set.univ :=
   hellingerDiv_eq_integral_of_ne_top' ha_pos.ne.symm ha.ne
-    (hellingerDiv_ne_top_of_lt_one ha_pos ha μ ν)
+    (hellingerDiv_ne_top_of_lt_one ha_pos.le ha μ ν)
 
 end HellingerEq
 
 --Maybe we could write something like this for the conditional case? Would it be useful?
-lemma hellingerDiv_le_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+lemma hellingerDiv_le_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν ≤ (1 - a)⁻¹ * ν Set.univ := by
-  rw [hellingerDiv, if_neg ha_pos.ne.symm]
-  refine (fDiv_le_zero_add_top (stronglyMeasurable_hellingerFun ha_pos)
-    (convexOn_hellingerFun ha_pos)).trans_eq ?_
-  rw [derivAtTop_hellingerFun_of_lt_one ha, hellingerFun, zero_rpow ha_pos.ne']
-  simp only [zero_sub, mul_neg, mul_one, zero_mul, add_zero]
+  by_cases h_zero : a = 0
+  · rw [h_zero, hellingerDiv_zero']
+    simp only [inv_one, EReal.coe_one, one_mul, EReal.coe_ennreal_le_coe_ennreal_iff, sub_zero]
+    exact measure_mono fun _ _ ↦ trivial
+  rw [hellingerDiv]
+  refine (fDiv_le_zero_add_top (stronglyMeasurable_hellingerFun ha_nonneg)
+    (convexOn_hellingerFun ha_nonneg)).trans_eq ?_
+  rw [derivAtTop_hellingerFun_of_lt_one ha, zero_mul, add_zero, hellingerFun_ne_zero_ne_one h_zero ha.ne]
+  simp only [zero_sub, mul_neg, mul_one, zero_mul, add_zero, zero_rpow h_zero]
   rw [neg_inv, neg_sub]
 
 lemma hellingerDiv_symm' (ha_pos : 0 < a) (ha : a < 1) (h_eq : μ Set.univ = ν Set.univ)
@@ -468,28 +472,29 @@ lemma hellingerDiv_symm (ha_pos : 0 < a) (ha : a < 1)
 
 lemma hellingerDiv_nonneg (ha_pos : 0 < a) (μ ν : Measure α)
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
-    0 ≤ hellingerDiv a μ ν :=
-  fDiv_nonneg (convexOn_hellingerFun ha_pos) (continuous_hellingerFun ha_pos).continuousOn
+    0 ≤ hellingerDiv a μ ν := by
+  rw [hellingerDiv]
+  exact fDiv_nonneg (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
     hellingerFun_one_eq_zero
 
 section Conditional
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
 
-lemma hellingerDiv_ae_ne_top_iff (a : ℝ) (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
+lemma hellingerDiv_ae_ne_top_iff (ha_ne_zero : a ≠ 0) (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     (∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
       ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
         ∧ (1 < a → ∀ᵐ x ∂μ, (κ x) ≪ (η x)) := by
-  simp_rw [hellingerDiv_ne_top_iff, eventually_and, eventually_all]
+  simp_rw [hellingerDiv_ne_top_iff ha_ne_zero, eventually_and, eventually_all]
 
-lemma hellingerDiv_ae_ne_top_iff_of_le_one (ha : a ≤ 1) (κ η : kernel α β) :
+lemma hellingerDiv_ae_ne_top_iff_of_le_one (ha_ne_zero : a ≠ 0) (ha : a ≤ 1) (κ η : kernel α β) :
     (∀ᵐ x ∂μ, hellingerDiv a (κ x) (η x) ≠ ⊤)
       ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)) := by
-  simp_rw [hellingerDiv_ne_top_iff_of_le_one ha]
+  simp_rw [hellingerDiv_ne_top_iff_of_le_one ha_ne_zero ha]
 
 /--Use this version only for the case `1 < a` or when one of the kernels is not finite, otherwise
 use `integrable_hellingerDiv_iff_of_lt_one`, as it is strictly more general.-/
-lemma integrable_hellingerDiv_iff
+lemma integrable_hellingerDiv_iff (ha_ne_zero : a ≠ 0)
     (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
     (h_ac : 1 < a → ∀ᵐ x ∂μ, κ x ≪ η x) :
     Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ
