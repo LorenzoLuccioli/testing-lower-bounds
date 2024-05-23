@@ -78,7 +78,7 @@ instance [h : CountableOrCountablyGenerated (α × β) γ] :
   · exact ⟨Or.inl inferInstance⟩
   · exact ⟨Or.inr h⟩
 
---TODO: prove this, it may be useful to prove the analogous of Countable.of_equiv for CountablyGenerated, this may require a measurable equivalence. It should be a useful result to have in mathlib anyway.
+--TODO: prove this, it may be useful to prove the analogous of Countable.of_equiv for CountablyGenerated, this may require a measurable equivalence. It should be a useful result to have in mathlib anyway. maybe there is a lemma about the measurable embeddings 
 instance [CountablyGenerated (α × β)] : CountablyGenerated (β × α) := by
   sorry
 
