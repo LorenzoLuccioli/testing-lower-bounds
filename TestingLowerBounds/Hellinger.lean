@@ -40,6 +40,9 @@ open scoped ENNReal NNReal Topology
 
 namespace ProbabilityTheory
 
+
+--TODO: try to add these attributes to fun_prop? how to do this?
+attribute [fun_prop] Measure.measurable_rnDeriv Measurable.ennreal_toReal
 variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α} {a : ℝ}
 
 -- todo: rename and move.
@@ -155,10 +158,32 @@ lemma continuous_hellingerFun (ha_pos : 0 < a) : Continuous (hellingerFun a) := 
   rw [hellingerFun, if_neg ha_pos.ne', if_neg ha_eq]
   exact continuous_const.mul ((continuous_rpow_const ha_pos).sub continuous_const)
 
-lemma stronglyMeasurable_hellingerFun (ha_pos : 0 < a) : StronglyMeasurable (hellingerFun a) :=
-  (continuous_hellingerFun ha_pos).stronglyMeasurable
+lemma stronglyMeasurable_hellingerFun (ha_nonneg : 0 ≤ a) : StronglyMeasurable (hellingerFun a) := by
+  cases  (lt_or_eq_of_le ha_nonneg) with
+  | inl ha_pos => exact (continuous_hellingerFun ha_pos).stronglyMeasurable
+  | inr ha_eq =>
+    rw [← ha_eq, hellingerFun_zero'']
+    measurability
 
-lemma convexOn_hellingerFun (ha_pos : 0 < a) : ConvexOn ℝ (Set.Ici 0) (hellingerFun a) := by
+@[simp]
+lemma hellingerFun_one_eq_zero : hellingerFun a 1 = 0 := by
+  by_cases ha_one : a = 1
+  · simp [ha_one, hellingerFun_one]
+  by_cases ha_zero : a = 0
+  · simp [ha_zero, hellingerFun_zero]
+  simp [hellingerFun, ha_one, ha_zero]
+
+lemma convexOn_hellingerFun (ha_pos : 0 ≤ a) : ConvexOn ℝ (Set.Ici 0) (hellingerFun a) := by
+  by_cases ha_zero : a = 0
+  · refine convexOn_iff_slope_mono_adjacent.mpr ?_
+    simp only [convex_Ici, Set.mem_Ici, smul_eq_mul, true_and, hellingerFun_zero, ha_zero]
+    intro x y z hx _ hxy hyz
+    simp only [(lt_of_le_of_lt hx hxy).ne', ↓reduceIte, zero_sub,
+      (gt_trans hyz <| lt_of_le_of_lt hx hxy).ne', sub_self, zero_div, div_nonpos_iff,
+      Left.nonneg_neg_iff, tsub_le_iff_right, zero_add, Left.neg_nonpos_iff, sub_nonneg]
+    right
+    exact ⟨by positivity, by linarith⟩
+  replace ha_pos := ha_pos.lt_of_ne fun h ↦ ha_zero h.symm
   rcases (lt_trichotomy a 1) with (ha | ha | ha)
   · have : hellingerFun a = - (fun x ↦ (1 - a)⁻¹ • (x ^ a - 1)) := by
       ext x
@@ -199,28 +224,36 @@ lemma derivAtTop_hellingerFun_of_lt_one (ha : a < 1) :
     derivAtTop (hellingerFun a) = 0 :=
   derivAtTop_of_tendsto (tendsto_hellingerFun_div_atTop_of_lt_one ha)
 
-lemma integrable_hellingerFun_iff_integrable_rpow (ha_zero : a ≠ 0) (ha_one : a ≠ 1)
-    [IsFiniteMeasure ν] :
+lemma integrable_hellingerFun_iff_integrable_rpow (ha_one : a ≠ 1) [IsFiniteMeasure ν] :
     Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν
       ↔ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν := by
+  by_cases ha_zero : a = 0
+  · simp_rw [ha_zero, hellingerFun_zero'', rpow_zero, integrable_const, iff_true,
+      ← Set.indicator_comp_right fun x ↦ ((∂μ/∂ν) x).toReal, Set.preimage, Set.mem_singleton_iff,
+      Pi.one_comp]
+    refine (integrable_indicator_iff ?_).mpr ?_
+    . apply measurableSet_eq_fun <;> fun_prop
+    . apply integrableOn_const.mpr
+      right
+      exact measure_lt_top ν _
   rw [hellingerFun_ne_zero_ne_one ha_zero ha_one, integrable_const_mul_iff]
   swap; · simp [sub_eq_zero, ha_one]
   simp_rw [sub_eq_add_neg, integrable_add_const_iff]
 
-lemma integrable_hellingerFun_rnDeriv_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ]
+lemma integrable_hellingerFun_rnDeriv_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] :
     Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
   refine integrable_f_rnDeriv_of_derivAtTop_ne_top μ ν ?_ ?_ ?_
-  · exact stronglyMeasurable_hellingerFun ha_pos
-  · exact convexOn_hellingerFun ha_pos
+  · exact stronglyMeasurable_hellingerFun ha_nonneg
+  · exact convexOn_hellingerFun ha_nonneg
   · rw [derivAtTop_hellingerFun_of_lt_one ha]
     exact EReal.zero_ne_top
 
-lemma integrable_rpow_rnDeriv_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ]
+lemma integrable_rpow_rnDeriv_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] :
     Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν := by
-  rw [← integrable_hellingerFun_iff_integrable_rpow ha_pos.ne' ha.ne]
-  exact integrable_hellingerFun_rnDeriv_of_lt_one ha_pos ha
+  rw [← integrable_hellingerFun_iff_integrable_rpow ha.ne]
+  exact integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha
 
 end HellingerFun
 
@@ -229,9 +262,6 @@ The cases `a = 0` and `a = 1` are defined separately inside the definition of th
 function, so that in the case `a = 0` we have `hellingerDiv 0 μ ν = ν {x | (∂μ/∂ν) x = 0}`, and in
 the case `a = 1` the Hellinger divergence coincides with the KL divergence. -/
 noncomputable def hellingerDiv (a : ℝ) (μ ν : Measure α) : EReal := fDiv (hellingerFun a) μ ν
-
---TODO: try to add these attributes to fun_prop? how to do this?
-attribute [fun_prop] Measure.measurable_rnDeriv Measurable.ennreal_toReal
 
 lemma hellingerDiv_zero (μ ν : Measure α) :
     hellingerDiv 0 μ ν = ν {x | ((∂μ/∂ν) x).toReal = 0} := by
