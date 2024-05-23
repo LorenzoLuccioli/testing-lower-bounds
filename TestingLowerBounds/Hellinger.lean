@@ -10,6 +10,9 @@ import TestingLowerBounds.FDiv.Basic
 import TestingLowerBounds.KullbackLeibler
 import Mathlib.Analysis.Convex.SpecificFunctions.Pow
 import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
+import Mathlib.Algebra.Function.Indicator
+import Mathlib.Data.Real.Basic
+import Mathlib.Tactic.FunProp.Measurable
 
 
 /-!
@@ -127,6 +130,11 @@ lemma hellingerFun_zero' : hellingerFun 0 = fun x ↦ 0 ^ x := by
   by_cases h : x = 0
     <;> simp [hellingerFun, h]
 
+lemma hellingerFun_zero'' : hellingerFun 0 = Set.indicator {0} 1 := by
+  ext x
+  by_cases h : x = 0
+    <;> simp [hellingerFun_zero, h]
+
 lemma hellingerFun_one : hellingerFun 1 = fun x ↦ x * log x := by
   ext x
   simp [hellingerFun]
@@ -216,8 +224,56 @@ lemma integrable_rpow_rnDeriv_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsFiniteM
 
 end HellingerFun
 
-/-- Hellinger divergence of order `a`. Meaningful for `a ∈ (0, 1) ∪ (1, ∞)`. -/
+/-- Hellinger divergence of order `a`.
+The cases `a = 0` and `a = 1` are defined separately inside the definition of the Hellinger
+function, so that in the case `a = 0` we have `hellingerDiv 0 μ ν = ν {x | (∂μ/∂ν) x = 0}`, and in
+the case `a = 1` the Hellinger divergence coincides with the KL divergence. -/
 noncomputable def hellingerDiv (a : ℝ) (μ ν : Measure α) : EReal := fDiv (hellingerFun a) μ ν
+
+--TODO: try to add these attributes to fun_prop? how to do this?
+attribute [fun_prop] Measure.measurable_rnDeriv Measurable.ennreal_toReal
+
+lemma hellingerDiv_zero (μ ν : Measure α) :
+    hellingerDiv 0 μ ν = ν {x | ((∂μ/∂ν) x).toReal = 0} := by
+  have h_eq : (fun x ↦ Set.indicator {0} 1 (μ.rnDeriv ν x).toReal)
+      = {y | ((∂μ/∂ν) y).toReal = 0}.indicator (1 : α → ℝ) := by
+    simp_rw [← Set.indicator_comp_right fun x ↦ ((∂μ/∂ν) x).toReal]
+    simp only [Set.preimage, Set.mem_singleton_iff, Pi.one_comp]
+  have h_meas : MeasurableSet {y | (μ.rnDeriv ν y).toReal = 0} := by
+    apply measurableSet_eq_fun <;> fun_prop
+  by_cases h_int : Integrable (fun x ↦ hellingerFun 0 (μ.rnDeriv ν x).toReal) ν
+  swap
+  · rw [hellingerDiv, fDiv_of_not_integrable h_int]
+    rw [hellingerFun_zero'', h_eq, integrable_indicator_iff h_meas] at h_int
+    have := integrableOn_const.mpr.mt h_int
+    simp only [not_or, not_lt, top_le_iff] at this
+    rw [this.2, EReal.coe_ennreal_top]
+  rw [hellingerDiv, fDiv_of_integrable h_int, hellingerFun_zero'', h_eq, ← hellingerFun_zero'',
+    derivAtTop_hellingerFun_of_lt_one zero_lt_one, zero_mul, add_zero,
+    integral_indicator_one h_meas]
+  rw [hellingerFun_zero'', h_eq, integrable_indicator_iff h_meas] at h_int
+  change IntegrableOn (fun _ ↦ 1) _ _ at h_int
+  apply integrableOn_const.mp at h_int
+  simp only [one_ne_zero, false_or] at h_int
+  exact EReal.coe_ennreal_toReal h_int.ne_top
+
+lemma hellingerDiv_zero' (μ ν : Measure α) [SigmaFinite μ] :
+    hellingerDiv 0 μ ν = ν {x | (∂μ/∂ν) x = 0} := by
+  rw [hellingerDiv_zero]
+  norm_cast
+  refine measure_congr <| eventuallyEq_set.mpr ?_
+  filter_upwards [Measure.rnDeriv_lt_top μ ν] with x hx
+  simp [ENNReal.toReal_eq_zero_iff, hx.ne]
+
+lemma hellingerDiv_zero'' (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure ν] :
+    hellingerDiv 0 μ ν = ν Set.univ - ν {x | 0 < (∂μ/∂ν) x} := by
+  have h : {x | μ.rnDeriv ν x = 0} = {x | 0 < μ.rnDeriv ν x}ᶜ := by
+    ext x
+    simp only [Set.mem_setOf_eq, Set.mem_compl_iff, not_lt, nonpos_iff_eq_zero, eq_comm]
+  rw [hellingerDiv_zero', h, measure_compl
+    (measurableSet_lt measurable_const (Measure.measurable_rnDeriv _ _)) (measure_ne_top _ _),
+    ENNReal.toEReal_sub (measure_ne_top _ _) (measure_mono _)]
+  exact fun _ _ ↦ trivial
 
 /--Note that the correct definition of Hellinger divergence at `a = 1` would be to be equal to the
 KL divergence, not the f divergence with `f = fun x ↦ 0`. -/
