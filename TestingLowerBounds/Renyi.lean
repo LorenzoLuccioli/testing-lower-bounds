@@ -53,19 +53,27 @@ lemma exp_mul_llr' [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
 
 /-- Rényi divergence of order `a`.-/
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
-  if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
-  else if a = 1 then kl μ ν
+  if a = 1 then kl μ ν
   else if hellingerDiv a μ ν ≠ ⊤
-    then (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) --I think this should be defined (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal), in this way we don't have to define it separately for the case a=0
+    then (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal)
     else ⊤
 
 @[simp]
-lemma renyiDiv_zero (μ ν : Measure α) :
-    renyiDiv 0 μ ν = - log (ν {x | 0 < (∂μ/∂ν) x}).toReal := if_pos rfl
+lemma renyiDiv_zero (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure ν] :
+    renyiDiv 0 μ ν = - log (ν {x | 0 < (∂μ/∂ν) x}).toReal := by
+  rw [renyiDiv, if_neg zero_ne_one, if_pos]
+  swap
+  · rw [hellingerDiv_zero, ne_eq, EReal.coe_ennreal_eq_top_iff]
+    exact measure_ne_top ν _
+  simp [ne_eq, zero_sub, ← neg_inv, inv_one, EReal.coe_neg, EReal.coe_one, neg_mul, one_mul, ←
+    sub_eq_add_neg, ite_not]
+  rw [hellingerDiv_zero'']
+  rw [EReal.toReal_sub]
+  all_goals simp [measure_ne_top]
 
 @[simp]
 lemma renyiDiv_one (μ ν : Measure α) : renyiDiv 1 μ ν = kl μ ν := by
-  rw [renyiDiv, if_neg (by simp), if_pos rfl]
+  rw [renyiDiv, if_pos rfl]
 
 section TopAndBounds
 
