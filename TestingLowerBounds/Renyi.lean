@@ -56,7 +56,7 @@ noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 0 then - log (ν {x | 0 < (∂μ/∂ν) x}).toReal
   else if a = 1 then kl μ ν
   else if hellingerDiv a μ ν ≠ ⊤
-    then (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal)
+    then (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) --I think this should be defined (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal), in this way we don't have to define it separately for the case a=0
     else ⊤
 
 @[simp]
