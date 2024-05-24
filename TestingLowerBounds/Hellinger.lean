@@ -301,6 +301,12 @@ lemma hellingerDiv_zero'' (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure
     ENNReal.toEReal_sub (measure_ne_top _ _) (measure_mono _)]
   exact fun _ _ ↦ trivial
 
+lemma hellingerDiv_zero_toReal (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure ν] :
+    (hellingerDiv 0 μ ν).toReal = (ν Set.univ).toReal - (ν {x | 0 < (∂μ/∂ν) x}).toReal := by
+  rw [hellingerDiv_zero'']
+  rw [EReal.toReal_sub]
+  all_goals simp [measure_ne_top]
+
 @[simp] lemma hellingerDiv_one (μ ν : Measure α) [SigmaFinite μ] [SigmaFinite ν] :
     hellingerDiv 1 μ ν = kl μ ν := by
   rw [hellingerDiv, hellingerFun_one, kl_eq_fDiv]
