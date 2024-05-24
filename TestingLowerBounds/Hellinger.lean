@@ -6,13 +6,8 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -- theorem foo (n : Nat) : 0 ≤ n := by exact? -- trick to make exact? work TODO : erase this when we are done
 -- import LeanCopilot
 
-import TestingLowerBounds.FDiv.Basic
 import TestingLowerBounds.KullbackLeibler
 import Mathlib.Analysis.Convex.SpecificFunctions.Pow
-import Mathlib.Analysis.SpecialFunctions.Log.NegMulLog
-import Mathlib.Algebra.Function.Indicator
-import Mathlib.Data.Real.Basic
-import Mathlib.Tactic.FunProp.Measurable
 
 
 /-!
