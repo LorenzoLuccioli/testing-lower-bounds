@@ -435,6 +435,17 @@ lemma hellingerDiv_eq_integral_of_lt_one' (ha_pos : 0 < a) (ha : a < 1) (μ ν :
   hellingerDiv_eq_integral_of_ne_top' ha_pos.ne.symm ha.ne
     (hellingerDiv_ne_top_of_lt_one ha_pos.le ha μ ν)
 
+lemma hellingerDiv_toReal_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    (hellingerDiv a μ ν).toReal
+      = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * (ν Set.univ).toReal := by
+  rw [hellingerDiv_eq_integral_of_lt_one' ha_pos ha, EReal.toReal_sub]
+  · simp [EReal.toReal_mul]
+  · exact EReal.coe_mul _ _ ▸ EReal.coe_ne_top _
+  · exact EReal.coe_mul _ _ ▸  EReal.coe_ne_bot _
+  · simp [ne_eq, EReal.mul_eq_top, measure_ne_top]
+  · simp [ne_eq, EReal.mul_eq_bot, measure_ne_top]
+
 end HellingerEq
 
 --Maybe we could write something like this for the conditional case? Would it be useful?
