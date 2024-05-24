@@ -9,7 +9,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 import TestingLowerBounds.KullbackLeibler
 import Mathlib.Analysis.Convex.SpecificFunctions.Pow
 import Mathlib.Tactic.FunProp.Measurable
-
+import LeanCopilot
 
 /-!
 # Helliger divergence
