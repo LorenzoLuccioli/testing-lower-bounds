@@ -154,7 +154,8 @@ lemma continuous_hellingerFun (ha_pos : 0 < a) : Continuous (hellingerFun a) := 
   rw [hellingerFun, if_neg ha_pos.ne', if_neg ha_eq]
   exact continuous_const.mul ((continuous_rpow_const ha_pos).sub continuous_const)
 
-lemma stronglyMeasurable_hellingerFun (ha_nonneg : 0 ≤ a) : StronglyMeasurable (hellingerFun a) := by
+lemma stronglyMeasurable_hellingerFun (ha_nonneg : 0 ≤ a) :
+    StronglyMeasurable (hellingerFun a) := by
   cases  (lt_or_eq_of_le ha_nonneg) with
   | inl ha_pos => exact (continuous_hellingerFun ha_pos).stronglyMeasurable
   | inr ha_eq =>
@@ -277,8 +278,7 @@ lemma hellingerDiv_zero (μ ν : Measure α) :
   rw [hellingerDiv, fDiv_of_integrable h_int, hellingerFun_zero'', h_eq, ← hellingerFun_zero'',
     derivAtTop_hellingerFun_of_lt_one zero_lt_one, zero_mul, add_zero,
     integral_indicator_one h_meas]
-  rw [hellingerFun_zero'', h_eq, integrable_indicator_iff h_meas] at h_int
-  change IntegrableOn (fun _ ↦ 1) _ _ at h_int
+  rw [hellingerFun_zero'', h_eq, integrable_indicator_iff h_meas, Pi.one_def] at h_int
   apply integrableOn_const.mp at h_int
   simp only [one_ne_zero, false_or] at h_int
   exact EReal.coe_ennreal_toReal h_int.ne_top
@@ -315,7 +315,7 @@ section HellingerEq
 
 /--If `a ≤ 1` use `hellingerDiv_eq_integral_of_integrable_of_le_one` or
 `hellingerDiv_eq_integral_of_le_one`, as they have fewer hypotheses.-/
-lemma hellingerDiv_eq_integral_of_integrable_of_ac --we could remove ha_ne_zero if we define the hellinger function differently at 0, we could define it as the indicator function of {0}, which kind of makes sense if we look at the limit of the function when a → 0, anyway, it may be better to state everything here with ha_ne_zero, then do a separate sections with the results for a=0
+lemma hellingerDiv_eq_integral_of_integrable_of_ac
     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) (h_ac : 1 ≤ a → μ ≪ ν) :
     hellingerDiv a μ ν = ∫ x, hellingerFun a ((∂μ/∂ν) x).toReal ∂ν := by
   rw [hellingerDiv, fDiv_of_integrable h_int]
@@ -408,6 +408,9 @@ lemma hellingerDiv_eq_integral_of_ne_top [IsFiniteMeasure μ] [SigmaFinite ν]
     rw [Measure.singularPart_eq_zero_of_ac h.2]
     simp
 
+/- Integral form of the Hellinger divergence:
+`Hₐ(μ, ν) = (a - 1)⁻¹ ∫ (dμ/dν) ^ a dν - (a - 1)⁻¹ ν(α)`.
+This lemma is not true for `a = 0`, because `0 ^ 0 = 1`. -/
 lemma hellingerDiv_eq_integral_of_ne_top' (ha_ne_zero : a ≠ 0) (ha_ne_one : a ≠ 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h : hellingerDiv a μ ν ≠ ⊤) :
     hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * ν Set.univ := by
@@ -445,7 +448,8 @@ lemma hellingerDiv_le_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Meas
   rw [hellingerDiv]
   refine (fDiv_le_zero_add_top (stronglyMeasurable_hellingerFun ha_nonneg)
     (convexOn_hellingerFun ha_nonneg)).trans_eq ?_
-  rw [derivAtTop_hellingerFun_of_lt_one ha, zero_mul, add_zero, hellingerFun_ne_zero_ne_one h_zero ha.ne]
+  rw [derivAtTop_hellingerFun_of_lt_one ha, zero_mul, add_zero,
+    hellingerFun_ne_zero_ne_one h_zero ha.ne]
   simp only [zero_sub, mul_neg, mul_one, zero_mul, add_zero, zero_rpow h_zero]
   rw [neg_inv, neg_sub]
 
