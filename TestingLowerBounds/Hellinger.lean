@@ -487,9 +487,15 @@ lemma hellingerDiv_symm (ha_pos : 0 < a) (ha : a < 1)
     (1 - a) * hellingerDiv a μ ν = a * hellingerDiv (1 - a) ν μ :=
   hellingerDiv_symm' ha_pos ha (by simp)
 
-lemma hellingerDiv_nonneg (ha_pos : 0 < a) (μ ν : Measure α)
+lemma hellingerDiv_zero_nonneg (μ ν : Measure α) :
+    0 ≤ hellingerDiv 0 μ ν := hellingerDiv_zero _ _ ▸ EReal.coe_ennreal_nonneg _
+
+lemma hellingerDiv_nonneg (ha_pos : 0 ≤ a) (μ ν : Measure α)
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
     0 ≤ hellingerDiv a μ ν := by
+  by_cases h_zero : a = 0
+  · exact h_zero ▸ hellingerDiv_zero_nonneg μ ν
+  replace ha_pos := ha_pos.lt_of_ne fun h ↦ h_zero h.symm
   rw [hellingerDiv]
   exact fDiv_nonneg (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
     hellingerFun_one_eq_zero
