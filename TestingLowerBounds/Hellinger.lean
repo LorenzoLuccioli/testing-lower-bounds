@@ -655,10 +655,13 @@ lemma condHellingerDiv_of_not_integrable
     (h_int : ¬ Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ) :
     condHellingerDiv a κ η μ = ⊤ := condFDiv_of_not_integrable h_int
 
-lemma condHellingerDiv_of_not_integrable' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
-    [IsFiniteKernel κ] [IsFiniteKernel η]
+lemma condHellingerDiv_of_not_integrable' (ha_nonneg : 0 ≤ a) (ha_ne_one : a ≠ 1)
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int' : ¬ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = ⊤ := by
+  by_cases ha_zero : a = 0
+  · simp [ha_zero, Integrable.kernel] at h_int'
+  have ha_pos := ha_nonneg.lt_of_ne fun h ↦ ha_zero h.symm
   by_cases h_int2 : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)
   swap; exact condHellingerDiv_of_not_ae_integrable h_int2
   by_cases h_ac : 1 ≤ a → ∀ᵐ x ∂μ, κ x ≪ η x
