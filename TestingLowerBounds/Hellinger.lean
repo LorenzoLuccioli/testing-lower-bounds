@@ -966,7 +966,6 @@ lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated 
 end Conditional
 
 end ProbabilityTheory
---TODO: generalize the definition of hellinger to 0, 1 and maybe infinity. at 1 it should be kl, at 0 see the renyi div, at ∞ see if there is anything useful in the renyi divergence paper
+
 --there are some results that we will have to show for `a < 1` and `a > 1` separately and then propagate to the general case by continuity
 -- TODO: try to implement the alternative proof of the DPI, using tests, before we will have to implement the Bπ, Iπ, and the relations between those, and to prove that every fDiv is an integral of Iπ
-#minimize_imports
