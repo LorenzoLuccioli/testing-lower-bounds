@@ -441,8 +441,6 @@ lemma condRenyiDiv_of_one_le_of_not_ac [CountableOrCountablyGenerated α β] (ha
   right; right
   exact h_ac
 
--- TODO: before proceding here I have to define the conditional Hellinger divergence
-
 lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
     (ha_lt_one : a < 1) (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
     [IsFiniteKernel η] [IsFiniteMeasure μ] :
