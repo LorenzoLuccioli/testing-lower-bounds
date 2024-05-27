@@ -339,7 +339,7 @@ variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {
 
 /--
 Rényi divergence between two kernels κ and η conditional to a measure μ.
-It is defined as Rₐ(κ, η | μ) := (a - 1)⁻¹ * log (1 + (a - 1) * Hₐ(κ, η | μ)),
+It is defined as `Rₐ(κ, η | μ) := Rₐ(μ ⊗ₘ κ, μ ⊗ₘ η)`.
 -/
 noncomputable
 def condRenyiDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
