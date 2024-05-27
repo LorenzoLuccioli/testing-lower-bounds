@@ -266,4 +266,8 @@ lemma compProd_apply_toReal [SFinite μ] [IsFiniteKernel κ]
   congr with x
   rw [ENNReal.ofReal_toReal (measure_ne_top _ _)]
 
+lemma compProd_univ_toReal [SFinite μ] [IsFiniteKernel κ] :
+    ((μ ⊗ₘ κ) Set.univ).toReal = ∫ x, (κ x Set.univ).toReal ∂μ :=
+  compProd_apply_toReal MeasurableSet.univ
+
 end ProbabilityTheory
