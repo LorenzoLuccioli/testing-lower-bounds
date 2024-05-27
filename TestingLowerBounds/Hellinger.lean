@@ -307,6 +307,11 @@ lemma hellingerDiv_zero_toReal (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMe
   rw [EReal.toReal_sub]
   all_goals simp [measure_ne_top]
 
+lemma hellingerDiv_zero_ne_top (μ ν : Measure α) [IsFiniteMeasure ν] :
+    hellingerDiv 0 μ ν ≠ ⊤ := by
+  rw [hellingerDiv_zero, ne_eq, EReal.coe_ennreal_eq_top_iff]
+  exact measure_ne_top _ _
+
 @[simp] lemma hellingerDiv_one (μ ν : Measure α) [SigmaFinite μ] [SigmaFinite ν] :
     hellingerDiv 1 μ ν = kl μ ν := by
   rw [hellingerDiv, hellingerFun_one, kl_eq_fDiv]
