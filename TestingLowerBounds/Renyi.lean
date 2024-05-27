@@ -357,10 +357,6 @@ lemma condRenyiDiv_one [CountableOrCountablyGenerated α β] (κ η : kernel α 
     condRenyiDiv 1 κ η μ = condKL κ η μ := by
   rw [condRenyiDiv, renyiDiv_one, kl_compProd_left]
 
--- might be useful:
-#check kernel.rnDeriv_measure_compProd_right'
-#check kernel.Measure.absolutelyContinuous_compProd_iff
-
 section TopAndBounds
 
 lemma condRenyiDiv_eq_top_iff_of_one_le [CountableOrCountablyGenerated α β] (ha : 1 ≤ a)
