@@ -700,6 +700,22 @@ lemma condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable [IsFiniteKernel �
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff _ _).mpr ⟨h_int, h_ac⟩) h_int2
 
+lemma condHellingerDiv_zero_of_ae_integrable [MeasurableSpace.CountableOrCountablyGenerated α β]
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun 0 ((∂κ x/∂η x) b).toReal) (η x)) :
+    condHellingerDiv 0 κ η μ = ∫ x, (hellingerDiv 0 (κ x) (η x)).toReal ∂μ :=
+  condHellingerDiv_of_ae_finite_of_integrable
+    ((hellingerDiv_ae_ne_top_iff _ _).mpr ⟨h_int, by simp⟩) integrable_hellingerDiv_zero
+
+lemma condHellingerDiv_zero_of_ae_integrable'
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun 0 ((∂κ x/∂η x) b).toReal) (η x))
+    (h_int2 : Integrable (fun x ↦ (hellingerDiv 0 (κ x) (η x)).toReal) μ) :
+    condHellingerDiv 0 κ η μ = ∫ x, (hellingerDiv 0 (κ x) (η x)).toReal ∂μ :=
+  condHellingerDiv_of_ae_finite_of_integrable
+    ((hellingerDiv_ae_ne_top_iff _ _).mpr ⟨h_int, by simp⟩) h_int2
+
+--TODO: try to generalize this to the case `a = 0`
 lemma condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
     [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
