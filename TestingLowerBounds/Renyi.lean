@@ -347,8 +347,16 @@ def condRenyiDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
 
 --Maybe this can be stated in a nicer way, but I didn't find a way to do it.
 @[simp]
-lemma condRenyiDiv_zero (κ η : kernel α β) (μ : Measure α) :
-    condRenyiDiv 0 κ η μ = - log ((μ ⊗ₘ η) {x | 0 < (∂μ ⊗ₘ κ/∂μ ⊗ₘ η) x}).toReal := if_pos rfl
+lemma condRenyiDiv_zero (κ η : kernel α β) (μ : Measure α) [IsFiniteMeasure μ]
+    [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condRenyiDiv 0 κ η μ = - log ((μ ⊗ₘ η) {x | 0 < (∂μ ⊗ₘ κ/∂μ ⊗ₘ η) x}).toReal := by
+  rw [condRenyiDiv, renyiDiv_zero]
+
+--TODO: prove this. This is probably the correct version of this lemma, I did some calculations to prove it in my notes
+lemma condRenyiDiv_zero' (κ η : kernel α β) (μ : Measure α) [IsFiniteMeasure μ]
+    [IsFiniteKernel κ] [IsFiniteKernel η] :
+    condRenyiDiv 0 κ η μ = - log ((ν Set.univ).toReal - (hellingerDiv a μ ν).toReal) := by
+  sorry
 
 @[simp]
 lemma condRenyiDiv_one [CountableOrCountablyGenerated α β] (κ η : kernel α β) (μ : Measure α)
@@ -362,90 +370,89 @@ lemma condRenyiDiv_one [CountableOrCountablyGenerated α β] (κ η : kernel α 
 
 section TopAndBounds
 
-lemma condRenyiDiv_eq_top_iff_of_one_lt [CountableOrCountablyGenerated α β] (ha : 1 < a)
+lemma condRenyiDiv_eq_top_iff_of_one_le [CountableOrCountablyGenerated α β] (ha : 1 ≤ a)
     (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
     condRenyiDiv a κ η μ = ⊤
       ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
         ∨ ¬Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ
         ∨ ¬ ∀ᵐ x ∂μ, κ x ≪ η x := by
-  rw [condRenyiDiv, renyiDiv_eq_top_iff_of_one_lt ha,
+  rw [condRenyiDiv, renyiDiv_eq_top_iff_of_one_le ha,
     kernel.Measure.absolutelyContinuous_compProd_right_iff, integrable_f_rnDeriv_compProd_right_iff
       (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))]
   tauto
 
-lemma condRenyiDiv_ne_top_iff_of_one_lt [CountableOrCountablyGenerated α β] (ha : 1 < a)
+lemma condRenyiDiv_ne_top_iff_of_one_le [CountableOrCountablyGenerated α β] (ha : 1 ≤ a)
     (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
     condRenyiDiv a κ η μ ≠ ⊤
       ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
         ∧ Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ
         ∧ ∀ᵐ x ∂μ, κ x ≪ η x := by
-  rw [ne_eq, condRenyiDiv_eq_top_iff_of_one_lt ha]
+  rw [ne_eq, condRenyiDiv_eq_top_iff_of_one_le ha]
   push_neg
   rfl
 
-lemma condRenyiDiv_eq_top_iff_of_lt_one [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+lemma condRenyiDiv_eq_top_iff_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
     (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
     [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
     condRenyiDiv a κ η μ = ⊤
     ↔ ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
       ∨ ¬Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ := by
-  rw [condRenyiDiv, renyiDiv_eq_top_iff_of_lt_one ha_pos ha, integrable_f_rnDeriv_compProd_right_iff
+  rw [condRenyiDiv, renyiDiv_eq_top_iff_of_lt_one ha, integrable_f_rnDeriv_compProd_right_iff
       (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))]
   tauto
 
-lemma condRenyiDiv_ne_top_iff_of_lt_one [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+lemma condRenyiDiv_ne_top_iff_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
     (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
     [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
     condRenyiDiv a κ η μ ≠ ⊤
     ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
       ∧ Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ := by
-  rw [ne_eq, condRenyiDiv_eq_top_iff_of_lt_one ha_pos ha]
+  rw [ne_eq, condRenyiDiv_eq_top_iff_of_lt_one ha_nonneg ha]
   push_neg
   rfl
 
-lemma condRenyiDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
+lemma condRenyiDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
     [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
     condRenyiDiv a κ η μ ≠ ⊤ := by
-  rw [condRenyiDiv, ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne]
-  exact hellingerDiv_ne_top_of_le_one ha_pos ha.le _ _
+  rw [condRenyiDiv, ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top]
+  exact hellingerDiv_ne_top_of_lt_one ha_nonneg ha _ _
 
-lemma condRenyiDiv_of_not_ae_integrable [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
-    (ha_ne_one : a ≠ 1) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ]
+lemma condRenyiDiv_of_not_ae_integrable [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
+    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ]
     (h_int : ¬ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))) :
     condRenyiDiv a κ η μ = ⊤ := by
   by_cases ha : a < 1
-  · have := integrable_hellingerFun_rnDeriv_of_le_one ha_pos ha.le (μ := μ ⊗ₘ κ) (ν := μ ⊗ₘ η)
+  · have := integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha (μ := μ ⊗ₘ κ) (ν := μ ⊗ₘ η)
     rw [integrable_f_rnDeriv_compProd_right_iff
       (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))] at this
     exfalso
     exact h_int this.1
-  · have : 1 < a := by exact lt_of_le_of_ne (not_lt.mp ha) ha_ne_one.symm
-    rw [condRenyiDiv_eq_top_iff_of_one_lt this]
+  · rw [condRenyiDiv_eq_top_iff_of_one_le (le_of_not_lt ha)]
     left
     exact h_int
 
-lemma condRenyiDiv_of_not_integrable [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
-    (ha_ne_one : a ≠ 1) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ]
+lemma condRenyiDiv_of_not_integrable [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
+    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ]
     (h_int : ¬Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ) :
     condRenyiDiv a κ η μ = ⊤ := by
   by_cases ha : a < 1
-  · have := integrable_hellingerFun_rnDeriv_of_le_one ha_pos ha.le (μ := μ ⊗ₘ κ) (ν := μ ⊗ₘ η)
+  · have := integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha (μ := μ ⊗ₘ κ) (ν := μ ⊗ₘ η)
     rw [integrable_f_rnDeriv_compProd_right_iff
       (stronglyMeasurable_hellingerFun (by linarith)) (convexOn_hellingerFun (by linarith))] at this
     exfalso
     exact h_int this.2
-  · have : 1 < a := by exact lt_of_le_of_ne (not_lt.mp ha) ha_ne_one.symm
-    rw [condRenyiDiv_eq_top_iff_of_one_lt this]
+  · rw [condRenyiDiv_eq_top_iff_of_one_le (le_of_not_lt ha)]
     right; left
     exact h_int
 
 -- TODO: before proceding here I have to define the conditional Hellinger divergence
 
-lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
     (ha_lt_one : a < 1) (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
     [IsFiniteKernel η] [IsFiniteMeasure μ] :
-    condRenyiDiv a κ η μ = (a - 1)⁻¹ * log (1 + (a - 1) * (condHellingerDiv a κ η μ).toReal) := by
-  rw [condRenyiDiv, renyiDiv_of_lt_one ha_pos ha_lt_one, hellingerDiv_compProd_left ha_pos _]
+    condRenyiDiv a κ η μ = (a - 1)⁻¹
+      * log (((μ ⊗ₘ η) Set.univ).toReal + (a - 1) * (condHellingerDiv a κ η μ).toReal) := by
+  rw [condRenyiDiv, renyiDiv_of_lt_one ha_nonneg ha_lt_one, hellingerDiv_compProd_left ha_nonneg _]
 
 -- lemma condRenyiDiv_of_one_lt_of_ac [CountableOrCountablyGenerated α β] (ha_one_lt : 1 < a)
 --     (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
