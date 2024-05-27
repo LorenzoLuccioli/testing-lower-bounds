@@ -6,6 +6,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 import TestingLowerBounds.KullbackLeibler
 import TestingLowerBounds.Hellinger
 import Mathlib.Probability.Moments
+import LeanCopilot
 
 /-!
 # Rényi divergence
