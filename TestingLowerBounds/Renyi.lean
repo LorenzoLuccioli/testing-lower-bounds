@@ -345,18 +345,11 @@ noncomputable
 def condRenyiDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   renyiDiv a (μ ⊗ₘ κ) (μ ⊗ₘ η)
 
---Maybe this can be stated in a nicer way, but I didn't find a way to do it.
-@[simp]
+--Maybe this can be stated in a nicer way, but I didn't find a way to do it. It's probably good enough to use `condRenyiDiv_of_lt_one`.
 lemma condRenyiDiv_zero (κ η : kernel α β) (μ : Measure α) [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsFiniteKernel η] :
     condRenyiDiv 0 κ η μ = - log ((μ ⊗ₘ η) {x | 0 < (∂μ ⊗ₘ κ/∂μ ⊗ₘ η) x}).toReal := by
   rw [condRenyiDiv, renyiDiv_zero]
-
---TODO: prove this. This is probably the correct version of this lemma, I did some calculations to prove it in my notes
-lemma condRenyiDiv_zero' (κ η : kernel α β) (μ : Measure α) [IsFiniteMeasure μ]
-    [IsFiniteKernel κ] [IsFiniteKernel η] :
-    condRenyiDiv 0 κ η μ = - log ((ν Set.univ).toReal - (hellingerDiv a μ ν).toReal) := by
-  sorry
 
 @[simp]
 lemma condRenyiDiv_one [CountableOrCountablyGenerated α β] (κ η : kernel α β) (μ : Measure α)
@@ -411,8 +404,8 @@ lemma condRenyiDiv_ne_top_iff_of_lt_one [CountableOrCountablyGenerated α β] (h
   push_neg
   rfl
 
-lemma condRenyiDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
-    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
+lemma condRenyiDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (κ η : kernel α β)
+    (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
     condRenyiDiv a κ η μ ≠ ⊤ := by
   rw [condRenyiDiv, ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top]
   exact hellingerDiv_ne_top_of_lt_one ha_nonneg ha _ _
