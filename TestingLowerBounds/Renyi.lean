@@ -68,9 +68,8 @@ lemma renyiDiv_zero (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure ν] :
     exact measure_ne_top ν _
   simp [ne_eq, zero_sub, ← neg_inv, inv_one, EReal.coe_neg, EReal.coe_one, neg_mul, one_mul, ←
     sub_eq_add_neg, ite_not]
-  rw [hellingerDiv_zero'']
-  rw [EReal.toReal_sub]
-  all_goals simp [measure_ne_top]
+  rw [hellingerDiv_zero_toReal]
+  norm_num
 
 @[simp]
 lemma renyiDiv_one (μ ν : Measure α) : renyiDiv 1 μ ν = kl μ ν := by
@@ -78,78 +77,94 @@ lemma renyiDiv_one (μ ν : Measure α) : renyiDiv 1 μ ν = kl μ ν := by
 
 section TopAndBounds
 
-lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) :
+lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top' (ha_ne_one : a ≠ 1) :
     renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
-  simp only [renyiDiv, ha_pos.ne', ↓reduceIte, ha_ne_one, ne_eq, ite_not, ite_eq_left_iff]
+  simp only [renyiDiv, ha_ne_one, ↓reduceIte, ne_eq, ite_not, ite_eq_left_iff]
   rw [← EReal.coe_mul]
   simp only [EReal.coe_ne_top, imp_false, not_not]
 
-lemma renyiDiv_eq_top_iff_of_one_lt (ha : 1 < a) (μ ν : Measure α)
+lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top [SigmaFinite μ] [SigmaFinite ν] :
+    renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
+  by_cases ha : a = 1
+  · rw [ha, renyiDiv_one, hellingerDiv_one]
+  · exact renyiDiv_eq_top_iff_hellingerDiv_eq_top' ha
+
+lemma renyiDiv_eq_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
     [IsFiniteMeasure μ] [SigmaFinite ν] :
     renyiDiv a μ ν = ⊤
       ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν ∨ ¬ μ ≪ ν := by
-  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top (zero_lt_one.trans ha) ha.ne',
-    hellingerDiv_eq_top_iff_of_one_lt ha]
+  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_one_le ha]
 
-lemma renyiDiv_ne_top_iff_of_one_lt (ha : 1 < a) (μ ν : Measure α)
+lemma renyiDiv_ne_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
     [IsFiniteMeasure μ] [SigmaFinite ν] :
     renyiDiv a μ ν ≠ ⊤
       ↔ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν ∧ μ ≪ ν := by
-  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top (zero_lt_one.trans ha) ha.ne',
-    hellingerDiv_eq_top_iff_of_one_lt ha]
+  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_one_le ha]
   push_neg
   rfl
 
-lemma renyiDiv_eq_top_iff_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+lemma renyiDiv_eq_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [SigmaFinite ν] :
     renyiDiv a μ ν = ⊤ ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
-  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne,
-    hellingerDiv_eq_top_iff_of_le_one ha.le]
+  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_lt_one ha]
 
-lemma renyiDiv_ne_top_iff_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+lemma renyiDiv_ne_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [SigmaFinite ν] :
     renyiDiv a μ ν ≠ ⊤ ↔ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
-  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne,
-    hellingerDiv_eq_top_iff_of_le_one ha.le]
+  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_lt_one ha]
   push_neg
   rfl
 
-lemma renyiDiv_ne_top_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measure α)
+lemma renyiDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     renyiDiv a μ ν ≠ ⊤ := by
-  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne]
-  exact hellingerDiv_ne_top_of_le_one ha_pos ha.le _ _
+  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top]
+  exact hellingerDiv_ne_top_of_lt_one ha_nonneg ha _ _
 
-lemma renyiDiv_of_not_integrable (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+lemma renyiDiv_of_not_integrable' (ha_ne_one : a ≠ 1)
     (h_int : ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
     renyiDiv a μ ν = ⊤ := by
-  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha_ne_one]
+  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top' ha_ne_one]
   by_contra h
   exact h (hellingerDiv_of_not_integrable h_int)
 
-lemma renyiDiv_of_lt_one' (ha_pos : 0 < a) (ha_lt_one : a < 1) [IsFiniteMeasure μ] [SigmaFinite ν]
-    (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
-    renyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
-  rw [renyiDiv, if_neg ha_pos.ne', if_neg ha_lt_one.ne,
-    if_pos ((hellingerDiv_ne_top_iff_of_le_one ha_lt_one.le _ _).mpr h_int)]
+lemma renyiDiv_of_not_integrable [IsFiniteMeasure μ] [SigmaFinite ν]
+    (h_int : ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
+    renyiDiv a μ ν = ⊤ := by
+  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top]
+  by_contra h
+  exact h (hellingerDiv_of_not_integrable h_int)
 
-lemma renyiDiv_of_lt_one (ha_pos : 0 < a) (ha_lt_one : a < 1) (μ ν : Measure α)
+lemma renyiDiv_of_lt_one' (ha_lt_one : a < 1) [IsFiniteMeasure μ] [SigmaFinite ν]
+    (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) :
+    renyiDiv a μ ν
+      = (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal) := by
+  rw [renyiDiv, if_neg ha_lt_one.ne,
+    if_pos ((hellingerDiv_ne_top_iff_of_lt_one ha_lt_one _ _).mpr h_int)]
+
+lemma renyiDiv_of_lt_one (ha_nonneg : 0 ≤ a) (ha_lt_one : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
-    renyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
-  rw [renyiDiv_of_lt_one' ha_pos ha_lt_one]
-  exact integrable_hellingerFun_rnDeriv_of_le_one ha_pos ha_lt_one.le
+    renyiDiv a μ ν
+      = (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal) := by
+  rw [renyiDiv_of_lt_one' ha_lt_one]
+  exact integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha_lt_one
 
 lemma renyiDiv_of_one_lt_of_ac (ha_one_lt : 1 < a) [IsFiniteMeasure μ] [SigmaFinite ν]
     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) (hμν : μ ≪ ν) :
-    renyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
-  rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne',
-    if_pos ((hellingerDiv_ne_top_iff_of_one_lt ha_one_lt _ _).mpr ⟨h_int, hμν⟩)]
+    renyiDiv a μ ν
+      = (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal) := by
+  rw [renyiDiv, if_neg ha_one_lt.ne',
+    if_pos ((hellingerDiv_ne_top_iff_of_one_le ha_one_lt.le _ _).mpr ⟨h_int, hμν⟩)]
 
-lemma renyiDiv_of_one_lt_of_not_ac (ha_one_lt : 1 < a) (hμν : ¬ μ ≪ ν)
-    [IsFiniteMeasure μ] [SigmaFinite ν] :
+lemma renyiDiv_of_one_le_of_not_ac (ha : 1 ≤ a) (hμν : ¬ μ ≪ ν)
+    [SigmaFinite μ] [SigmaFinite ν] :
     renyiDiv a μ ν = ⊤ := by
-  rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne', if_neg]
-  rw [hellingerDiv_ne_top_iff_of_one_lt ha_one_lt]
+  by_cases ha_one : a = 1
+  · rw [ha_one, renyiDiv_one]
+    exact kl_of_not_ac hμν
+  replace ha : 1 < a := lt_of_le_of_ne ha fun h ↦ ha_one h.symm
+  rw [renyiDiv, if_neg ha.ne', if_neg]
+  rw [hellingerDiv_ne_top_iff_of_one_le ha.le]
   push_neg
   exact fun _ ↦ hμν
 
@@ -160,38 +175,29 @@ section IntegralForm
 /-- The Rényi divergence `renyiDiv a μ ν` can be written as the log of an integral
 with respect to `ν`. -/
 lemma renyiDiv_eq_log_integral (ha_pos : 0 < a) (ha : a < 1)
-    [IsFiniteMeasure μ] [IsProbabilityMeasure ν] :
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     renyiDiv a μ ν = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν) := by
-  rw [renyiDiv_of_lt_one ha_pos ha μ ν]
+  rw [renyiDiv_of_lt_one ha_pos.le ha μ ν]
   congr
-  rw [hellingerDiv_eq_integral_of_lt_one' ha_pos ha]
-  simp only [measure_univ, EReal.coe_ennreal_one, mul_one]
-  rw [EReal.toReal_sub, EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe, mul_sub, ← mul_assoc,
-    mul_inv_cancel, one_mul]
-  · simp
-  · linarith
-  · rw [← EReal.coe_mul]
-    exact EReal.coe_ne_top _
-  · rw [← EReal.coe_mul]
-    exact EReal.coe_ne_bot _
-  · exact EReal.coe_ne_top _
-  · exact EReal.coe_ne_bot _
+  simp_rw [hellingerDiv_toReal_of_lt_one ha_pos ha, mul_sub, ← mul_assoc,
+    mul_inv_cancel (sub_neg.mpr ha).ne, one_mul]
+  norm_num
 
 /-- The Rényi divergence `renyiDiv a μ ν` can be written as the log of an integral
 with respect to `ν`.
 If `a < 1`, use `renyiDiv_eq_log_integral` instead. -/
-lemma renyiDiv_eq_log_integral_of_ne_top (ha_pos : 0 < a) (ha : a ≠ 1) [IsFiniteMeasure μ]
+lemma renyiDiv_eq_log_integral_of_ne_top (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
     [IsProbabilityMeasure ν] (h : renyiDiv a μ ν ≠ ⊤) :
     renyiDiv a μ ν = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν) := by
-  cases lt_or_gt_of_ne ha with
+  cases lt_or_gt_of_ne ha_ne_one with
   | inl ha => exact renyiDiv_eq_log_integral ha_pos ha
   | inr ha =>
     have h_ne_top : hellingerDiv a μ ν ≠ ⊤ := by
-      rwa [ne_eq, ← renyiDiv_eq_top_iff_hellingerDiv_eq_top ha_pos ha.ne']
-    rw [renyiDiv_ne_top_iff_of_one_lt ha] at h
+      rwa [ne_eq, ← renyiDiv_eq_top_iff_hellingerDiv_eq_top]
+    rw [renyiDiv_ne_top_iff_of_one_le ha.le] at h
     rw [renyiDiv_of_one_lt_of_ac ha h.1 h.2]
     congr
-    rw [hellingerDiv_eq_integral_of_ne_top'' ha.ne' h_ne_top]
+    rw [hellingerDiv_eq_integral_of_ne_top'' ha_pos.ne' ha_ne_one h_ne_top]
     rw [EReal.toReal_sub, EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe, mul_sub, ← mul_assoc,
       mul_inv_cancel, one_mul]
     · simp
@@ -234,7 +240,7 @@ end IntegralForm
 lemma renyiDiv_symm' (ha_pos : 0 < a) (ha : a < 1) (h_eq : μ Set.univ = ν Set.univ)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     (1 - a) * renyiDiv a μ ν = a * renyiDiv (1 - a) ν μ := by
-  rw [renyiDiv_of_lt_one ha_pos ha, renyiDiv_of_lt_one _ _]
+  rw [renyiDiv_of_lt_one ha_pos.le ha, renyiDiv_of_lt_one _ _]
   rotate_left
   · linarith
   · linarith
@@ -249,10 +255,11 @@ lemma renyiDiv_symm' (ha_pos : 0 < a) (ha : a < 1) (h_eq : μ Set.univ = ν Set.
     · linarith
   rw [this, ← EReal.coe_mul, inv_neg, mul_neg, mul_inv_cancel ha_pos.ne']
   simp only [EReal.coe_neg, EReal.coe_one, one_mul]
-  congr
+  congr 5
+  · exact h_eq.symm
   rw [← EReal.toReal_coe a, ← EReal.toReal_mul, EReal.toReal_coe a, ← h, EReal.toReal_mul,
     ← neg_mul]
-  congr
+  congr 1
   norm_cast
   rw [EReal.toReal_coe, neg_sub]
 
@@ -286,7 +293,7 @@ lemma coe_cgf_llr' (ha_pos : 0 < a) [IsFiniteMeasure μ] [IsProbabilityMeasure �
     (h : renyiDiv (1 + a) μ ν ≠ ⊤) :
     cgf (llr μ ν) μ a = a * renyiDiv (1 + a) μ ν := by
   have hμν : μ ≪ ν := by
-    rw [renyiDiv_ne_top_iff_of_one_lt] at h
+    rw [renyiDiv_ne_top_iff_of_one_le] at h
     · exact h.2
     · linarith
   rw [renyiDiv_eq_log_integral_of_ne_top' _ _ hμν h, ← mul_assoc]
