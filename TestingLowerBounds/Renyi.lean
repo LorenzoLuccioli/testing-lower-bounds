@@ -438,6 +438,13 @@ lemma condRenyiDiv_of_not_integrable [CountableOrCountablyGenerated α β] (ha_n
     right; left
     exact h_int
 
+lemma condRenyiDiv_of_one_le_of_not_ac [CountableOrCountablyGenerated α β] (ha : 1 ≤ a)
+    [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] (h_ac : ¬ ∀ᵐ x ∂μ, κ x ≪ η x) :
+    condRenyiDiv a κ η μ = ⊤ := by
+  rw [condRenyiDiv_eq_top_iff_of_one_le ha]
+  right; right
+  exact h_ac
+
 -- TODO: before proceding here I have to define the conditional Hellinger divergence
 
 lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
@@ -447,22 +454,22 @@ lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 
       * log (((μ ⊗ₘ η) Set.univ).toReal + (a - 1) * (condHellingerDiv a κ η μ).toReal) := by
   rw [condRenyiDiv, renyiDiv_of_lt_one ha_nonneg ha_lt_one, hellingerDiv_compProd_left ha_nonneg _]
 
--- lemma condRenyiDiv_of_one_lt_of_ac [CountableOrCountablyGenerated α β] (ha_one_lt : 1 < a)
---     (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
---     [IsFiniteKernel η] [IsFiniteMeasure μ] :
---     [IsFiniteMeasure μ] [SigmaFinite ν]
---     (h_int : Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν) (hμν : μ ≪ ν) :
---     condRenyiDiv a μ ν = (a - 1)⁻¹ * log (1 + (a - 1) * (hellingerDiv a μ ν).toReal) := by
---   rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne',
---     if_pos ((hellingerDiv_ne_top_iff_of_one_lt ha_one_lt _ _).mpr ⟨h_int, hμν⟩)]
-
--- lemma condRenyiDiv_of_one_lt_of_not_ac [IsFiniteMeasure μ] [SigmaFinite ν]
---     (ha_one_lt : 1 < a) (hμν : ¬ μ ≪ ν) :
---     condRenyiDiv a μ ν = ⊤ := by
---   rw [renyiDiv, if_neg (zero_lt_one.trans ha_one_lt).ne', if_neg ha_one_lt.ne', if_neg]
---   rw [hellingerDiv_ne_top_iff_of_one_lt ha_one_lt]
---   push_neg
---   exact fun _ ↦ hμν
+lemma condRenyiDiv_of_one_lt_of_ac [CountableOrCountablyGenerated α β] (ha_one_lt : 1 < a)
+    (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
+    [IsFiniteKernel η] [IsFiniteMeasure μ]
+    (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
+    (h_ac : ∀ᵐ x ∂μ, (κ x) ≪ (η x))
+    (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
+    condRenyiDiv a κ η μ = (a - 1)⁻¹
+      * log (((μ ⊗ₘ η) Set.univ).toReal + (a - 1) * (condHellingerDiv a κ η μ).toReal) := by
+  have ha_pos : 0 < a := by linarith
+  rw [condRenyiDiv, renyiDiv_of_one_lt_of_integrable_of_ac ha_one_lt _ _,
+    hellingerDiv_compProd_left ha_pos.le _]
+  · refine (integrable_f_rnDeriv_compProd_right_iff (stronglyMeasurable_hellingerFun ha_pos.le)
+      (convexOn_hellingerFun ha_pos.le)).mpr ⟨h_int, ?_⟩
+    apply (integrable_hellingerDiv_iff h_int fun _ ↦ h_ac).mp
+    exact (integrable_hellingerDiv_iff' ha_pos ha_one_lt.ne' h_int fun _ ↦ h_ac).mpr h_int'
+  · exact kernel.Measure.absolutelyContinuous_compProd_iff.mpr ⟨fun _ a ↦ a, h_ac⟩
 
 end TopAndBounds
 
