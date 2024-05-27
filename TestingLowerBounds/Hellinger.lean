@@ -627,7 +627,7 @@ Consider the following conditions:
 3.a `∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x)` (`h_int`)
 3.b `∀ᵐ x ∂μ, (κ x) ≪ (η x)` (`h_ac`)
 3.c `Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ` (`h_int'`)
-4. `condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ - (a - 1)⁻¹ * ∫ x, ((η x) Set.univ).toReal ∂μ`
+4. `condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ - (a - 1)⁻¹ * ((μ ⊗ₘ η) Set.univ).toReal`
 
 Then the following hold:
 - 1. ↔ 2. (`condHellingerDiv_eq_integral_iff_ne_top`)
@@ -855,7 +855,7 @@ lemma condHellingerDiv_eq_integral'_of_one_lt (ha_ne_zero : a ≠ 0) (ha : 1 < a
     (h_ac : ∀ᵐ x ∂μ, (κ x) ≪ (η x))
     (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
-      - (a - 1)⁻¹ * ∫ x, ((η x) Set.univ).toReal ∂μ := by
+      - (a - 1)⁻¹ * ((μ ⊗ₘ η) Set.univ).toReal := by
   rw [condHellingerDiv_eq_integral_iff_of_one_lt ha |>.mpr ⟨h_int, h_ac, h_int'⟩]
   norm_cast
   calc
@@ -883,7 +883,7 @@ lemma condHellingerDiv_eq_integral'_of_one_lt (ha_ne_zero : a ≠ 0) (ha : 1 < a
       integral_sub (Integrable.const_mul h_int' _)
         (Integrable.const_mul (Integrable.kernel _ MeasurableSet.univ) _)
     _ = _ := by
-      rw [integral_mul_left, integral_mul_left]
+      rw [integral_mul_left, integral_mul_left, compProd_univ_toReal]
 
 lemma condHellingerDiv_eq_integral'_of_one_lt' (ha_ne_zero : a ≠ 0) (ha : 1 < a) [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsMarkovKernel η]
@@ -892,8 +892,8 @@ lemma condHellingerDiv_eq_integral'_of_one_lt' (ha_ne_zero : a ≠ 0) (ha : 1 < 
     (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
       - (a - 1)⁻¹ * (μ Set.univ).toReal := by
-  simp_rw [condHellingerDiv_eq_integral'_of_one_lt ha_ne_zero ha h_int h_ac h_int', measure_univ,
-    ENNReal.one_toReal, integral_const, smul_eq_mul, mul_one]
+  simp_rw [condHellingerDiv_eq_integral'_of_one_lt ha_ne_zero ha h_int h_ac h_int',
+    compProd_univ_toReal, measure_univ, ENNReal.one_toReal, integral_const, smul_eq_mul, mul_one]
 
 lemma condHellingerDiv_eq_integral'_of_one_lt'' (ha_ne_zero : a ≠ 0) (ha : 1 < a)
     [IsProbabilityMeasure μ] [IsFiniteKernel κ] [IsMarkovKernel η]
@@ -909,7 +909,7 @@ lemma condHellingerDiv_eq_integral'_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsF
     [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
-      - (a - 1)⁻¹ * ∫ x, ((η x) Set.univ).toReal ∂μ := by
+      - (a - 1)⁻¹ * ((μ ⊗ₘ η) Set.univ).toReal := by
   rw [condHellingerDiv_eq_integral_iff_of_lt_one ha_pos ha |>.mpr h_int']
   norm_cast
   calc
@@ -936,15 +936,15 @@ lemma condHellingerDiv_eq_integral'_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsF
       integral_sub (Integrable.const_mul h_int' _)
         (Integrable.const_mul (Integrable.kernel _ MeasurableSet.univ) _)
     _ = _ := by
-      rw [integral_mul_left, integral_mul_left]
+      rw [integral_mul_left, integral_mul_left, compProd_univ_toReal]
 
 lemma condHellingerDiv_eq_integral'_of_lt_one' (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsMarkovKernel η]
     (h_int' : Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ) :
     condHellingerDiv a κ η μ = (a - 1)⁻¹ * ∫ x, ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x ∂μ
       - (a - 1)⁻¹ * (μ Set.univ).toReal := by
-  simp_rw [condHellingerDiv_eq_integral'_of_lt_one ha_pos ha h_int', measure_univ,
-    ENNReal.one_toReal, integral_const, smul_eq_mul, mul_one]
+  simp_rw [condHellingerDiv_eq_integral'_of_lt_one ha_pos ha h_int', compProd_univ_toReal,
+    measure_univ, ENNReal.one_toReal, integral_const, smul_eq_mul, mul_one]
 
 lemma condHellingerDiv_eq_integral'_of_lt_one'' (ha_pos : 0 < a) (ha : a < 1)
     [IsProbabilityMeasure μ] [IsFiniteKernel κ] [IsMarkovKernel η]
