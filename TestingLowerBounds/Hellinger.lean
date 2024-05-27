@@ -570,16 +570,27 @@ lemma integrable_hellingerDiv_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFin
     (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
   exact hC x
 
---The following lemma may be false, I'm not sure how to prove it the last sorry
-lemma integrable_hellingerDiv_zero [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
+--TODO: shouldn't Set.setOf_app_iff be a simp lemma?
+
+lemma integrable_hellingerDiv_zero [MeasurableSpace.CountableOrCountablyGenerated α β]
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
     Integrable (fun x ↦ (hellingerDiv 0 (κ x) (η x)).toReal) μ := by
   simp_rw [hellingerDiv_zero]
   obtain ⟨C, ⟨hC_finite, hC⟩⟩ := IsFiniteKernel.exists_univ_le (κ := η)
   simp only [EReal.toReal_coe_ennreal]
+  have h_eq : (fun x ↦ ((η x) {y | ((κ x).rnDeriv (η x) y).toReal = 0}).toReal) =
+      fun x ↦ ((η x) {y | (kernel.rnDeriv κ η x y).toReal = 0}).toReal := by
+    ext x
+    congr 1
+    apply measure_congr
+    filter_upwards [kernel.rnDeriv_eq_rnDeriv_measure κ η x] with y hy
+    simp only [Set.setOf_app_iff, eq_iff_iff, hy]
+  simp_rw [h_eq]
   apply (integrable_const C.toReal).mono'
   · apply Measurable.aestronglyMeasurable
     apply Measurable.ennreal_toReal
-    sorry -- I'm not sure this is true, for now I cannot prove it, maybe it can be proven using the fact that this should be the limit with a → 0 of measurable functions, or maybe using measurable_fDiv
+    exact kernel.measurable_kernel_prod_mk_left
+      (measurableSet_eq_fun (kernel.measurable_rnDeriv _ _).ennreal_toReal measurable_const)
   · refine eventually_of_forall (fun x ↦ ?_)
     simp only [norm_eq_abs, ENNReal.abs_toReal, ENNReal.toReal_le_toReal
     (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
