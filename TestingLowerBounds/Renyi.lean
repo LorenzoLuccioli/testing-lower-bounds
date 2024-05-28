@@ -270,7 +270,7 @@ lemma renyiDiv_symm (ha_pos : 0 < a) (ha : a < 1)
 
 -- todo: `ν ≪ μ` is necessary (?) due to the llr being 0 when `(∂μ/∂ν) x = 0`.
 -- In that case, `exp (llr μ ν x) = 1 ≠ 0 = (∂μ/∂ν) x`.
-lemma coe_cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsProbabilityMeasure ν]
+lemma coe_cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hνμ : ν ≪ μ) :
     cgf (llr μ ν) ν a = (a - 1) * renyiDiv a μ ν := by
   rw [renyiDiv_eq_log_integral ha_pos ha, ← mul_assoc]
@@ -282,7 +282,7 @@ lemma coe_cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsProbabil
   congr 2
   exact integral_congr_ae (exp_mul_llr hνμ)
 
-lemma cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsProbabilityMeasure ν]
+lemma cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hνμ : ν ≪ μ) :
     cgf (llr μ ν) ν a = (a - 1) * (renyiDiv a μ ν).toReal := by
   have : (a - 1) * (renyiDiv a μ ν).toReal = ((a - 1) * renyiDiv a μ ν).toReal := by
