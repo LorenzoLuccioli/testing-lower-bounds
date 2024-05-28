@@ -1277,6 +1277,7 @@ lemma fDiv_comp_left_le [Nonempty α] [StandardBorelSpace α] [CountableOrCounta
     ≤ fDiv f (μ ⊗ₘ κ) (μ ⊗ₘ η) := fDiv_comp_le_compProd μ μ κ η hf hf_cvx hf_cont
   _ = condFDiv f κ η μ := fDiv_compProd_left μ κ η hf hf_cvx
 
+/--The DPI (Data Processing Inequality). -/
 lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ : kernel α β) [IsMarkovKernel κ]
@@ -1288,3 +1289,4 @@ lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] [CountableOrCount
   _ = fDiv f μ ν := fDiv_compProd_right μ ν κ hf hf_cvx
 
 end ProbabilityTheory
+-- TODO: try to implement the alternative proof of the DPI, using tests, before we will have to implement the Bπ, Iπ, and the relations between those, and to prove that every fDiv is an integral of Iπ

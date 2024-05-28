@@ -967,4 +967,3 @@ end Conditional
 end ProbabilityTheory
 
 --there are some results that we will have to show for `a < 1` and `a > 1` separately and then propagate to the general case by continuity
--- TODO: try to implement the alternative proof of the DPI, using tests, before we will have to implement the Bπ, Iπ, and the relations between those, and to prove that every fDiv is an integral of Iπ

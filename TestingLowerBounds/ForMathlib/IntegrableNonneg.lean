@@ -6,7 +6,7 @@ namespace MeasureTheory
 
 variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α}
 
---TODO: put this in the right place and PR to mathlib
+--TODO: put this in the right place and PR to mathlib. PRed, see #13309.
 lemma integrable_left_of_integrable_add_of_nonneg {f g : α → ℝ}
     (h_meas : AEStronglyMeasurable f μ) (hf : 0 ≤ᵐ[μ] f) (hg : 0 ≤ᵐ[μ] g)
     (h_int : Integrable (f + g) μ) : Integrable f μ := by

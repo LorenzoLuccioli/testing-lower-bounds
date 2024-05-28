@@ -728,9 +728,10 @@ lemma kl_prod_two [CountableOrCountablyGenerated α β] {ξ ψ : Measure β} [Is
   simp only [kl_prod_two', measure_univ, EReal.coe_ennreal_one, mul_one]
 
 --TODO: put this in the right place, maybe PR to mathlib, just after MeasurableEquiv.piCongrLeft?
+-- The following 3 lemmas have been PRed, see #13311
 lemma MeasurableEquiv.piCongrLeft_apply_apply {ι ι' : Type*} (e : ι ≃ ι') {β : ι' → Type*}
     [∀ i', MeasurableSpace (β i')] (x : (i : ι) → β (e i)) (i : ι) :
-    (MeasurableEquiv.piCongrLeft (fun i' => β i') e) x (e i) = x i := by
+    (MeasurableEquiv.piCongrLeft (fun i' ↦ β i') e) x (e i) = x i := by
   rw [MeasurableEquiv.piCongrLeft, MeasurableEquiv.coe_mk, Equiv.piCongrLeft_apply_apply]
 
 lemma Measure.pi_map_piCongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fintype ι'] (e : ι ≃ ι')
@@ -746,10 +747,9 @@ lemma Measure.pi_map_piCongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fin
   have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
     ext x
     simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
-    apply (e.forall_congr _).symm
+    refine (e.forall_congr ?_).symm
     intro i
-    convert Iff.rfl
-    exact MeasurableEquiv.piCongrLeft_apply_apply e x i
+    rw [MeasurableEquiv.piCongrLeft_apply_apply e x i]
   rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
   · simp only [Finset.mem_univ, implies_true]
   intro i _
