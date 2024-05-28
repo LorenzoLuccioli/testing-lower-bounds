@@ -252,10 +252,11 @@ Write $\mu = \mu_X \otimes \mu_{Y|X}$ and $\nu = \nu_X \otimes \nu_{Y|X}$, then 
   $$\KL(\mu_1\times \mu_2, \nu_1 \times \nu_2) = \KL(\mu_1, \nu_1) + \KL(\mu_2, \nu_2) \mu_1 (\mathcal X) \: .$$
 \end{lemma}
 
-\begin{proof}
+\begin{proof} \leanok
 \uses{thm:kl_compProd, lem:condKL_const}
 Write $\mu_1 \times \mu_2$ and $\nu_1 \times \nu_2$ as composition products of a measure and a constant kernel, then apply the chain rule (Theorem~\ref{thm:kl_compProd}) and Lemma~\ref{lem:condKL_const}.
 \end{proof}
+ 
 \begin{theorem}[Tensorization]
   \label{thm:kl_prod_two}
   \lean{ProbabilityTheory.kl_prod_two}
