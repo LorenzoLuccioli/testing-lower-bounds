@@ -241,11 +241,10 @@ instance : MeasurableMul₂ EReal := by
 
 end EReal
 
-section ENNReal
-
 namespace ENNReal
 
-lemma toEReal_sub {x y : ENNReal} (hy_top : y ≠ ⊤) (h_le : y ≤ x) : (x - y).toEReal = x.toEReal - y.toEReal := by
+lemma toEReal_sub {x y : ENNReal} (hy_top : y ≠ ⊤) (h_le : y ≤ x) :
+    (x - y).toEReal = x.toEReal - y.toEReal := by
   by_cases hx_top : x = ⊤
   · lift y to ℝ≥0 using hy_top
     simp only [hx_top, top_sub_coe, EReal.coe_ennreal_top]
@@ -257,7 +256,5 @@ lemma toEReal_sub {x y : ENNReal} (hy_top : y ≠ ⊤) (h_le : y ≤ x) : (x - y
   simp only [EReal.coe_ennreal_ofReal, ge_iff_le, toReal_nonneg, max_eq_left]
   rw [toReal_sub_of_le h_le hx_top]
   exact EReal.coe_sub _ _
-
-
 
 end ENNReal
