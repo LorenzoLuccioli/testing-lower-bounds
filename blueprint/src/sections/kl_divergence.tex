@@ -96,14 +96,14 @@ Apply Theorem~\ref{thm:fDiv_fst_le}.
 
 \begin{theorem}[Data-processing]
   \label{thm:kl_data_proc}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.kl_comp_right_le}
+  \leanok
   \uses{def:KL}
   Let $\mu, \nu$ be two measures on $\mathcal X$ and let $\kappa : \mathcal X \rightsquigarrow \mathcal Y$ be a Markov kernel.
   Then $\KL(\kappa \circ \mu, \kappa \circ \nu) \le \KL(\mu, \nu)$.
 \end{theorem}
 
-\begin{proof}
+\begin{proof} \leanok
 \uses{thm:fDiv_data_proc, lem:kl_eq_fDiv}
 Apply Theorem~\ref{thm:fDiv_data_proc}.
 \end{proof}
