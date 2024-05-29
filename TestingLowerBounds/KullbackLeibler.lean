@@ -401,6 +401,20 @@ lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [
   rw [condKL_eq_condFDiv, kl_eq_fDiv]
   exact condFDiv_const
 
+lemma kl_fst_le [Nonempty β] [StandardBorelSpace β]
+    (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    kl μ.fst ν.fst ≤ kl μ ν := by
+  simp_rw [kl_eq_fDiv]
+  exact fDiv_fst_le _ _ continuous_mul_log.stronglyMeasurable convexOn_mul_log
+    continuous_mul_log.continuousOn
+
+lemma kl_snd_le [Nonempty α] [StandardBorelSpace α]
+    (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    kl μ.snd ν.snd ≤ kl μ ν := by
+  simp_rw [kl_eq_fDiv]
+  exact fDiv_snd_le _ _ continuous_mul_log.stronglyMeasurable convexOn_mul_log
+    continuous_mul_log.continuousOn
+
 section CompProd
 
 /- TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is
