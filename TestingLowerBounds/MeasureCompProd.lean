@@ -295,4 +295,16 @@ lemma compProd_univ_toReal [SFinite μ] [IsFiniteKernel κ] :
     ((μ ⊗ₘ κ) Set.univ).toReal = ∫ x, (κ x Set.univ).toReal ∂μ :=
   compProd_apply_toReal MeasurableSet.univ
 
+instance [SFinite μ] [IsSFiniteKernel κ] : SFinite (μ ∘ₘ κ) := by
+  rw [Measure.comp_eq_snd_compProd]
+  infer_instance
+
+instance [IsFiniteMeasure μ] [IsFiniteKernel κ] : IsFiniteMeasure (μ ∘ₘ κ) := by
+  rw [Measure.comp_eq_snd_compProd]
+  infer_instance
+
+instance [IsProbabilityMeasure μ] [IsMarkovKernel κ] : IsProbabilityMeasure (μ ∘ₘ κ) := by
+  rw [Measure.comp_eq_snd_compProd]
+  infer_instance
+
 end ProbabilityTheory
