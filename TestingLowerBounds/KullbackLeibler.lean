@@ -195,6 +195,7 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   · rw [ENNReal.toReal_ne_zero]
     simp [hν, measure_ne_top ν]
 
+-- If needed, it should be possible to relax h to `μ Set.univ ≥ ν Set.univ`.
 lemma kl_nonneg' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (h : μ Set.univ = ν Set.univ) :
     0 ≤ kl μ ν := by

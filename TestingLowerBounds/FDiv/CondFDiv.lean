@@ -1277,7 +1277,7 @@ lemma fDiv_comp_left_le [Nonempty α] [StandardBorelSpace α] [CountableOrCounta
     ≤ fDiv f (μ ⊗ₘ κ) (μ ⊗ₘ η) := fDiv_comp_le_compProd μ μ κ η hf hf_cvx hf_cont
   _ = condFDiv f κ η μ := fDiv_compProd_left μ κ η hf hf_cvx
 
-/--The DPI (Data Processing Inequality). -/
+/--The Data Processing Inequality for the f divergence. -/
 lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ : kernel α β) [IsMarkovKernel κ]
