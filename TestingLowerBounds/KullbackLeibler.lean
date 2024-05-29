@@ -426,6 +426,13 @@ lemma kl_snd_le [Nonempty α] [StandardBorelSpace α]
 
 section CompProd
 
+lemma le_kl_compProd [CountableOrCountablyGenerated α β] (μ ν : Measure α) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η] :
+    kl μ ν ≤ kl (μ ⊗ₘ κ) (ν ⊗ₘ η) := by
+  simp_rw [kl_eq_fDiv]
+  exact le_fDiv_compProd μ ν κ η continuous_mul_log.stronglyMeasurable
+    convexOn_mul_log continuous_mul_log.continuousOn
+
 /- TODO: the following lemma may be generalized, infact the hypothesys of being markov kernels is
 only used to prove that
 `Integrable (fun x ↦ ∫ (y : β), ‖EReal.toReal (kl (κ (x, y)) (η (x, y)))‖ ∂ξ x) μ` is true,
