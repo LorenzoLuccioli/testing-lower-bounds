@@ -29,7 +29,7 @@ import LeanCopilot
 
 -/
 
-open Real MeasureTheory Filter
+open Real MeasureTheory Filter MeasurableSpace
 
 open scoped ENNReal NNReal Topology
 
@@ -581,7 +581,7 @@ lemma integrable_hellingerDiv_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFin
 
 --TODO: shouldn't Set.setOf_app_iff be a simp lemma?
 
-lemma integrable_hellingerDiv_zero [MeasurableSpace.CountableOrCountablyGenerated α β]
+lemma integrable_hellingerDiv_zero [CountableOrCountablyGenerated α β]
     [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
     Integrable (fun x ↦ (hellingerDiv 0 (κ x) (η x)).toReal) μ := by
   simp_rw [hellingerDiv_zero]
@@ -704,7 +704,7 @@ lemma condHellingerDiv_of_ae_integrable_of_ae_ac_of_integrable [IsFiniteKernel �
   condHellingerDiv_of_ae_finite_of_integrable
     ((hellingerDiv_ae_ne_top_iff _ _).mpr ⟨h_int, h_ac⟩) h_int2
 
-lemma condHellingerDiv_zero_eq [MeasurableSpace.CountableOrCountablyGenerated α β]
+lemma condHellingerDiv_zero_eq [CountableOrCountablyGenerated α β]
     [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
     condHellingerDiv 0 κ η μ = ∫ x, (hellingerDiv 0 (κ x) (η x)).toReal ∂μ :=
   condHellingerDiv_of_ae_finite_of_integrable
@@ -955,7 +955,7 @@ lemma condHellingerDiv_eq_integral'_of_lt_one'' (ha_pos : 0 < a) (ha : a < 1)
 
 end CondHellingerEq
 
-lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated α β]
+lemma hellingerDiv_compProd_left [CountableOrCountablyGenerated α β]
     (ha_nonneg : 0 ≤ a) (μ : Measure α) [IsFiniteMeasure μ] (κ η : kernel α β) [IsFiniteKernel κ]
     [∀ x, NeZero (κ x)] [IsFiniteKernel η] :
     hellingerDiv a (μ ⊗ₘ κ) (μ ⊗ₘ η) = condHellingerDiv a κ η μ := by
@@ -963,6 +963,54 @@ lemma hellingerDiv_compProd_left [MeasurableSpace.CountableOrCountablyGenerated 
     (stronglyMeasurable_hellingerFun ha_nonneg) (convexOn_hellingerFun ha_nonneg)]
 
 end Conditional
+
+section DataProcessingInequality
+
+variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
+
+lemma le_hellingerDiv_compProd [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η] :
+    hellingerDiv a μ ν ≤ hellingerDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) :=
+  le_fDiv_compProd μ ν κ η (stronglyMeasurable_hellingerFun ha_pos.le)
+    (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+lemma hellingerDiv_fst_le [Nonempty β] [StandardBorelSpace β] (ha_pos : 0 < a)
+    (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    hellingerDiv a μ.fst ν.fst ≤ hellingerDiv a μ ν :=
+  fDiv_fst_le _ _ (stronglyMeasurable_hellingerFun ha_pos.le)
+    (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+lemma hellingerDiv_snd_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+    (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    hellingerDiv a μ.snd ν.snd ≤ hellingerDiv a μ ν :=
+  fDiv_snd_le _ _ (stronglyMeasurable_hellingerFun ha_pos.le)
+    (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+lemma hellingerDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
+    hellingerDiv a (μ ∘ₘ κ) (ν ∘ₘ η) ≤ hellingerDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) :=
+  fDiv_comp_le_compProd μ ν κ η (stronglyMeasurable_hellingerFun ha_pos.le)
+    (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+lemma hellingerDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
+    [CountableOrCountablyGenerated α β] (ha_pos : 0 < a) (μ : Measure α) [IsFiniteMeasure μ]
+    (κ η : kernel α β) [IsFiniteKernel κ] [∀ a, NeZero (κ a)] [IsFiniteKernel η] :
+    hellingerDiv a (μ ∘ₘ κ) (μ ∘ₘ η) ≤ condHellingerDiv a κ η μ :=
+  fDiv_comp_left_le μ κ η (stronglyMeasurable_hellingerFun ha_pos.le)
+    (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+/--The Data Processing Inequality for the Hellinger divergence. -/
+lemma hellingerDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+    [CountableOrCountablyGenerated α β]
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ : kernel α β) [IsMarkovKernel κ] :
+    hellingerDiv a (μ ∘ₘ κ) (ν ∘ₘ κ) ≤ hellingerDiv a μ ν :=
+  fDiv_comp_right_le μ ν κ (stronglyMeasurable_hellingerFun ha_pos.le)
+    (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+end DataProcessingInequality
 
 end ProbabilityTheory
 
