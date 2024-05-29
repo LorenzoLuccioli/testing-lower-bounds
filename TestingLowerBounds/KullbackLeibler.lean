@@ -195,15 +195,21 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   · rw [ENNReal.toReal_ne_zero]
     simp [hν, measure_ne_top ν]
 
-lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
+lemma kl_nonneg' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] [NeZero ν]
+    (h : μ Set.univ = ν Set.univ) :
     0 ≤ kl μ ν := by
   by_cases hμν : μ ≪ ν
   swap; · rw [kl_of_not_ac hμν]; simp
   by_cases h_int : Integrable (llr μ ν) μ
   swap; · rw [kl_of_not_integrable h_int]; simp
   calc 0
-    = ((μ Set.univ).toReal : EReal) * log ((μ Set.univ).toReal / (ν Set.univ).toReal) := by simp
+    = ((μ Set.univ).toReal : EReal) * log ((μ Set.univ).toReal / (ν Set.univ).toReal) := by
+        rw [h, div_self (ENNReal.toReal_ne_zero.mpr ⟨NeZero.ne _, measure_ne_top _ _⟩)]
+        simp [h]
   _ ≤ kl μ ν := kl_ge_mul_log _ _
+
+lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
+    0 ≤ kl μ ν := kl_nonneg' μ ν (by simp)
 
 lemma kl_eq_zero_iff [SigmaFinite μ] [SigmaFinite ν] : kl μ ν = 0 ↔ μ = ν := by
   constructor <;> intro h
