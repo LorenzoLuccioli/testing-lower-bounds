@@ -52,6 +52,40 @@ lemma exp_mul_llr' [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
   have h_pos : 0 < ((∂μ/∂ν) x).toReal :=  ENNReal.toReal_pos hx_pos.ne' hx_lt_top.ne
   rw [← log_rpow h_pos, exp_log (rpow_pos_of_pos h_pos _)]
 
+--attempt at proving an auxiliary lemma for the DPI, it seems there are some difficulties related to the fact that log is not monotone everywhere, but only in the positive reals, in particular it's not monotone in 0, but the qualtity that we put inside the log can be 0, at least when the two measures are mutually singular. how should we do? Shall we define the Renyi div with the new extended log? that should be at least monotone on all the ENNReals, even though I don't know wether this is already proven or not
+
+-- --find a better name
+-- lemma monotone_const_mul_log_const_add_const_mul₂ (b c : ℝ) :
+--     Monotone (fun x ↦ c⁻¹ * log (b + c * x)) := by
+--   rcases lt_trichotomy c 0 with (h | rfl | h)
+--   ·
+
+--     sorry
+--   · simp [monotone_const]
+--   ·
+--     refine Monotone.const_mul ?inr.inr.hf (inv_nonneg_of_nonneg h.le)
+--     apply?
+
+--     sorry
+
+
+
+
+
+--     sorry
+
+
+-- lemma monotone_mul_log_add_mul₂ (a₁ b₁ a₂ b₂ c : ℝ) (ha : a₁ ≤ a₂) (hb : b₁ ≤ b₂) :
+--     c⁻¹ * log (a₁ + c * b₁) ≤ c⁻¹ * log (a₂ + c * b₂) := by
+--   rcases lt_trichotomy c 0 with (h | rfl | h)
+--   ·
+--     sorry
+--   · norm_num
+--   ·
+--     gcongr c⁻¹ * log (?_ + c * ?_)
+
+--     sorry
+
 /-- Rényi divergence of order `a`.-/
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 1 then kl μ ν
@@ -467,7 +501,62 @@ lemma condRenyiDiv_of_one_lt_of_ac [CountableOrCountablyGenerated α β] (ha_one
 
 end TopAndBounds
 
-
 end Conditional
+
+section DataProcessingInequality
+
+variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
+
+--failed attempt at proving the data processing inequality for the Rényi divergence, see also the comment at the beginning of the file about `monotone_const_mul_log_const_add_const_mul₂`
+
+-- lemma le_renyiDiv_of_le_hellingerDiv
+
+
+-- lemma le_renyiDiv_compProd [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+--     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+--     (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η] :
+--     renyiDiv a μ ν ≤ renyiDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) := by
+
+
+
+--   le_fDiv_compProd μ ν κ η (stronglyMeasurable_hellingerFun ha_pos.le)
+--     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+-- lemma renyiDiv_fst_le [Nonempty β] [StandardBorelSpace β] (ha_pos : 0 < a)
+--     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+--     renyiDiv a μ.fst ν.fst ≤ renyiDiv a μ ν :=
+--   fDiv_fst_le _ _ (stronglyMeasurable_hellingerFun ha_pos.le)
+--     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+-- lemma renyiDiv_snd_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+--     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+--     renyiDiv a μ.snd ν.snd ≤ renyiDiv a μ ν :=
+--   fDiv_snd_le _ _ (stronglyMeasurable_hellingerFun ha_pos.le)
+--     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+-- lemma renyiDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+--     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+--     (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
+--     renyiDiv a (μ ∘ₘ κ) (ν ∘ₘ η) ≤ renyiDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) :=
+--   fDiv_comp_le_compProd μ ν κ η (stronglyMeasurable_hellingerFun ha_pos.le)
+--     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+-- lemma renyiDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
+--     [CountableOrCountablyGenerated α β] (ha_pos : 0 < a) (μ : Measure α) [IsFiniteMeasure μ]
+--     (κ η : kernel α β) [IsFiniteKernel κ] [∀ a, NeZero (κ a)] [IsFiniteKernel η] :
+--     renyiDiv a (μ ∘ₘ κ) (μ ∘ₘ η) ≤ condrenyiDiv a κ η μ :=
+--   fDiv_comp_left_le μ κ η (stronglyMeasurable_hellingerFun ha_pos.le)
+--     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+-- /--The Data Processing Inequality for the Hellinger divergence. -/
+-- lemma renyiDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+--     [CountableOrCountablyGenerated α β]
+--     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+--     (κ : kernel α β) [IsMarkovKernel κ] :
+--     renyiDiv a (μ ∘ₘ κ) (ν ∘ₘ κ) ≤ renyiDiv a μ ν :=
+--   fDiv_comp_right_le μ ν κ (stronglyMeasurable_hellingerFun ha_pos.le)
+--     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+
+end DataProcessingInequality
 
 end ProbabilityTheory
