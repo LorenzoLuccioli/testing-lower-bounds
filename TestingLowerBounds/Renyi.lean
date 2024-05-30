@@ -86,7 +86,12 @@ lemma exp_mul_llr' [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
 
 --     sorry
 
-/-- Rényi divergence of order `a`.-/
+/-- Rényi divergence of order `a`. If `a = 1`, it is defined as `kl μ ν`, otherwise as
+`(a - 1)⁻¹ * log (ν(α) + (a - 1) * Hₐ(μ, ν))`.
+If `ν` is a probability measure then this becomes the more usual definition
+`(a - 1)⁻¹ * log (1 + (a - 1) * Hₐ(μ, ν))`, but this definition maintains some useful properties
+also for a general finite measure `ν`, in particular the integral form
+`Rₐ(μ, ν) = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν)`. -/
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 1 then kl μ ν
   else if hellingerDiv a μ ν ≠ ⊤
@@ -369,17 +374,15 @@ section Conditional
 
 variable {β γ : Type*} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ} {κ η : kernel α β}
 
---TODO: what convention should we adopt for the names of the variables? we cannot use `a` for the element of `α`, so we cannot adopt the same convention as for kl, on the other hand using `x`for the element of `α` may be confusing and we may need `x` for other cases, such that an element of the product space, or some other mute variable. Shall we change the convention for the parameter then? in this case a possibilty would be `λ`. but it is problematic because of the lambda calculus notation, so could we call the parameter `l`? For now I leave it as `x` but I think we should change it at some point.
 
-/--
-Rényi divergence between two kernels κ and η conditional to a measure μ.
-It is defined as `Rₐ(κ, η | μ) := Rₐ(μ ⊗ₘ κ, μ ⊗ₘ η)`.
--/
+/-- Rényi divergence between two kernels κ and η conditional to a measure μ.
+It is defined as `Rₐ(κ, η | μ) := Rₐ(μ ⊗ₘ κ, μ ⊗ₘ η)`. -/
 noncomputable
 def condRenyiDiv (a : ℝ) (κ η : kernel α β) (μ : Measure α) : EReal :=
   renyiDiv a (μ ⊗ₘ κ) (μ ⊗ₘ η)
 
---Maybe this can be stated in a nicer way, but I didn't find a way to do it. It's probably good enough to use `condRenyiDiv_of_lt_one`.
+/-Maybe this can be stated in a nicer way, but I didn't find a way to do it. It's probably good
+enough to use `condRenyiDiv_of_lt_one`.-/
 lemma condRenyiDiv_zero (κ η : kernel α β) (μ : Measure α) [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsFiniteKernel η] :
     condRenyiDiv 0 κ η μ = - log ((μ ⊗ₘ η) {x | 0 < (∂μ ⊗ₘ κ/∂μ ⊗ₘ η) x}).toReal := by
@@ -465,15 +468,13 @@ lemma condRenyiDiv_of_not_integrable [CountableOrCountablyGenerated α β] (ha_n
     exfalso
     exact h_int this.2
   · rw [condRenyiDiv_eq_top_iff_of_one_le (le_of_not_lt ha)]
-    right; left
-    exact h_int
+    exact Or.inr (Or.inl h_int)
 
 lemma condRenyiDiv_of_one_le_of_not_ac [CountableOrCountablyGenerated α β] (ha : 1 ≤ a)
     [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] (h_ac : ¬ ∀ᵐ x ∂μ, κ x ≪ η x) :
     condRenyiDiv a κ η μ = ⊤ := by
   rw [condRenyiDiv_eq_top_iff_of_one_le ha]
-  right; right
-  exact h_ac
+  exact Or.inr (Or.inr h_ac)
 
 lemma condRenyiDiv_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
     (ha_lt_one : a < 1) (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [∀ x, NeZero (κ x)]
@@ -500,6 +501,7 @@ lemma condRenyiDiv_of_one_lt_of_ac [CountableOrCountablyGenerated α β] (ha_one
   · exact kernel.Measure.absolutelyContinuous_compProd_iff.mpr ⟨fun _ a ↦ a, h_ac⟩
 
 end TopAndBounds
+
 
 end Conditional
 

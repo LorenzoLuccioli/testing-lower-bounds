@@ -35,7 +35,6 @@ open scoped ENNReal NNReal Topology
 
 namespace ProbabilityTheory
 
-
 --TODO: try to add these attributes to fun_prop? how to do this?
 attribute [fun_prop] Measure.measurable_rnDeriv Measurable.ennreal_toReal
 variable {α : Type*} {mα : MeasurableSpace α} {μ ν : Measure α} {a : ℝ}
@@ -106,9 +105,6 @@ lemma integrable_rpow_rnDeriv_iff [SigmaFinite ν] [SigmaFinite μ] (hμν : μ 
 
 section HellingerFun
 
--- noncomputable
--- def hellingerFun (a : ℝ) : ℝ → ℝ := fun x ↦ (a - 1)⁻¹ * (x ^ a - 1)
-
 /--Hellinger function, defined as `x ↦ (a - 1)⁻¹ * (x ^ a - 1)` for `a ∈ (0, 1) ∪ (1, + ∞)`.
 At `0` the function is obtained by contiuity and is the indicator function of `{0}`. At `1` it is
 defined as `x ↦ x * log x`, because in this way we obtain that the Hellinger divergence at `1`
@@ -125,19 +121,17 @@ lemma hellingerFun_zero : hellingerFun 0 = fun x ↦ if x = 0 then 1 else 0 := b
 
 lemma hellingerFun_zero' : hellingerFun 0 = fun x ↦ 0 ^ x := by
   ext x
-  by_cases h : x = 0
-    <;> simp [hellingerFun, h]
+  by_cases h : x = 0 <;> simp [hellingerFun, h]
 
 lemma hellingerFun_zero'' : hellingerFun 0 = Set.indicator {0} 1 := by
   ext x
-  by_cases h : x = 0
-    <;> simp [hellingerFun_zero, h]
+  by_cases h : x = 0 <;> simp [hellingerFun_zero, h]
 
 lemma hellingerFun_one : hellingerFun 1 = fun x ↦ x * log x := by
   ext x
   simp [hellingerFun]
 
-lemma hellingerFun_ne_zero_ne_one (ha_zero : a ≠ 0) (ha_one : a ≠ 1) :
+lemma hellingerFun_of_ne_zero_of_ne_one (ha_zero : a ≠ 0) (ha_one : a ≠ 1) :
     hellingerFun a = fun x ↦ (a - 1)⁻¹ * (x ^ a - 1) := by
   ext x
   simp [hellingerFun, ha_zero, ha_one]
@@ -184,7 +178,7 @@ lemma convexOn_hellingerFun (ha_pos : 0 ≤ a) : ConvexOn ℝ (Set.Ici 0) (helli
   · have : hellingerFun a = - (fun x ↦ (1 - a)⁻¹ • (x ^ a - 1)) := by
       ext x
       simp only [Pi.neg_apply]
-      rw [hellingerFun_ne_zero_ne_one ha_pos.ne' ha.ne, smul_eq_mul, ← neg_mul, neg_inv, neg_sub]
+      rw [hellingerFun_of_ne_zero_of_ne_one ha_pos.ne' ha.ne, smul_eq_mul, ← neg_mul, neg_inv, neg_sub]
     rw [this]
     refine ConcaveOn.neg ?_
     exact ((Real.concaveOn_rpow ha_pos.le ha.le).sub (convexOn_const _ (convex_Ici 0))).smul
@@ -232,7 +226,7 @@ lemma integrable_hellingerFun_iff_integrable_rpow (ha_one : a ≠ 1) [IsFiniteMe
     . apply integrableOn_const.mpr
       right
       exact measure_lt_top ν _
-  rw [hellingerFun_ne_zero_ne_one ha_zero ha_one, integrable_const_mul_iff]
+  rw [hellingerFun_of_ne_zero_of_ne_one ha_zero ha_one, integrable_const_mul_iff]
   swap; · simp [sub_eq_zero, ha_one]
   simp_rw [sub_eq_add_neg, integrable_add_const_iff]
 
@@ -424,7 +418,7 @@ lemma hellingerDiv_eq_integral_of_ne_top' (ha_ne_zero : a ≠ 0) (ha_ne_one : a 
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h : hellingerDiv a μ ν ≠ ⊤) :
     hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * ν Set.univ := by
   rw [hellingerDiv_eq_integral_of_ne_top h]
-  simp_rw [hellingerFun_ne_zero_ne_one ha_ne_zero ha_ne_one, integral_mul_left]
+  simp_rw [hellingerFun_of_ne_zero_of_ne_one ha_ne_zero ha_ne_one, integral_mul_left]
   rw [integral_sub _ (integrable_const _),
     integral_const, smul_eq_mul, mul_one, mul_sub, EReal.coe_sub, EReal.coe_mul, EReal.coe_mul,
     EReal.coe_ennreal_toReal (measure_ne_top _ _)]
@@ -469,7 +463,7 @@ lemma hellingerDiv_le_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Meas
   refine (fDiv_le_zero_add_top (stronglyMeasurable_hellingerFun ha_nonneg)
     (convexOn_hellingerFun ha_nonneg)).trans_eq ?_
   rw [derivAtTop_hellingerFun_of_lt_one ha, zero_mul, add_zero,
-    hellingerFun_ne_zero_ne_one h_zero ha.ne]
+    hellingerFun_of_ne_zero_of_ne_one h_zero ha.ne]
   simp only [zero_sub, mul_neg, mul_one, zero_mul, add_zero, zero_rpow h_zero]
   rw [neg_inv, neg_sub]
 
