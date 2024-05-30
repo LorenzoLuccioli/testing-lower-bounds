@@ -42,27 +42,3 @@ instance [SFinite ρ] : SFinite ρ.fst := by
 instance [SFinite ρ] : SFinite ρ.snd := by
   rw [snd]
   infer_instance
-
-
-
---this is an attempt to do the same thing with `SigmaFinite`, but it doesn't work, definitely the last sorry is not even true with this proof, we would have to add to the collection of sets also the complement of the sets in the collection, so that their union is univ, but the real problem is the first sorry, I don't know how to solve it, maybe there is some way to take, instead of f''(s n), some measurable set that contains it and that has finite measure, but I don't know how to do it
--- @[instance]
--- theorem Measure.isSigmaFinite_map {m : MeasurableSpace α} (μ : Measure α) [SigmaFinite μ]
---     (f : α → β) : SigmaFinite (μ.map f) := by
---   by_cases hf : AEMeasurable f μ
---   ·
---     obtain ⟨s, hs, hμ, hu⟩ := μ.toFiniteSpanningSetsIn
---     use fun n ↦ f '' (s n)
---     ·
---       exact fun _ ↦ trivial
---     ·
---       intro i
---       rw [map]
-
---
---       sorry
---     ·
-
---       sorry
-
---   · rw [map_of_not_aemeasurable hf]
