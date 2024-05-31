@@ -89,8 +89,7 @@ lemma integral_rpow_rnDeriv (ha_pos : 0 < a) (ha : a ≠ 1) [SigmaFinite μ] [Si
         rw [add_comm] at hx
         simp only [hx, Pi.div_apply, p, q]
 
-lemma integrable_rpow_rnDeriv_iff [SigmaFinite ν] [SigmaFinite μ] (hμν : μ ≪ ν)
-    {a : ℝ} (ha : 0 < a) :
+lemma integrable_rpow_rnDeriv_iff [SigmaFinite ν] [SigmaFinite μ] (hμν : μ ≪ ν) (ha : 0 < a) :
     Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) μ
       ↔ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ (1 + a)) ν := by
   rw [← integrable_rnDeriv_smul_iff hμν]
@@ -1022,5 +1021,4 @@ end DataProcessingInequality
 end ProbabilityTheory
 
 --there are some results that we will have to show for `a < 1` and `a > 1` separately and then propagate to the general case by continuity
--- TODO: add the DPI for the hellingerDiv, also for KL
--- TODO: prove that the integral of the power of the rnderiv is zero iff the measures are mutually singular, then change the definition of the Renyi divergence and se the new ereal log instead of the real one and try to prove the DPI for renyi, the part about the measure univ (the first thing inside the log) should not matter in the case of Markov kernels, because we have the measure of univ in one part, and th measure of the composition with the kernel of univ, which is the same as the measure of univ.
+-- TODO: change the definition of the Renyi divergence and use the new ereal log instead of the real one and try to prove the DPI for renyi, the part about the measure univ (the first thing inside the log) should not matter in the case of Markov kernels, because we have the measure of univ in one part, and th measure of the composition with the kernel of univ, which is the same as the measure of univ.
