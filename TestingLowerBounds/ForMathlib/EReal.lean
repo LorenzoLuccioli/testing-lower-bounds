@@ -1,5 +1,6 @@
 import Mathlib.Data.Real.EReal
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import LeanCopilot
 
 open scoped ENNReal NNReal
 
@@ -238,6 +239,48 @@ instance : MeasurableAdd₂ EReal := ⟨EReal.lowerSemicontinuous_add.measurable
 instance : MeasurableMul₂ EReal := by
   constructor
   sorry
+
+/-- Reinterpret an EReal number `x` as a NNReal number. Returns `0` if `x < 0` or `x = ⊤`. -/
+noncomputable def toNNReal (x : EReal) : NNReal :=
+  if x = ⊤ then 0
+  else if h : 0 ≤ x then ⟨x.toReal, toReal_nonneg h⟩
+  else 0
+
+@[simp]
+theorem toNNReal_top : (⊤ : EReal).toNNReal = 0 := rfl
+
+@[simp]
+theorem toNNReal_neg {x : EReal} (hx : x < 0) : x.toNNReal = 0 := by
+  rw [toNNReal, if_neg hx.ne_top, dif_neg (not_le_of_gt hx)]
+
+theorem toNNReal_of_nonneg_of_finite {x : EReal} (hx : 0 ≤ x) (h_top : x ≠ ⊤) :
+    x.toNNReal = ⟨x.toReal, toReal_nonneg hx⟩ := by
+  rw [toNNReal, if_neg h_top, dif_pos hx]
+
+theorem coe_toNNReal {x : EReal} (hx : 0 ≤ x) (h_top : x ≠ ⊤) : (x.toNNReal : EReal) = x := by
+  rw [toNNReal_of_nonneg_of_finite hx h_top, ← Real.toNNReal_of_nonneg, coe_nnreal_eq_coe_real,
+    Real.coe_toNNReal _ (toReal_nonneg hx), coe_toReal h_top _]
+  exact fun h ↦ by simp_all only [le_bot_iff, zero_ne_bot]
+
+/-- Reinterpret an EReal number `x` as an ENNReal number. Returns `0` if `x < 0`. -/
+noncomputable def toENNReal (x : EReal) : ENNReal :=
+  if x = ⊤ then ⊤
+  else x.toNNReal
+
+@[simp]
+theorem toENNReal_top : (⊤ : EReal).toENNReal = ⊤ := rfl
+
+@[simp]
+theorem toENNReal_neg {x : EReal} (hx : x < 0) : x.toENNReal = 0 := by
+  rw [toENNReal, if_neg hx.ne_top, toNNReal_neg hx]
+  rfl
+
+theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
+  rw [toENNReal]
+  by_cases h_top : x = ⊤
+  · rw [if_pos h_top, h_top]
+    rfl
+  exact if_neg h_top ▸ coe_toNNReal hx h_top
 
 end EReal
 
