@@ -281,6 +281,7 @@ theorem toENNReal_neg {x : EReal} (hx : x < 0) : x.toENNReal = 0 := by
   rw [toENNReal, if_neg hx.ne_top]
   exact ENNReal.ofReal_of_nonpos (toReal_nonpos hx.le)
 
+@[simp]
 theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
   rw [toENNReal]
   by_cases h_top : x = ⊤
@@ -290,6 +291,7 @@ theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := 
   simp only [coe_ennreal_ofReal, ge_iff_le, hx, toReal_nonneg, max_eq_left]
   exact coe_toReal h_top fun _ ↦ by simp_all only [le_bot_iff, zero_ne_bot]
 
+@[simp]
 theorem toENNReal_coe {x : ENNReal} : (x : EReal).toENNReal = x := by
   by_cases h_top : x = ⊤
   · rw [h_top, coe_ennreal_top, toENNReal_top]
