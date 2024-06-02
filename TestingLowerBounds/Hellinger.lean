@@ -514,6 +514,32 @@ lemma hellingerDiv_nonneg (ha_pos : 0 ≤ a) (μ ν : Measure α)
   exact fDiv_nonneg (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
     hellingerFun_one_eq_zero
 
+lemma meas_univ_add_mul_hellingerDiv_nonneg_of_le_one (ha_nonneg : 0 ≤ a) (ha : a ≤ 1)
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν ≥ 0 := by
+  by_cases h_one : a = 1
+  · have : (1 - 1 : EReal) = 0 := EReal.sub_self (ne_of_beq_false rfl) (ne_of_beq_false rfl)
+    simp [h_one, add_zero, zero_mul, this, EReal.coe_ennreal_nonneg]
+  replace ha : a < 1 := ha.lt_of_ne h_one
+  calc
+    _ = (ν Set.univ) - (1 - ↑a) * hellingerDiv a μ ν := by
+      congr
+      rw [← neg_mul, EReal.neg_sub _ _, add_comm, sub_eq_add_neg] <;> simp
+    _ ≥ (ν Set.univ) - (1 - ↑a) * ((1 - a)⁻¹ * ν Set.univ) := by
+      simp_rw [sub_eq_add_neg]
+      gcongr
+      rw [EReal.neg_le_neg_iff]
+      gcongr
+      · norm_cast
+        simp only [le_add_neg_iff_add_le, zero_add, ha.le]
+      · exact hellingerDiv_le_of_lt_one ha_nonneg ha μ ν
+    _ = (ν Set.univ) - (ν Set.univ) := by
+      norm_cast
+      rw [← mul_assoc, ← EReal.coe_mul, mul_inv_cancel (by linarith), EReal.coe_one, one_mul]
+    _ ≥ _ := by
+      rw [← ENNReal.toEReal_sub (measure_ne_top _ _) (le_refl _)]
+      simp
+
 section Conditional
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
