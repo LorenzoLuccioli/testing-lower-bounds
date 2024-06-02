@@ -514,6 +514,19 @@ lemma hellingerDiv_nonneg (ha_pos : 0 ≤ a) (μ ν : Measure α)
   exact fDiv_nonneg (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
     hellingerFun_one_eq_zero
 
+section MeasUnivAddMulHellingerDiv
+/-! In this section there are results about the expression
+`ν Set.univ + (a - 1) * hellingerDiv a μ ν`,
+which appears in the definition of the Renyi divergence. -/
+
+lemma meas_univ_add_mul_hellingerDiv_eq (ha_ne_zero : a ≠ 0) (ha_ne_one : a ≠ 1)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h : hellingerDiv a μ ν ≠ ⊤) :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν := by
+  rw_mod_cast [hellingerDiv_eq_integral_of_ne_top' ha_ne_zero ha_ne_one h, ← ENNReal.ofReal_toReal (measure_ne_top ν Set.univ), EReal.coe_ennreal_ofReal,
+    max_eq_left ENNReal.toReal_nonneg, ← mul_sub, ← mul_assoc, mul_inv_cancel _]
+  ring_nf
+  exact sub_ne_zero_of_ne ha_ne_one
+
 lemma meas_univ_add_mul_hellingerDiv_nonneg_of_le_one (ha_nonneg : 0 ≤ a) (ha : a ≤ 1)
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν ≥ 0 := by
@@ -540,6 +553,28 @@ lemma meas_univ_add_mul_hellingerDiv_nonneg_of_le_one (ha_nonneg : 0 ≤ a) (ha 
       rw [← ENNReal.toEReal_sub (measure_ne_top _ _) (le_refl _)]
       simp
 
+lemma meas_univ_add_mul_hellingerDiv_nonneg_of_one_lt (ha : 1 < a) (μ ν : Measure α)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν ≥ 0 := by
+  by_cases h_top : hellingerDiv a μ ν = ⊤
+  · rw [h_top, EReal.mul_top_of_pos, EReal.add_top_of_ne_bot]
+    · exact OrderTop.le_top 0
+    · exact EReal.coe_ennreal_ne_bot (ν Set.univ)
+    · norm_cast
+      linarith
+  rw [meas_univ_add_mul_hellingerDiv_eq (by linarith) ha.ne' h_top]
+  simp only [ge_iff_le, EReal.coe_nonneg]
+  positivity
+
+lemma meas_univ_add_mul_hellingerDiv_nonneg (ha_nonneg : 0 ≤ a) (μ ν : Measure α)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν ≥ 0 := by
+  by_cases h_le_one : a ≤ 1
+  · exact meas_univ_add_mul_hellingerDiv_nonneg_of_le_one ha_nonneg h_le_one μ ν
+  · exact meas_univ_add_mul_hellingerDiv_nonneg_of_one_lt
+      (lt_of_not_ge h_le_one) μ ν
+
+end MeasUnivAddMulHellingerDiv
 section Conditional
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
