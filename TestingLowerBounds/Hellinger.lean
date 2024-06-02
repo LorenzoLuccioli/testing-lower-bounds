@@ -431,9 +431,8 @@ lemma hellingerDiv_eq_integral_of_ne_top' (ha_ne_zero : a ≠ 0) (ha_ne_one : a 
     hellingerDiv a μ ν = (a - 1)⁻¹ * ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν - (a - 1)⁻¹ * ν Set.univ := by
   rw [hellingerDiv_eq_integral_of_ne_top h]
   simp_rw [hellingerFun_of_ne_zero_of_ne_one ha_ne_zero ha_ne_one, integral_mul_left]
-  rw [integral_sub _ (integrable_const _),
-    integral_const, smul_eq_mul, mul_one, mul_sub, EReal.coe_sub, EReal.coe_mul, EReal.coe_mul,
-    EReal.coe_ennreal_toReal (measure_ne_top _ _)]
+  rw [integral_sub _ (integrable_const _), integral_const, smul_eq_mul, mul_one, mul_sub,
+    EReal.coe_sub, EReal.coe_mul, EReal.coe_mul, EReal.coe_ennreal_toReal (measure_ne_top _ _)]
   rw [← integrable_hellingerFun_iff_integrable_rpow ha_ne_one]
   by_contra h_not_int
   exact h (hellingerDiv_of_not_integrable h_not_int)
