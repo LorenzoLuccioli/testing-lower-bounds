@@ -634,17 +634,11 @@ lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff (ha_ne_one : a ≠ 1)
 lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one (ha : a < 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν  := by
-  by_cases h_top : hellingerDiv a μ ν = ⊤
-  swap
-  · rw [meas_univ_add_mul_hellingerDiv_eq_zero_iff ha.ne]
-    tauto
-  rw [h_top]
-  rw [EReal.mul_top_of_neg (mod_cast sub_neg.mpr ha), EReal.add_bot]
-  simp only [EReal.bot_ne_zero, false_iff]
-  intro h
-  rw [hellingerDiv, fDiv_of_mutuallySingular h, derivAtTop_hellingerFun_of_lt_one ha,
-    hellingerFun_at_zero, zero_mul, add_zero, EReal.mul_eq_top] at h_top
-  rcases h_top with (h | h | h | h) <;> simp [measure_ne_top] at h
+  rw [meas_univ_add_mul_hellingerDiv_eq_zero_iff ha.ne, and_iff_left_iff_imp]
+  intro hμν
+  rw [hellingerDiv, fDiv_of_mutuallySingular hμν, derivAtTop_hellingerFun_of_lt_one ha,
+    hellingerFun_at_zero, zero_mul, add_zero, ne_eq, EReal.mul_eq_top]
+  simp [measure_ne_top]
 
 lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one
     (ha_nonneg : 0 ≤ a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
