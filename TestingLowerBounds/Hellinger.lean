@@ -642,8 +642,7 @@ lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one (ha : a < 1)
     ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν  := by
   rw [meas_univ_add_mul_hellingerDiv_eq_zero_iff ha.ne, and_iff_left_iff_imp]
   intro hμν
-  rw [hellingerDiv, fDiv_of_mutuallySingular hμν, derivAtTop_hellingerFun_of_lt_one ha,
-    hellingerFun_at_zero, zero_mul, add_zero, ne_eq, EReal.mul_eq_top]
+  rw [hellingerDiv_of_mutuallySingular_of_lt_one ha hμν, ne_eq, EReal.mul_eq_top]
   simp [measure_ne_top]
 
 lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one
