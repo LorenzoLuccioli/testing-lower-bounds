@@ -606,10 +606,20 @@ lemma meas_univ_add_mul_hellingerDiv_nonneg (ha_nonneg : 0 ≤ a) (μ ν : Measu
   · exact meas_univ_add_mul_hellingerDiv_nonneg_of_one_lt
       (lt_of_not_ge h_le_one) μ ν
 
--- if `1 ≤ a` and `hellingerDiv a μ ν = ⊤`, then it may happen that
+/- Note that if `1 ≤ a` and `hellingerDiv a μ ν = ⊤`, then the lhs is always false, but the rhs
+  can be true, infact each time that `μ ≠ 0` and `μ ⟂ₘ ν` this happens. -/
 lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff (ha_ne_one : a ≠ 1)
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_top : hellingerDiv a μ ν ≠ ⊤) :
-  ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν  := by
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+  ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν ∧ hellingerDiv a μ ν ≠ ⊤ := by
+  by_cases h_top : hellingerDiv a μ ν = ⊤
+  · simp only [h_top, ne_eq, not_true_eq_false, and_false, iff_false]
+    rcases (lt_or_gt_of_ne ha_ne_one) with ha | ha
+    · rw [EReal.mul_top_of_neg (by exact_mod_cast sub_neg.mpr ha), EReal.add_bot]
+      exact EReal.bot_ne_zero
+    · rw [EReal.mul_top_of_pos (by exact_mod_cast sub_pos.mpr ha),
+        EReal.add_top_of_ne_bot (EReal.coe_ennreal_ne_bot _)]
+      exact EReal.top_ne_zero
+  simp_rw [ne_eq, h_top, not_false_eq_true, and_true]
   by_cases ha_zero : a = 0
   · rw [meas_univ_add_mul_hellingerDiv_zero_eq ha_zero, ← Measure.rnDeriv_eq_zero,
       EReal.coe_ennreal_eq_zero]
@@ -625,7 +635,9 @@ lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one (ha : a < 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν  := by
   by_cases h_top : hellingerDiv a μ ν = ⊤
-  swap; exact meas_univ_add_mul_hellingerDiv_eq_zero_iff ha.ne h_top
+  swap
+  · rw [meas_univ_add_mul_hellingerDiv_eq_zero_iff ha.ne]
+    tauto
   rw [h_top]
   rw [EReal.mul_top_of_neg (mod_cast sub_neg.mpr ha), EReal.add_bot]
   simp only [EReal.bot_ne_zero, false_iff]
