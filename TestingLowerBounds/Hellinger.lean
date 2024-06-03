@@ -419,6 +419,13 @@ lemma hellingerDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : 
   rw [hellingerDiv_ne_top_iff_of_lt_one ha]
   exact integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha
 
+lemma hellingerDiv_ne_bot : hellingerDiv a μ ν ≠ ⊥ := by
+  refine fDiv_ne_bot_of_derivAtTop_nonneg ?_
+  by_cases ha : 1 ≤ a
+  · rw [derivAtTop_hellingerFun_of_one_le ha]
+    exact OrderTop.le_top 0
+  · rw [derivAtTop_hellingerFun_of_lt_one (lt_of_not_ge ha)]
+
 lemma hellingerDiv_eq_integral_of_ne_top [IsFiniteMeasure μ] [SigmaFinite ν]
     (h : hellingerDiv a μ ν ≠ ⊤) :
     hellingerDiv a μ ν = ∫ x, hellingerFun a ((∂μ/∂ν) x).toReal ∂ν := by
