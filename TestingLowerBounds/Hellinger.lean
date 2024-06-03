@@ -175,6 +175,13 @@ lemma hellingerFun_at_one_eq_zero : hellingerFun a 1 = 0 := by
   · simp [ha_zero, hellingerFun_zero]
   simp [hellingerFun, ha_one, ha_zero]
 
+lemma hellingerFun_at_zero : hellingerFun a 0 = (1 - a)⁻¹ := by
+  by_cases ha_zero : a = 0
+  · simp [ha_zero, hellingerFun_zero]
+  by_cases ha_one : a = 1
+  · simp [ha_one, hellingerFun_one]
+  simp [hellingerFun, ha_zero, ha_one, neg_inv]
+
 lemma convexOn_hellingerFun (ha_pos : 0 ≤ a) : ConvexOn ℝ (Set.Ici 0) (hellingerFun a) := by
   by_cases ha_zero : a = 0
   · refine convexOn_iff_slope_mono_adjacent.mpr ?_
