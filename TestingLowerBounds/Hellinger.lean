@@ -612,8 +612,6 @@ lemma meas_univ_add_mul_hellingerDiv_nonneg (ha_nonneg : 0 ≤ a) (μ ν : Measu
   · exact meas_univ_add_mul_hellingerDiv_nonneg_of_one_lt
       (lt_of_not_ge h_le_one) μ ν
 
-/- Note that if `1 ≤ a` and `hellingerDiv a μ ν = ⊤`, then the lhs is always false, but the rhs
-  can be true, infact each time that `μ ≠ 0` and `μ ⟂ₘ ν` this happens. -/
 lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff (ha_ne_one : a ≠ 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
   ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν ∧ hellingerDiv a μ ν ≠ ⊤ := by
