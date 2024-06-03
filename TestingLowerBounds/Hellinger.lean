@@ -652,6 +652,17 @@ lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one
   rw [← meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one ha, EReal.toENNReal_eq_zero_iff]
   exact LE.le.le_iff_eq (meas_univ_add_mul_hellingerDiv_nonneg ha_nonneg μ ν)
 
+lemma meas_univ_add_mul_hellingerDiv_ne_top_of_lt_one (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν ≠ ⊤ := by
+  apply EReal.add_ne_top
+  · simp [measure_ne_top]
+  · rw [ne_eq, EReal.mul_eq_top]
+    norm_cast
+    simp_rw [EReal.coe_ne_bot, EReal.coe_ne_top, sub_neg, sub_pos, ha, not_lt_of_gt ha,
+      hellingerDiv_ne_bot]
+    tauto
+
 end MeasUnivAddMulHellingerDiv
 section Conditional
 
