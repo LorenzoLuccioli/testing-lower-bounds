@@ -645,11 +645,30 @@ lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one (ha : a < 1)
   rw [hellingerDiv_of_mutuallySingular_of_lt_one ha hμν, ne_eq, EReal.mul_eq_top]
   simp [measure_ne_top]
 
+lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_one_lt (ha : 1 < a)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ = 0 := by
+  rw [meas_univ_add_mul_hellingerDiv_eq_zero_iff ha.ne', hellingerDiv_ne_top_iff_of_one_le ha.le]
+  refine ⟨fun ⟨h, _, h'⟩ ↦ Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular h' h,
+    fun h ↦ ?_⟩
+  simp only [h, Measure.MutuallySingular.zero_left, Measure.AbsolutelyContinuous.zero, and_true,
+    true_and]
+  apply Integrable.congr (show Integrable (fun _ ↦ hellingerFun a 0) ν from integrable_const _)
+  filter_upwards [Measure.rnDeriv_zero ν] with x hx
+  simp [hx]
+
 lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one
     (ha_nonneg : 0 ≤ a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     (↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal = 0 ↔ μ ⟂ₘ ν  := by
   rw [← meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one ha, EReal.toENNReal_eq_zero_iff]
   exact LE.le.le_iff_eq (meas_univ_add_mul_hellingerDiv_nonneg ha_nonneg μ ν)
+
+lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_one_lt (ha : 1 < a)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    (↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal = 0 ↔ μ = 0  := by
+  rw [← meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_one_lt ha (ν := ν),
+    EReal.toENNReal_eq_zero_iff]
+  exact LE.le.le_iff_eq (meas_univ_add_mul_hellingerDiv_nonneg (by positivity) μ ν)
 
 lemma meas_univ_add_mul_hellingerDiv_ne_top_of_lt_one (ha : a < 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
