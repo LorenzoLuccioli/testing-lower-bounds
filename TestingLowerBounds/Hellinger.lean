@@ -168,7 +168,7 @@ lemma stronglyMeasurable_hellingerFun (ha_nonneg : 0 ≤ a) :
     measurability
 
 @[simp]
-lemma hellingerFun_one_eq_zero : hellingerFun a 1 = 0 := by
+lemma hellingerFun_at_one_eq_zero : hellingerFun a 1 = 0 := by
   by_cases ha_one : a = 1
   · simp [ha_one, hellingerFun_one]
   by_cases ha_zero : a = 0
@@ -512,7 +512,7 @@ lemma hellingerDiv_nonneg (ha_pos : 0 ≤ a) (μ ν : Measure α)
   replace ha_pos := ha_pos.lt_of_ne fun h ↦ h_zero h.symm
   rw [hellingerDiv]
   exact fDiv_nonneg (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
-    hellingerFun_one_eq_zero
+    hellingerFun_at_one_eq_zero
 
 section MeasUnivAddMulHellingerDiv
 /-! In this section there are results about the expression
