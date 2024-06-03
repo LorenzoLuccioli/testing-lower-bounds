@@ -679,6 +679,25 @@ lemma meas_univ_add_mul_hellingerDiv_ne_top_of_lt_one (ha : a < 1)
       hellingerDiv_ne_bot]
     tauto
 
+lemma meas_univ_add_mul_hellingerDiv_eq_top_iff_of_one_lt (ha : 1 < a)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = ⊤
+      ↔ ¬ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν ∨ ¬ μ ≪ ν := by
+  rw [← integrable_hellingerFun_iff_integrable_rpow ha.ne',
+    ← hellingerDiv_eq_top_iff_of_one_le ha.le]
+  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
+  · contrapose! h
+    refine EReal.add_ne_top ?_ ?_
+    · rw [ne_eq, EReal.coe_ennreal_eq_top_iff]
+      exact measure_ne_top ν Set.univ
+    · rw [ne_eq, EReal.mul_eq_top]
+      norm_cast
+      simp_rw [EReal.coe_ne_bot, EReal.coe_ne_top, sub_neg, sub_pos, ha, not_lt_of_gt ha,
+      hellingerDiv_ne_bot]
+      tauto
+  · rw [h, EReal.mul_top_of_pos (by exact_mod_cast sub_pos.mpr ha), EReal.add_top_of_ne_bot]
+    exact EReal.coe_ennreal_ne_bot _
+
 end MeasUnivAddMulHellingerDiv
 section Conditional
 
