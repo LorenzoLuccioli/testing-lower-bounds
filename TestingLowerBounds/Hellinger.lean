@@ -474,8 +474,6 @@ lemma hellingerDiv_toReal_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measu
   · simp [ne_eq, EReal.mul_eq_top, measure_ne_top]
   · simp [ne_eq, EReal.mul_eq_bot, measure_ne_top]
 
-end HellingerEq
-
 lemma hellingerDiv_of_mutuallySingular_of_one_le (ha : 1 ≤ a) (hμν : μ ⟂ₘ ν) [NeZero μ]
     [SigmaFinite μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν = ⊤ := by
@@ -485,6 +483,14 @@ lemma hellingerDiv_of_mutuallySingular_of_one_le (ha : 1 ≤ a) (hμν : μ ⟂�
   apply EReal.add_top_of_ne_bot
   rw [ne_eq, EReal.mul_eq_bot, hellingerFun_at_zero]
   simp [measure_ne_top]
+
+lemma hellingerDiv_of_mutuallySingular_of_lt_one (ha : a < 1) (hμν : μ ⟂ₘ ν)
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
+    hellingerDiv a μ ν = (1 - a)⁻¹ * ν Set.univ  := by
+  rw [hellingerDiv, fDiv_of_mutuallySingular hμν, derivAtTop_hellingerFun_of_lt_one ha,
+    hellingerFun_at_zero, zero_mul, add_zero]
+
+end HellingerEq
 
 --Maybe we could write something like this for the conditional case? Would it be useful?
 lemma hellingerDiv_le_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
