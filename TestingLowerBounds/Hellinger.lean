@@ -469,6 +469,16 @@ lemma hellingerDiv_toReal_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measu
 
 end HellingerEq
 
+lemma hellingerDiv_of_mutuallySingular_of_one_le (ha : 1 ≤ a) (hμν : μ ⟂ₘ ν) [NeZero μ]
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
+    hellingerDiv a μ ν = ⊤ := by
+  have := fDiv_of_mutuallySingular hμν (f := hellingerFun a)
+  rw [hellingerDiv, this, derivAtTop_hellingerFun_of_one_le ha,
+    EReal.top_mul_ennreal_coe (NeZero.ne' (μ Set.univ)).symm]
+  apply EReal.add_top_of_ne_bot
+  rw [ne_eq, EReal.mul_eq_bot, hellingerFun_at_zero]
+  simp [measure_ne_top]
+
 --Maybe we could write something like this for the conditional case? Would it be useful?
 lemma hellingerDiv_le_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
@@ -529,7 +539,8 @@ which appears in the definition of the Renyi divergence. -/
 lemma meas_univ_add_mul_hellingerDiv_eq (ha_ne_zero : a ≠ 0) (ha_ne_one : a ≠ 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h : hellingerDiv a μ ν ≠ ⊤) :
     ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν := by
-  rw_mod_cast [hellingerDiv_eq_integral_of_ne_top' ha_ne_zero ha_ne_one h, ← ENNReal.ofReal_toReal (measure_ne_top ν Set.univ), EReal.coe_ennreal_ofReal,
+  rw_mod_cast [hellingerDiv_eq_integral_of_ne_top' ha_ne_zero ha_ne_one h,
+    ← ENNReal.ofReal_toReal (measure_ne_top ν Set.univ), EReal.coe_ennreal_ofReal,
     max_eq_left ENNReal.toReal_nonneg, ← mul_sub, ← mul_assoc, mul_inv_cancel _]
   ring_nf
   exact sub_ne_zero_of_ne ha_ne_one
@@ -588,6 +599,7 @@ lemma meas_univ_add_mul_hellingerDiv_nonneg (ha_nonneg : 0 ≤ a) (μ ν : Measu
   · exact meas_univ_add_mul_hellingerDiv_nonneg_of_one_lt
       (lt_of_not_ge h_le_one) μ ν
 
+-- if `1 ≤ a` and `hellingerDiv a μ ν = ⊤`, then it may happen that
 lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff (ha_ne_one : a ≠ 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_top : hellingerDiv a μ ν ≠ ⊤) :
   ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν = 0 ↔ μ ⟂ₘ ν  := by
@@ -615,8 +627,8 @@ lemma meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one (ha : a < 1)
     hellingerFun_at_zero, zero_mul, add_zero, EReal.mul_eq_top] at h_top
   rcases h_top with (h | h | h | h) <;> simp [measure_ne_top] at h
 
-lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+lemma toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one
+    (ha_nonneg : 0 ≤ a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     (↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal = 0 ↔ μ ⟂ₘ ν  := by
   rw [← meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one ha, EReal.toENNReal_eq_zero_iff]
   exact LE.le.le_iff_eq (meas_univ_add_mul_hellingerDiv_nonneg ha_nonneg μ ν)
