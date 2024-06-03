@@ -333,6 +333,11 @@ lemma hellingerDiv_zero_ne_top (μ ν : Measure α) [IsFiniteMeasure ν] :
     hellingerDiv 1 μ ν = kl μ ν := by
   rw [hellingerDiv, hellingerFun_one, kl_eq_fDiv]
 
+@[simp]
+lemma hellingerDiv_zero_measure (ν : Measure α) [IsFiniteMeasure ν] :
+    hellingerDiv a 0 ν = (1 - a)⁻¹ * ν Set.univ := by
+  rw [hellingerDiv, fDiv_zero_measure, hellingerFun_at_zero]
+
 section HellingerEq
 
 /--If `a ≤ 1` use `hellingerDiv_eq_integral_of_integrable_of_le_one` or
