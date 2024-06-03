@@ -302,6 +302,9 @@ theorem toENNReal_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
   rw [h, top_le_iff] at hx
   exact zero_ne_top hx
 
+theorem toENNReal_eq_zero_iff {x : EReal} : x.toENNReal = 0 ↔ x ≤ 0 := by
+  induction' x using EReal.rec with x <;> simp [toENNReal]
+
 @[simp]
 theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
   rw [toENNReal]
