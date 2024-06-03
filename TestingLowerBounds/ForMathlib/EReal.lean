@@ -73,6 +73,11 @@ lemma mul_eq_bot (a b : EReal) :
   · simp [hx.le, EReal.coe_mul_bot_of_neg hx]
   · simp
 
+lemma add_ne_top {x y : EReal} (hx : x ≠ ⊤) (hy : y ≠ ⊤) : x + y ≠ ⊤ := by
+  induction x using EReal.rec <;> tauto
+  induction y using EReal.rec <;> tauto
+  exact ne_of_beq_false rfl
+
 lemma coe_mul_add_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
     x * (y + z) = x * y + x * z := by
   by_cases hx0 : x = 0
@@ -117,6 +122,7 @@ lemma neg_sub {x y : EReal} (h1 : (x ≠ ⊥) ∨ (y ≠ ⊥)) (h2 : (x ≠ ⊤)
     - (x - y) = - x + y := by
   rw [sub_eq_add_neg, neg_add _ _, sub_eq_add_neg, neg_neg] <;> simp_all
 
+@[simp]
 lemma sub_self {x : EReal} (h_top : x ≠ ⊤) (h_bot : x ≠ ⊥) : x - x = 0 := by
   induction x using EReal.rec <;> simp_all [← coe_sub]
 
@@ -289,9 +295,12 @@ theorem toENNReal_eq_top_iff {x : EReal} : x.toENNReal = ⊤ ↔ x = ⊤ := by
   · simp [h, toENNReal]
 
 @[simp]
-theorem toENNReal_neg {x : EReal} (hx : x < 0) : x.toENNReal = 0 := by
-  rw [toENNReal, if_neg hx.ne_top]
-  exact ENNReal.ofReal_of_nonpos (toReal_nonpos hx.le)
+theorem toENNReal_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
+  rw [toENNReal, if_neg ?_]
+  exact ENNReal.ofReal_of_nonpos (toReal_nonpos hx)
+  intro h
+  rw [h, top_le_iff] at hx
+  exact zero_ne_top hx
 
 @[simp]
 theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
