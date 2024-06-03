@@ -5,6 +5,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import TestingLowerBounds.KullbackLeibler
 import TestingLowerBounds.Hellinger
+import TestingLowerBounds.ForMathlib.ERealLogExp
 import Mathlib.Probability.Moments
 import LeanCopilot
 
@@ -86,6 +87,27 @@ lemma exp_mul_llr' [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
 
 --     sorry
 
+-- variable (x : Real) (y : ENNReal) (z : EReal)
+-- #check x * z
+-- #check x * y
+-- #check y * x
+-- #check y * z
+-- #check x + y
+-- #check y + x
+-- #check x + z
+-- #check y + z
+-- #check y.toReal
+-- #check z.toReal
+-- #check x.toNNReal
+-- -- #check z.toENNreal
+
+-- variable (a : ℝ) (μ ν : Measure α)
+
+-- #check (hellingerDiv a μ ν)
+-- #check (a - 1) * (hellingerDiv a μ ν)
+-- #check (ν Set.univ)
+-- -- #check (ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)
+
 /-- Rényi divergence of order `a`. If `a = 1`, it is defined as `kl μ ν`, otherwise as
 `(a - 1)⁻¹ * log (ν(α) + (a - 1) * Hₐ(μ, ν))`.
 If `ν` is a probability measure then this becomes the more usual definition
@@ -95,57 +117,153 @@ also for a general finite measure `ν`, in particular the integral form
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 1 then kl μ ν
   else if hellingerDiv a μ ν ≠ ⊤
-    then (a - 1)⁻¹ * log ((ν Set.univ).toReal + (a - 1) * (hellingerDiv a μ ν).toReal)
+    then (a - 1)⁻¹ * EReal.log ((↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal)
     else ⊤
 
 @[simp]
 lemma renyiDiv_zero (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure ν] :
-    renyiDiv 0 μ ν = - log (ν {x | 0 < (∂μ/∂ν) x}).toReal := by
+    renyiDiv 0 μ ν = - EReal.log (ν {x | 0 < (∂μ/∂ν) x}) := by
   rw [renyiDiv, if_neg zero_ne_one, if_pos]
   swap
   · rw [hellingerDiv_zero, ne_eq, EReal.coe_ennreal_eq_top_iff]
     exact measure_ne_top ν _
-  simp [ne_eq, zero_sub, ← neg_inv, inv_one, EReal.coe_neg, EReal.coe_one, neg_mul, one_mul, ←
-    sub_eq_add_neg, ite_not]
-  rw [hellingerDiv_zero_toReal]
-  norm_num
+  simp only [zero_sub, ← neg_inv, inv_one, EReal.coe_neg, EReal.coe_one, EReal.coe_zero, neg_mul,
+    one_mul, ← sub_eq_add_neg, neg_inj]
+  congr
+  rw [hellingerDiv_zero'', sub_eq_add_neg, EReal.neg_sub, ← add_assoc, ← sub_eq_add_neg,
+    EReal.sub_self, zero_add, EReal.toENNReal_coe]
+    <;> simp only [ne_eq, EReal.coe_ennreal_eq_top_iff, EReal.coe_ennreal_ne_bot,measure_ne_top,
+      not_false_eq_true, or_self]
 
 @[simp]
 lemma renyiDiv_one (μ ν : Measure α) : renyiDiv 1 μ ν = kl μ ν := by
   rw [renyiDiv, if_pos rfl]
 
+lemma renyiDiv_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    renyiDiv a μ ν
+      = (a - 1)⁻¹ * EReal.log ((↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal) := by
+  rw [renyiDiv, if_neg ha.ne, if_pos]
+  exact hellingerDiv_ne_top_of_lt_one ha_nonneg ha _ _
+
 section TopAndBounds
 
-lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top' (ha_ne_one : a ≠ 1) :
-    renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
-  simp only [renyiDiv, ha_ne_one, ↓reduceIte, ne_eq, ite_not, ite_eq_left_iff]
-  rw [← EReal.coe_mul]
-  simp only [EReal.coe_ne_top, imp_false, not_not]
+lemma renyiDiv_eq_top_of_hellingerDiv_eq_top' (ha_ne_one : a ≠ 1) (h : hellingerDiv a μ ν = ⊤) :
+    renyiDiv a μ ν = ⊤ := by
+  simp only [renyiDiv, ha_ne_one, ↓reduceIte, h, ite_not]
 
-lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top [SigmaFinite μ] [SigmaFinite ν] :
-    renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
+lemma renyiDiv_eq_top_of_hellingerDiv_eq_top [SigmaFinite μ] [SigmaFinite ν]
+    (h : hellingerDiv a μ ν = ⊤) :
+    renyiDiv a μ ν = ⊤ := by
   by_cases ha : a = 1
-  · rw [ha, renyiDiv_one, hellingerDiv_one]
-  · exact renyiDiv_eq_top_iff_hellingerDiv_eq_top' ha
+  · rw [← h, ha, renyiDiv_one, hellingerDiv_one]
+  · exact renyiDiv_eq_top_of_hellingerDiv_eq_top' ha h
+
+lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_lt (ha : 1 < a) [IsFiniteMeasure ν] :
+    renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
+  refine ⟨fun h ↦ ?_, fun h ↦ renyiDiv_eq_top_of_hellingerDiv_eq_top' ha.ne' h⟩
+  contrapose! h
+  rw [renyiDiv, if_neg ha.ne', if_pos h]
+  apply (EReal.mul_eq_top _ _).mp.mt
+  simp only [EReal.coe_ne_bot, false_and, EReal.coe_neg', inv_lt_zero, sub_neg, not_lt_of_gt ha,
+    EReal.coe_ne_top, EReal.coe_pos, inv_pos, sub_pos, ha,
+    EReal.log_eq_top_iff, true_and, false_or, EReal.toENNReal_eq_top_iff]
+  apply EReal.add_ne_top
+  · simp [measure_ne_top]
+  · apply (EReal.mul_eq_top _ _).mp.mt
+    simp only [h, and_false, or_false, not_or, not_and, not_lt]
+    have h1 : a.toEReal - 1 ≥ 0 := by
+      norm_cast
+      simp only [sub_nonneg, ha.le]
+    have h2 : a.toEReal - 1 ≠ ⊥ := by
+      intro _
+      simp_all only [le_bot_iff, EReal.zero_ne_bot]
+    have h3 : a.toEReal - 1 ≠ ⊤ := mod_cast EReal.coe_ne_top _
+    simp [h1, h2, h3]
+
+lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_le (ha : 1 ≤ a)
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
+    renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
+  by_cases ha_one : a = 1
+  · rw [ha_one, renyiDiv_one, hellingerDiv_one]
+  · exact renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_lt
+      (lt_of_le_of_ne ha fun h ↦ ha_one h.symm)
+
+lemma renyiDiv_eq_top_iff_mutuallySingular_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    renyiDiv a μ ν = ⊤ ↔ μ ⟂ₘ ν := by
+  rw [renyiDiv_of_lt_one ha_nonneg ha, EReal.mul_eq_top,
+    ←  toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one ha_nonneg ha]
+  simp [ha, not_lt_of_gt ha]
+
+/-TODO: prove that this ↓ holds forall a, we can use the monotonocity of the Renyi div, but we would
+have to prove it before.
+Maybe it's not true actually, see `Theorem 24` of the paper `Renyi divergence and Kullback-Leibler divergence`.
+It says that `μ ⟂ ν` is equivalent to the fact that for every a `Rₐ(μ, ν) = ⊤`, but it may happen
+that `Rₐ(μ, ν) = ⊤` for some `a ≥ 1`, but not for all `a`, it may not imply that `μ ⟂ ν`. Actually
+this is most likely the case, otherwise we would have that `Rₐ(μ, ν) = ⊤` for some `a` iff
+`Rₐ(μ, ν) = ⊤` for all `a`, which  think is not true.
+-/
+lemma renyiDiv_ne_top_iff_not_mutuallySingular_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    renyiDiv a μ ν ≠ ⊤ ↔ ¬ μ ⟂ₘ ν := by
+  exact not_congr (renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha_nonneg ha)
+
+lemma renyiDiv_of_mutuallySingular (ha_nonneg : 0 ≤ a)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] [NeZero μ] (hμν : μ ⟂ₘ ν) :
+    renyiDiv a μ ν = ⊤ := by
+  by_cases ha : a < 1
+  · rw [renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha_nonneg ha]
+    exact hμν
+  · rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_le (le_of_not_lt ha)]
+    exact hellingerDiv_of_mutuallySingular_of_one_le (le_of_not_lt ha) hμν
+
+lemma renyiDiv_eq_top_forall_of_eq_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h : renyiDiv a μ ν = ⊤) :
+    ∀ a', 0 ≤ a' → renyiDiv a' μ ν = ⊤ := by
+  by_cases hμ : μ = 0
+  ·
+    simp [hμ]
+
+
+    sorry
+  have : NeZero μ := { out := hμ }
+  intro a' ha'
+  rw [renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha_nonneg ha] at h
+  exact renyiDiv_of_mutuallySingular ha' h
+
+lemma renyiDiv_eq_top_iff_mutuallySingular (ha_nonneg : 0 ≤ a)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] [NeZero μ]:
+    renyiDiv a μ ν = ⊤ ↔ μ ⟂ₘ ν := by
+
+  sorry
+
+
+-- lemma renyiDiv_eq_top_iff_hellingerDiv_eq_top [SigmaFinite μ] [SigmaFinite ν] :
+--     renyiDiv a μ ν = ⊤ ↔ hellingerDiv a μ ν = ⊤ := by
+--   by_cases ha : a = 1
+--   · rw [ha, renyiDiv_one, hellingerDiv_one]
+--   · exact renyiDiv_eq_top_iff_hellingerDiv_eq_top' ha
 
 lemma renyiDiv_eq_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
-    [IsFiniteMeasure μ] [SigmaFinite ν] :
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
     renyiDiv a μ ν = ⊤
       ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν ∨ ¬ μ ≪ ν := by
-  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_one_le ha]
+  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_le ha, hellingerDiv_eq_top_iff_of_one_le ha]
 
 lemma renyiDiv_ne_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
-    [IsFiniteMeasure μ] [SigmaFinite ν] :
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
     renyiDiv a μ ν ≠ ⊤
       ↔ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν ∧ μ ≪ ν := by
-  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_one_le ha]
+  rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_le ha,
+    hellingerDiv_eq_top_iff_of_one_le ha]
   push_neg
   rfl
 
-lemma renyiDiv_eq_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α)
-    [IsFiniteMeasure μ] [SigmaFinite ν] :
-    renyiDiv a μ ν = ⊤ ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
-  rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_lt_one ha]
+-- lemma renyiDiv_eq_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α)
+--     [IsFiniteMeasure μ] [SigmaFinite ν] :
+--     renyiDiv a μ ν = ⊤ ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
+--   rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top, hellingerDiv_eq_top_iff_of_lt_one ha]
 
 lemma renyiDiv_ne_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [SigmaFinite ν] :
@@ -562,3 +680,5 @@ variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
 end DataProcessingInequality
 
 end ProbabilityTheory
+--finish the refactoring of Renyi, prove the DPI. Then try the new category theory approach, we want at first to define the category of measurable spaces with kernels as morphisms and then we would like to have the string diagram widget.
+--Some useful flies for that: `Mathlib/MeasureTheory/Category/MeasCat.lean`, `Mathlib/Tactic/CategoryTheory/Coherence.lean`, `Mathlib/Tactic/CategoryTheory/MonoidalComp.lean`
