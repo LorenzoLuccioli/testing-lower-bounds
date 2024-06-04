@@ -369,7 +369,6 @@ lemma hellingerDiv_eq_integral_of_integrable_of_lt_one (ha : a < 1)
     hellingerDiv a μ ν = ∫ x, hellingerFun a ((∂μ/∂ν) x).toReal ∂ν :=
   hellingerDiv_eq_integral_of_integrable_of_ac h_int ha.not_le.elim
 
-
 lemma hellingerDiv_eq_integral_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : Measure α)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     hellingerDiv a μ ν = ∫ x, hellingerFun a ((∂μ/∂ν) x).toReal ∂ν :=
@@ -491,8 +490,8 @@ lemma hellingerDiv_toReal_of_lt_one (ha_pos : 0 < a) (ha : a < 1) (μ ν : Measu
   · simp [ne_eq, EReal.mul_eq_top, measure_ne_top]
   · simp [ne_eq, EReal.mul_eq_bot, measure_ne_top]
 
-lemma hellingerDiv_of_mutuallySingular_of_one_le (ha : 1 ≤ a) (hμν : μ ⟂ₘ ν) [NeZero μ]
-    [SigmaFinite μ] [IsFiniteMeasure ν] :
+lemma hellingerDiv_of_mutuallySingular_of_one_le (ha : 1 ≤ a) [NeZero μ]
+    [SigmaFinite μ] [IsFiniteMeasure ν] (hμν : μ ⟂ₘ ν) :
     hellingerDiv a μ ν = ⊤ := by
   have := fDiv_of_mutuallySingular hμν (f := hellingerFun a)
   rw [hellingerDiv, this, derivAtTop_hellingerFun_of_one_le ha,
@@ -501,8 +500,8 @@ lemma hellingerDiv_of_mutuallySingular_of_one_le (ha : 1 ≤ a) (hμν : μ ⟂�
   rw [ne_eq, EReal.mul_eq_bot, hellingerFun_at_zero]
   simp [measure_ne_top]
 
-lemma hellingerDiv_of_mutuallySingular_of_lt_one (ha : a < 1) (hμν : μ ⟂ₘ ν)
-    [SigmaFinite μ] [IsFiniteMeasure ν] :
+lemma hellingerDiv_of_mutuallySingular_of_lt_one (ha : a < 1)
+    [SigmaFinite μ] [IsFiniteMeasure ν] (hμν : μ ⟂ₘ ν) :
     hellingerDiv a μ ν = (1 - a)⁻¹ * ν Set.univ  := by
   rw [hellingerDiv, fDiv_of_mutuallySingular hμν, derivAtTop_hellingerFun_of_lt_one ha,
     hellingerFun_at_zero, zero_mul, add_zero]
@@ -562,8 +561,7 @@ lemma hellingerDiv_nonneg (ha_pos : 0 ≤ a) (μ ν : Measure α)
     hellingerFun_at_one_eq_zero
 
 section MeasUnivAddMulHellingerDiv
-/-! In this section there are results about the expression
-`ν Set.univ + (a - 1) * hellingerDiv a μ ν`,
+/-! In this section there are results about the expression `ν(α) + (a - 1) * Hₐ(μ, ν)`,
 which appears in the definition of the Renyi divergence. -/
 
 lemma meas_univ_add_mul_hellingerDiv_eq (ha_ne_zero : a ≠ 0) (ha_ne_one : a ≠ 1)
@@ -612,9 +610,8 @@ lemma meas_univ_add_mul_hellingerDiv_nonneg_of_one_lt (ha : 1 < a) (μ ν : Meas
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     ↑(ν Set.univ) + (a - 1) * hellingerDiv a μ ν ≥ 0 := by
   by_cases h_top : hellingerDiv a μ ν = ⊤
-  · rw [h_top, EReal.mul_top_of_pos, EReal.add_top_of_ne_bot]
+  · rw [h_top, EReal.mul_top_of_pos, EReal.add_top_of_ne_bot (EReal.coe_ennreal_ne_bot _)]
     · exact OrderTop.le_top 0
-    · exact EReal.coe_ennreal_ne_bot (ν Set.univ)
     · norm_cast
       linarith
   rw [meas_univ_add_mul_hellingerDiv_eq (by linarith) ha.ne' h_top]
