@@ -338,6 +338,18 @@ lemma hellingerDiv_zero_measure (ν : Measure α) [IsFiniteMeasure ν] :
     hellingerDiv a 0 ν = (1 - a)⁻¹ * ν Set.univ := by
   rw [hellingerDiv, fDiv_zero_measure, hellingerFun_at_zero]
 
+@[simp]
+lemma hellingerDiv_zero_measure_right_of_lt_one (ha : a < 1) (μ : Measure α) :
+    hellingerDiv a μ 0 = 0 := by
+  rw [hellingerDiv, fDiv_zero_measure_right, derivAtTop_hellingerFun_of_lt_one ha, zero_mul]
+
+@[simp]
+lemma hellingerDiv_zero_measure_right_of_one_le (ha : 1 ≤ a) (μ : Measure α) [hμ : NeZero μ] :
+    hellingerDiv a μ 0 = ⊤ := by
+  rw [hellingerDiv, fDiv_zero_measure_right, derivAtTop_hellingerFun_of_one_le ha,
+    EReal.top_mul_of_pos]
+  simp [hμ.out]
+
 section HellingerEq
 
 /--If `a ≤ 1` use `hellingerDiv_eq_integral_of_integrable_of_le_one` or
