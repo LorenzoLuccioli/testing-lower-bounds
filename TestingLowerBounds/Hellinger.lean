@@ -115,6 +115,17 @@ lemma integral_rpow_rnDeriv_eq_zero_iff_mutuallySingular [SigmaFinite μ] [Sigma
   simp only [Pi.zero_apply, ENNReal.toReal_nonneg]
   simp_rw [rpow_eq_zero ENNReal.toReal_nonneg ha_zero, ENNReal.toReal_eq_zero_iff, hx, or_false]
 
+lemma integral_rpow_rnDeriv_pos_iff_mutuallySingular [SigmaFinite μ] [SigmaFinite ν]
+    (ha_zero : a ≠ 0) (h_int : Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν) :
+    ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν > 0 ↔ ¬ μ ⟂ₘ ν := by
+  rw [← integral_rpow_rnDeriv_eq_zero_iff_mutuallySingular ha_zero h_int]
+  push_neg
+  have h_nonneg : 0 ≤ ∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν := by
+    apply integral_nonneg
+    intro x
+    simp only [Pi.zero_apply, ENNReal.toReal_nonneg, rpow_nonneg]
+  exact LE.le.gt_iff_ne h_nonneg
+
 section HellingerFun
 
 /--Hellinger function, defined as `x ↦ (a - 1)⁻¹ * (x ^ a - 1)` for `a ∈ (0, 1) ∪ (1, + ∞)`.
