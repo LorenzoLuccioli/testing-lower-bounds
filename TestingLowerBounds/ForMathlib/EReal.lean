@@ -126,6 +126,9 @@ lemma neg_sub {x y : EReal} (h1 : (x ≠ ⊥) ∨ (y ≠ ⊥)) (h2 : (x ≠ ⊤)
 lemma sub_self {x : EReal} (h_top : x ≠ ⊤) (h_bot : x ≠ ⊥) : x - x = 0 := by
   induction x using EReal.rec <;> simp_all [← coe_sub]
 
+lemma sub_self_le_zero {x : EReal} : x - x ≤ 0 := by
+  induction x using EReal.rec <;> simp
+
 lemma top_add_of_ne_bot {x : EReal} (hx : x ≠ ⊥) : ⊤ + x = ⊤ := by
   by_cases hx_top : x = ⊤
   · simp [hx_top]
@@ -289,6 +292,7 @@ noncomputable def toENNReal (x : EReal) : ENNReal :=
 @[simp]
 theorem toENNReal_top : (⊤ : EReal).toENNReal = ⊤ := rfl
 
+@[simp]
 theorem toENNReal_eq_top_iff {x : EReal} : x.toENNReal = ⊤ ↔ x = ⊤ := by
   by_cases h : x = ⊤
   · simp [h]
