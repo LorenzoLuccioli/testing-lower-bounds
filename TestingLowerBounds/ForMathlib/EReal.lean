@@ -295,7 +295,7 @@ theorem toENNReal_eq_top_iff {x : EReal} : x.toENNReal = ⊤ ↔ x = ⊤ := by
   · simp [h, toENNReal]
 
 @[simp]
-theorem toENNReal_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
+theorem toENNReal_of_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
   rw [toENNReal, if_neg ?_]
   exact ENNReal.ofReal_of_nonpos (toReal_nonpos hx)
   intro h
