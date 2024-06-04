@@ -417,6 +417,18 @@ lemma hellingerDiv_ne_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
   push_neg
   rfl
 
+lemma hellingerDiv_eq_top_iff_of_one_lt (ha : 1 < a) (μ ν : Measure α)
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
+    hellingerDiv a μ ν = ⊤
+      ↔ ¬ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν ∨ ¬ μ ≪ ν := by
+  rw [hellingerDiv_eq_top_iff_of_one_le ha.le, integrable_hellingerFun_iff_integrable_rpow ha.ne']
+
+lemma hellingerDiv_ne_top_iff_of_one_lt (ha : 1 < a) (μ ν : Measure α)
+    [SigmaFinite μ] [IsFiniteMeasure ν] :
+    hellingerDiv a μ ν ≠ ⊤
+      ↔ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν ∧ μ ≪ ν := by
+  rw [hellingerDiv_ne_top_iff_of_one_le ha.le, integrable_hellingerFun_iff_integrable_rpow ha.ne']
+
 lemma hellingerDiv_eq_top_iff_of_lt_one (ha : a < 1) (μ ν : Measure α) :
     hellingerDiv a μ ν = ⊤ ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν := by
   refine ⟨?_, fun h ↦ hellingerDiv_of_not_integrable h⟩
@@ -434,18 +446,6 @@ lemma hellingerDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (μ ν : 
     hellingerDiv a μ ν ≠ ⊤ := by
   rw [hellingerDiv_ne_top_iff_of_lt_one ha]
   exact integrable_hellingerFun_rnDeriv_of_lt_one ha_nonneg ha
-
-lemma hellingerDiv_eq_top_iff' (ha_ne_one : a ≠ 1) (μ ν : Measure α)
-    [SigmaFinite μ] [IsFiniteMeasure ν] :
-    hellingerDiv a μ ν = ⊤
-      ↔ ¬ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν ∨ (1 ≤ a ∧ ¬ μ ≪ ν) := by
-  rw [hellingerDiv_eq_top_iff, integrable_hellingerFun_iff_integrable_rpow ha_ne_one]
-
-lemma hellingerDiv_ne_top_iff' (ha_ne_one : a ≠ 1) (μ ν : Measure α)
-    [SigmaFinite μ] [IsFiniteMeasure ν] :
-    hellingerDiv a μ ν ≠ ⊤
-      ↔ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν ∧ (1 ≤ a → μ ≪ ν) := by
-  rw [hellingerDiv_ne_top_iff, integrable_hellingerFun_iff_integrable_rpow ha_ne_one]
 
 lemma hellingerDiv_ne_bot : hellingerDiv a μ ν ≠ ⊥ := by
   refine fDiv_ne_bot_of_derivAtTop_nonneg ?_
