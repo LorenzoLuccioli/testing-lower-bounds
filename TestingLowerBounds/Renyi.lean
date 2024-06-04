@@ -141,7 +141,7 @@ lemma renyiDiv_of_ne_one (ha_ne_one : a ≠ 1) (μ ν : Measure α) :
   rw [renyiDiv, if_neg ha_ne_one]
 
 @[simp]
-lemma RenyiDiv_zero_measure (ν : Measure α) [IsFiniteMeasure ν] :
+lemma renyiDiv_zero_measure (ν : Measure α) [IsFiniteMeasure ν] :
     renyiDiv a 0 ν = sign (a - 1) * ⊥ := by
   by_cases ha : a = 1
   · simp [ha]
@@ -384,10 +384,7 @@ end IntegralForm
 lemma renyiDiv_symm' (ha_pos : 0 < a) (ha : a < 1) (h_eq : μ Set.univ = ν Set.univ)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     (1 - a) * renyiDiv a μ ν = a * renyiDiv (1 - a) ν μ := by
-  rw [renyiDiv_of_lt_one ha_pos.le ha, renyiDiv_of_lt_one _ _]
-  rotate_left
-  · linarith
-  · linarith
+  rw [renyiDiv_of_ne_one ha.ne, renyiDiv_of_ne_one (by linarith)]
   simp only [sub_sub_cancel_left, neg_mul]
   rw [← mul_assoc, ← mul_assoc]
   have h : (1 - a) * hellingerDiv a μ ν = a * hellingerDiv (1 - a) ν μ :=
@@ -397,68 +394,80 @@ lemma renyiDiv_symm' (ha_pos : 0 < a) (ha : a < 1) (h_eq : μ Set.univ = ν Set.
     rw [← neg_neg (1 - a), neg_sub, neg_mul, mul_inv_cancel]
     · simp
     · linarith
-  rw [this, ← EReal.coe_mul, inv_neg, mul_neg, mul_inv_cancel ha_pos.ne']
+  rw [this, ← EReal.coe_mul, inv_neg, mul_neg, mul_inv_cancel ha_pos.ne', h_eq]
   simp only [EReal.coe_neg, EReal.coe_one, one_mul]
-  congr 5
-  · exact h_eq.symm
-  rw [← EReal.toReal_coe a, ← EReal.toReal_mul, EReal.toReal_coe a, ← h, EReal.toReal_mul,
-    ← neg_mul]
-  congr 1
+  congr 4
   norm_cast
-  rw [EReal.toReal_coe, neg_sub]
+  simp only [EReal.coe_sub, EReal.coe_one, sub_sub_cancel_left, EReal.coe_neg, neg_mul, ← h]
+  rw_mod_cast [← neg_mul, neg_sub]
 
 lemma renyiDiv_symm (ha_pos : 0 < a) (ha : a < 1)
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
     (1 - a) * renyiDiv a μ ν = a * renyiDiv (1 - a) ν μ :=
   renyiDiv_symm' ha_pos ha (by simp)
 
+#check EReal.log_ofReal_of_pos
+#check integral_rpow_rnDeriv_eq_zero_iff_mutuallySingular
+
 -- todo: `ν ≪ μ` is necessary (?) due to the llr being 0 when `(∂μ/∂ν) x = 0`.
 -- In that case, `exp (llr μ ν x) = 1 ≠ 0 = (∂μ/∂ν) x`.
-lemma coe_cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (hνμ : ν ≪ μ) :
+lemma coe_cgf_llr_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
+    [hν : NeZero ν] [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hνμ : ν ≪ μ) :
     cgf (llr μ ν) ν a = (a - 1) * renyiDiv a μ ν := by
-  rw [renyiDiv_eq_log_integral ha_pos ha, ← mul_assoc]
-  have : ((a : EReal) - 1) * ↑(a - 1)⁻¹ = 1 := by
-    norm_cast
-    rw [mul_inv_cancel]
-    linarith
-  rw [this, one_mul, cgf, mgf]
+  rw_mod_cast [renyiDiv_eq_log_integral_of_lt_one ha_pos ha, ← mul_assoc,
+    mul_inv_cancel (by linarith), one_mul, cgf, mgf]
+  have h_ms : ¬ μ ⟂ₘ ν := by
+    intro h
+    exact hν.out <| Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular hνμ h.symm
+  rw [EReal.log_ofReal_of_pos]
+  swap
+  · refine integral_rpow_rnDeriv_pos_iff_mutuallySingular ha_pos.ne' ?_ |>.mpr h_ms
+    exact integrable_rpow_rnDeriv_of_lt_one ha_pos.le ha
   congr 2
   exact integral_congr_ae (exp_mul_llr hνμ)
 
-lemma cgf_llr (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (hνμ : ν ≪ μ) :
+lemma cgf_llr_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hνμ : ν ≪ μ) :
     cgf (llr μ ν) ν a = (a - 1) * (renyiDiv a μ ν).toReal := by
+  by_cases hν : NeZero ν
+  swap
+  · have ha' : a - 1 < 0 := by linarith
+    rw [not_neZero.mp hν]
+    by_cases hμ : NeZero μ
+    swap; simp [not_neZero.mp hμ, ha', Real.sign_of_neg]
+    simp [ha'.ne]
   have : (a - 1) * (renyiDiv a μ ν).toReal = ((a - 1) * renyiDiv a μ ν).toReal := by
     rw [EReal.toReal_mul, ← EReal.coe_one, ← EReal.coe_sub, EReal.toReal_coe]
-  rw [this, ← coe_cgf_llr ha_pos ha hνμ, EReal.toReal_coe]
+  rw [this, ← coe_cgf_llr_of_lt_one ha_pos ha hνμ, EReal.toReal_coe]
 
-lemma coe_cgf_llr' (ha_pos : 0 < a) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (h : renyiDiv (1 + a) μ ν ≠ ⊤) :
+lemma coe_cgf_llr' (ha_pos : 0 < a) [hν : NeZero μ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (h_int : Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ (1 + a)) ν) (hμν : μ ≪ ν) :
     cgf (llr μ ν) μ a = a * renyiDiv (1 + a) μ ν := by
-  have hμν : μ ≪ ν := by
-    rw [renyiDiv_ne_top_iff_of_one_le] at h
-    · exact h.2
-    · linarith
-  rw [renyiDiv_eq_log_integral_of_ne_top' _ _ hμν h, ← mul_assoc]
-  rotate_left
-  · linarith
-  · linarith
-  simp only [add_sub_cancel_left]
-  have : (a : EReal) * ↑a⁻¹ = 1 := by
-    norm_cast
-    rw [mul_inv_cancel]
-    linarith
-  rw [this, one_mul, cgf, mgf]
+  rw_mod_cast [renyiDiv_eq_log_integral' (by linarith) (by linarith) h_int hμν, ← mul_assoc,
+    add_sub_cancel_left, mul_inv_cancel ha_pos.ne', one_mul, cgf, mgf]
+  have h_ms : ¬ μ ⟂ₘ ν := by
+    intro h
+    exact hν.out <| Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular hμν h
+  rw [EReal.log_ofReal_of_pos]
+  swap;
+  · rw [← integral_rnDeriv_smul hμν]
+    simp_rw [smul_eq_mul, mul_comm ((∂μ/∂ν) _).toReal,
+      ← Real.rpow_add_one' ENNReal.toReal_nonneg (by linarith), add_comm a]
+    exact integral_rpow_rnDeriv_pos_iff_mutuallySingular (by linarith) h_int |>.mpr h_ms
   congr 2
-  exact integral_congr_ae (exp_mul_llr' hμν)
+  refine integral_congr_ae (exp_mul_llr' hμν)
+
 
 lemma cgf_llr' (ha_pos : 0 < a) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (h : renyiDiv (1 + a) μ ν ≠ ⊤) :
+    (h_int : Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ (1 + a)) ν) (hμν : μ ≪ ν) :
     cgf (llr μ ν) μ a = a * (renyiDiv (1 + a) μ ν).toReal := by
+  by_cases hμ : NeZero μ
+  swap
+  · rw [not_neZero.mp hμ]
+    simp [ha_pos.ne', sign_of_pos ha_pos]
   have : a * (renyiDiv (1 + a) μ ν).toReal = (a * renyiDiv (1 + a) μ ν).toReal := by
     rw [EReal.toReal_mul, EReal.toReal_coe]
-  rw [this, ← coe_cgf_llr' ha_pos h, EReal.toReal_coe]
+  rw [this, ← coe_cgf_llr' ha_pos h_int hμν, EReal.toReal_coe]
 
 section RenyiMeasure
 
