@@ -77,16 +77,13 @@ lemma Measure.mutuallySingular_compProd_right (μ ν : Measure α) [SFinite μ] 
   symm
   refine ⟨s, hs, ?_⟩
   rw [Measure.compProd_apply hs, Measure.compProd_apply hs.compl]
+  have h_eq (a : α) : Prod.mk a ⁻¹' s = mutuallySingularSetSlice κ η a := rfl
   have h1 : ∀ a, η a (Prod.mk a ⁻¹' s) = 0 := by
     intro a
-    have : Prod.mk a ⁻¹' s = mutuallySingularSetSlice κ η a := rfl
-    rw [this, measure_mutuallySingularSetSlice]
+    rw [h_eq, measure_mutuallySingularSetSlice]
   have h2 : ∀ᵐ a ∂ μ, κ a (Prod.mk a ⁻¹' s)ᶜ = 0 := by
     filter_upwards [hκη] with a ha
-    have : (Prod.mk a ⁻¹' s)ᶜ ⊆ Prod.mk a ⁻¹' sᶜ := by intro; simp
-    refine measure_mono_null this ?_
-    have : Prod.mk a ⁻¹' sᶜ = (mutuallySingularSetSlice κ η a)ᶜ := rfl
-    rw [this, ← withDensity_rnDeriv_eq_zero_iff_measure_eq_zero κ η a,
+    rw [h_eq, ← withDensity_rnDeriv_eq_zero_iff_measure_eq_zero κ η a,
       withDensity_rnDeriv_eq_zero_iff_mutuallySingular]
     exact ha
   simp [h1, lintegral_congr_ae h2]
