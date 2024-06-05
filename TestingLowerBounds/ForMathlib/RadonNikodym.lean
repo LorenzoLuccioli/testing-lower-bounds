@@ -95,6 +95,35 @@ lemma Measure.mutuallySingular_compProd_right' (μ ν : Measure α) [SFinite μ]
   apply Measure.mutuallySingular_compProd_right
   simp_rw [Measure.MutuallySingular.comm, hκη]
 
+--the sorries should not be too hard to prove, we just need the right measurability lemmas about kernels
+lemma Measure.mutuallySingular_of_mutuallySingular_compProd {μ ν ξ : Measure α} [SFinite μ] [SFinite ν]
+    {κ η : kernel α γ} [IsSFiniteKernel κ] [IsSFiniteKernel η] (h : μ ⊗ₘ κ ⟂ₘ ν ⊗ₘ η) (hμ : ξ ≪ μ) (hν : ξ ≪ ν) :
+    ∀ᵐ x ∂ξ, κ x ⟂ₘ η x := by
+  let s := h.nullSet
+  have hs := h.measurableSet_nullSet
+  have hμ_zero:= h.measure_nullSet
+  have hν_zero := h.measure_compl_nullSet
+  rw [Measure.compProd_apply, MeasureTheory.lintegral_eq_zero_iff'] at hμ_zero hν_zero
+  filter_upwards [hμ hμ_zero, hν hν_zero] with x hxμ hxν
+  exact ⟨Prod.mk x ⁻¹' s, measurable_prod_mk_left hs, ⟨hxμ, hxν⟩⟩
+  ·
+    -- refine Measurable.aemeasurable ?_
+    -- simp_rw [← Measure.map_apply measurable_prod_mk_left hs.compl]
+    sorry
+  ·
+    -- refine Measurable.aemeasurable ?_
+    -- simp_rw [← Measure.map_apply measurable_prod_mk_left hs, ← kernel.map_apply κ measurable_prod_mk_left]
+    sorry
+  · exact hs.compl
+  · exact hs
+
+--TODO: can we do something similar if the kernels are the same?
+lemma Measure.mutuallySingular_compProd_iff_of_same_left (μ : Measure α) [SFinite μ]
+    (κ η : kernel α γ) [IsFiniteKernel κ] [IsFiniteKernel η] :
+    μ ⊗ₘ κ ⟂ₘ μ ⊗ₘ η ↔ ∀ᵐ a ∂μ, κ a ⟂ₘ η a := by
+  refine ⟨fun h ↦ ?_, fun h ↦ Measure.mutuallySingular_compProd_right _ _ h⟩
+  exact Measure.mutuallySingular_of_mutuallySingular_compProd h (fun _ a ↦ a) (fun _ a ↦ a)
+
 lemma ae_compProd_of_ae_fst {μ : Measure α} (κ : kernel α γ)
     [SFinite μ] [IsSFiniteKernel κ] {p : α → Prop} (hp : MeasurableSet {x | p x})
     (h : ∀ᵐ a ∂μ, p a) :
