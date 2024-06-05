@@ -532,8 +532,8 @@ lemma condKL_compProd_meas [CountableOrCountablyGenerated (α × β) γ] [SFinit
   filter_upwards [h.1] with a ha
   simp_rw [condKL_ne_top_iff'.mp ha, EReal.toReal_coe, kernel.snd'_apply]
 
-lemma kl_compProd_left [CountableOrCountablyGenerated α β] [IsFiniteMeasure μ] [IsMarkovKernel κ]
-    [IsFiniteKernel η] :
+lemma kl_compProd_left [CountableOrCountablyGenerated α β]
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [∀ x, NeZero (κ x)] [IsFiniteKernel η] :
     kl (μ ⊗ₘ κ) (μ ⊗ₘ η) = condKL κ η μ := by
   rw [kl_eq_fDiv, condKL_eq_condFDiv]
   exact fDiv_compProd_left μ κ η continuous_mul_log.stronglyMeasurable convexOn_mul_log
