@@ -645,53 +645,50 @@ lemma le_renyiDiv_of_le_hellingerDiv {a : ℝ} {μ₁ ν₁ : Measure α} {μ₂
     norm_cast
     linarith
 
--- lemma le_renyiDiv_compProd [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
---     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
---     (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η] :
---     renyiDiv a μ ν ≤ renyiDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) := by
+lemma le_renyiDiv_compProd [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ η : kernel α β) [IsMarkovKernel κ] [IsMarkovKernel η] :
+    renyiDiv a μ ν ≤ renyiDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) := by
+  refine le_renyiDiv_of_le_hellingerDiv ?_ (le_hellingerDiv_compProd ha_pos μ ν κ η)
+  rw [Measure.compProd_apply MeasurableSet.univ]
+  simp
 
+lemma renyiDiv_fst_le [Nonempty β] [StandardBorelSpace β] (ha_pos : 0 < a)
+    (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    renyiDiv a μ.fst ν.fst ≤ renyiDiv a μ ν :=
+  le_renyiDiv_of_le_hellingerDiv Measure.fst_univ (hellingerDiv_fst_le ha_pos μ ν)
 
+lemma renyiDiv_snd_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+    (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    renyiDiv a μ.snd ν.snd ≤ renyiDiv a μ ν :=
+  le_renyiDiv_of_le_hellingerDiv Measure.snd_univ (hellingerDiv_snd_le ha_pos μ ν)
 
---   le_fDiv_compProd μ ν κ η (stronglyMeasurable_hellingerFun ha_pos.le)
---     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+lemma renyiDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
+    renyiDiv a (μ ∘ₘ κ) (ν ∘ₘ η) ≤ renyiDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) :=
+  le_renyiDiv_of_le_hellingerDiv (Measure.snd_compProd ν η ▸ Measure.snd_univ)
+    (hellingerDiv_comp_le_compProd ha_pos μ ν κ η)
 
--- lemma renyiDiv_fst_le [Nonempty β] [StandardBorelSpace β] (ha_pos : 0 < a)
---     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
---     renyiDiv a μ.fst ν.fst ≤ renyiDiv a μ ν :=
---   fDiv_fst_le _ _ (stronglyMeasurable_hellingerFun ha_pos.le)
---     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+lemma renyiDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
+    [CountableOrCountablyGenerated α β] (ha_pos : 0 < a) (μ : Measure α) [IsFiniteMeasure μ]
+    (κ η : kernel α β) [IsFiniteKernel κ] [∀ a, NeZero (κ a)] [IsFiniteKernel η] :
+    renyiDiv a (μ ∘ₘ κ) (μ ∘ₘ η) ≤ condRenyiDiv a κ η μ :=
+  le_renyiDiv_of_le_hellingerDiv (Measure.snd_compProd μ η ▸ Measure.snd_univ)
+    (hellingerDiv_comp_le_compProd ha_pos μ μ κ η)
 
--- lemma renyiDiv_snd_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
---     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
---     renyiDiv a μ.snd ν.snd ≤ renyiDiv a μ ν :=
---   fDiv_snd_le _ _ (stronglyMeasurable_hellingerFun ha_pos.le)
---     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
-
--- lemma renyiDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
---     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
---     (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
---     renyiDiv a (μ ∘ₘ κ) (ν ∘ₘ η) ≤ renyiDiv a (μ ⊗ₘ κ) (ν ⊗ₘ η) :=
---   fDiv_comp_le_compProd μ ν κ η (stronglyMeasurable_hellingerFun ha_pos.le)
---     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
-
--- lemma renyiDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
---     [CountableOrCountablyGenerated α β] (ha_pos : 0 < a) (μ : Measure α) [IsFiniteMeasure μ]
---     (κ η : kernel α β) [IsFiniteKernel κ] [∀ a, NeZero (κ a)] [IsFiniteKernel η] :
---     renyiDiv a (μ ∘ₘ κ) (μ ∘ₘ η) ≤ condrenyiDiv a κ η μ :=
---   fDiv_comp_left_le μ κ η (stronglyMeasurable_hellingerFun ha_pos.le)
---     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
-
--- /--The Data Processing Inequality for the Hellinger divergence. -/
--- lemma renyiDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
---     [CountableOrCountablyGenerated α β]
---     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
---     (κ : kernel α β) [IsMarkovKernel κ] :
---     renyiDiv a (μ ∘ₘ κ) (ν ∘ₘ κ) ≤ renyiDiv a μ ν :=
---   fDiv_comp_right_le μ ν κ (stronglyMeasurable_hellingerFun ha_pos.le)
---     (convexOn_hellingerFun ha_pos.le) (continuous_hellingerFun ha_pos).continuousOn
+/--The Data Processing Inequality for the Renyi divergence. -/
+lemma renyiDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 < a)
+    [CountableOrCountablyGenerated α β]
+    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ : kernel α β) [IsMarkovKernel κ] :
+    renyiDiv a (μ ∘ₘ κ) (ν ∘ₘ κ) ≤ renyiDiv a μ ν := by
+  refine le_renyiDiv_of_le_hellingerDiv ?_ (hellingerDiv_comp_right_le ha_pos μ ν κ)
+  rw [← Measure.snd_compProd ν κ, Measure.snd_univ, Measure.compProd_apply MeasurableSet.univ]
+  simp
 
 end DataProcessingInequality
 
 end ProbabilityTheory
---finish the refactoring of Renyi, prove the DPI. Then try the new category theory approach, we want at first to define the category of measurable spaces with kernels as morphisms and then we would like to have the string diagram widget.
---Some useful flies for that: `Mathlib/MeasureTheory/Category/MeasCat.lean`, `Mathlib/Tactic/CategoryTheory/Coherence.lean`, `Mathlib/Tactic/CategoryTheory/MonoidalComp.lean`
+--try the new category theory approach, we want at first to define the category of measurable spaces with kernels as morphisms and then we would like to have the string diagram widget.
+--Some useful files for that: `Mathlib/MeasureTheory/Category/MeasCat.lean`, `Mathlib/Tactic/CategoryTheory/Coherence.lean`, `Mathlib/Tactic/CategoryTheory/MonoidalComp.lean`
