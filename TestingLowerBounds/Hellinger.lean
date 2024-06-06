@@ -783,8 +783,8 @@ lemma integrable_hellingerDiv_iff_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
   refine integrable_congr (eventually_of_forall fun x ↦ ?_)
   simp_rw [hellingerDiv_eq_integral_of_lt_one ha_nonneg ha, EReal.toReal_coe]
 
-lemma integrable_hellingerDiv_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1) [IsFiniteMeasure μ]
-    [IsFiniteKernel κ] [IsFiniteKernel η]
+lemma integrable_hellingerDiv_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η]
     (h_int : ∀ᵐ x ∂μ, Integrable (fun b ↦ ((∂κ x/∂η x) b).toReal ^ a) (η x))
     (h_ac : 1 ≤ a → ∀ᵐ x ∂μ, κ x ≪ η x) :
     Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ
@@ -846,8 +846,8 @@ lemma integrable_hellingerDiv_zero [CountableOrCountablyGenerated α β]
     (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
     exact measure_mono (Set.subset_univ _) |>.trans (hC x)
 
-lemma integrable_hellingerDiv_iff'_of_lt_one (ha_pos : 0 < a) (ha : a < 1) [IsFiniteMeasure μ]
-    [IsFiniteKernel κ] [IsFiniteKernel η] :
+lemma integrable_hellingerDiv_iff'_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
+    [IsFiniteMeasure μ] [IsFiniteKernel κ] [IsFiniteKernel η] :
     Integrable (fun x ↦ (hellingerDiv a (κ x) (η x)).toReal) μ
       ↔ Integrable (fun x ↦ ∫ b, ((∂κ x/∂η x) b).toReal ^ a ∂η x) μ :=
   integrable_hellingerDiv_iff' ha_pos ha.ne (eventually_of_forall
