@@ -327,6 +327,16 @@ theorem toENNReal_coe {x : ENNReal} : (x : EReal).toENNReal = x := by
   · exact h_top
   · simp [h_top]
 
+theorem toENNReal_le_toENNReal {x y : EReal} (h : x ≤ y) : x.toENNReal ≤ y.toENNReal := by
+  induction' x using EReal.rec with x
+  · simp
+  · by_cases hy_top : y = ⊤
+    · simp [hy_top]
+    simp_all [h, toENNReal]
+    refine ENNReal.ofReal_le_ofReal ?_
+    refine EReal.toReal_le_toReal h (coe_ne_bot x) hy_top
+  · simp_all
+
 end EReal
 
 noncomputable instance : HMul ℝ ℝ≥0∞ EReal where
