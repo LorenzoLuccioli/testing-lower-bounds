@@ -71,16 +71,17 @@ lemma integrable_rpow_rnDeriv_compProd_right_iff [CountableOrCountablyGenerated 
 
 --attempt at proving an auxiliary lemma for the DPI, it seems there are some difficulties related to the fact that log is not monotone everywhere, but only in the positive reals, in particular it's not monotone in 0, but the qualtity that we put inside the log can be 0, at least when the two measures are mutually singular. how should we do? Shall we define the Renyi div with the new extended log? that should be at least monotone on all the ENNReals, even though I don't know wether this is already proven or not
 
--- --find a better name
--- lemma monotone_const_mul_log_const_add_const_mul₂ (b c : ℝ) :
---     Monotone (fun x ↦ c⁻¹ * log (b + c * x)) := by
+--find a better name
+-- lemma EReal.monotone_const_mul_log_const_add_const_mul₂ (b : EReal) (c : ℝ) :
+--     Monotone (fun (x : EReal) ↦ (c⁻¹ * EReal.log (b + c * x).toENNReal : EReal)) := by
 --   rcases lt_trichotomy c 0 with (h | rfl | h)
 --   ·
 
 --     sorry
 --   · simp [monotone_const]
 --   ·
---     refine Monotone.const_mul ?inr.inr.hf (inv_nonneg_of_nonneg h.le)
+--     refine Monotone.const_mul ?_ ?_ (β := EReal)
+--     -- (inv_nonneg_of_nonneg h.le)
 --     apply?
 
 --     sorry
@@ -615,8 +616,34 @@ variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
 
 --failed attempt at proving the data processing inequality for the Rényi divergence, see also the comment at the beginning of the file about `monotone_const_mul_log_const_add_const_mul₂`
 
--- lemma le_renyiDiv_of_le_hellingerDiv
-
+lemma le_renyiDiv_of_le_hellingerDiv {a : ℝ} {μ₁ ν₁ : Measure α} {μ₂ ν₂ : Measure β}
+    [SigmaFinite μ₁] [SigmaFinite ν₁] [SigmaFinite μ₂] [SigmaFinite ν₂]
+    (h_eq : ν₁ Set.univ = ν₂ Set.univ) (h_le : hellingerDiv a μ₁ ν₁ ≤ hellingerDiv a μ₂ ν₂) :
+    renyiDiv a μ₁ ν₁ ≤ renyiDiv a μ₂ ν₂ := by
+  rcases lt_trichotomy a 1 with (ha | rfl | ha)
+  · simp_rw [renyiDiv_of_ne_one ha.ne, h_eq]
+    apply EReal.neg_le_neg_iff.mp
+    simp_rw [← neg_mul, ← EReal.coe_neg, neg_inv, neg_sub]
+    gcongr
+    · simp only [EReal.coe_nonneg, inv_nonneg, sub_nonneg, ha.le]
+    refine EReal.log_mono ?_
+    apply EReal.toENNReal_le_toENNReal
+    gcongr (ν₂ Set.univ) + ?_
+    apply EReal.neg_le_neg_iff.mp
+    norm_cast
+    simp_rw [← neg_mul, ← EReal.coe_neg, neg_sub]
+    gcongr
+    norm_cast
+    linarith
+  · simp_all
+  · simp_rw [renyiDiv_of_ne_one ha.ne', h_eq]
+    gcongr
+    · simp only [EReal.coe_nonneg, inv_nonneg, sub_nonneg, ha.le]
+    refine EReal.log_mono ?_
+    apply EReal.toENNReal_le_toENNReal
+    gcongr
+    norm_cast
+    linarith
 
 -- lemma le_renyiDiv_compProd [CountableOrCountablyGenerated α β] (ha_pos : 0 < a)
 --     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
