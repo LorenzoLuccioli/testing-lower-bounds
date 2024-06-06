@@ -789,8 +789,7 @@ lemma Measure.pi_map_piCongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fin
     ext x
     simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
     refine (e.forall_congr ?_).symm
-    intro i
-    rw [MeasurableEquiv.piCongrLeft_apply_apply e x i]
+    simp_rw [MeasurableEquiv.piCongrLeft_apply_apply e x _, implies_true]
   rw [this, Measure.pi_pi, Finset.prod_equiv e.symm]
   · simp only [Finset.mem_univ, implies_true]
   intro i _
