@@ -115,8 +115,20 @@ lemma Measure.mutuallySingular_of_mutuallySingular_compProd {μ ν ξ : Measure 
 lemma Measure.mutuallySingular_compProd_iff_of_same_left (μ : Measure α) [SFinite μ]
     (κ η : kernel α γ) [IsFiniteKernel κ] [IsFiniteKernel η] :
     μ ⊗ₘ κ ⟂ₘ μ ⊗ₘ η ↔ ∀ᵐ a ∂μ, κ a ⟂ₘ η a := by
-  refine ⟨fun h ↦ ?_, fun h ↦ Measure.mutuallySingular_compProd_right _ _ h⟩
-  exact Measure.mutuallySingular_of_mutuallySingular_compProd h (fun _ a ↦ a) (fun _ a ↦ a)
+  refine ⟨fun h ↦ ?_, fun h ↦ mutuallySingular_compProd_right _ _ h⟩
+  exact mutuallySingular_of_mutuallySingular_compProd h (fun _ a ↦ a) (fun _ a ↦ a)
+
+lemma Measure.mutuallySingular_compProd_iff_of_same_right (μ ν : Measure α) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (κ : kernel α γ) [IsFiniteKernel κ] [hκ : ∀ x, NeZero (κ x)] :
+    μ ⊗ₘ κ ⟂ₘ ν ⊗ₘ κ ↔ μ ⟂ₘ ν := by
+  refine ⟨fun h ↦ ?_, fun h ↦ mutuallySingular_compProd_left h _ _⟩
+  rw [← Measure.withDensity_rnDeriv_eq_zero]
+  have hh := mutuallySingular_of_mutuallySingular_compProd h ?_ ?_ (ξ  := ν.withDensity (∂μ/∂ν))
+  rotate_left
+  · exact Measure.absolutelyContinuous_of_le (Measure.withDensity_rnDeriv_le μ ν)
+  · exact MeasureTheory.withDensity_absolutelyContinuous _ _
+  simp_rw [Measure.MutuallySingular.self_iff, (hκ _).ne] at hh
+  exact ae_eq_bot.mp (Filter.eventually_false_iff_eq_bot.mp hh)
 
 lemma ae_compProd_of_ae_fst {μ : Measure α} (κ : kernel α γ)
     [SFinite μ] [IsSFiniteKernel κ] {p : α → Prop} (hp : MeasurableSet {x | p x})
