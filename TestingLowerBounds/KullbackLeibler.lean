@@ -195,20 +195,23 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   · rw [ENNReal.toReal_ne_zero]
     simp [hν, measure_ne_top ν]
 
--- If needed, it should be possible to relax h to `μ Set.univ ≥ ν Set.univ`.
 lemma kl_nonneg' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (h : μ Set.univ = ν Set.univ) :
+    (h : μ Set.univ ≥ ν Set.univ) :
     0 ≤ kl μ ν := by
   by_cases hμν : μ ≪ ν
   swap; · rw [kl_of_not_ac hμν]; simp
   by_cases h_int : Integrable (llr μ ν) μ
   swap; · rw [kl_of_not_integrable h_int]; simp
   calc 0
-    = ((μ Set.univ).toReal : EReal) * log ((μ Set.univ).toReal / (ν Set.univ).toReal) := by
+    ≤ ((μ Set.univ).toReal : EReal) * log ((μ Set.univ).toReal / (ν Set.univ).toReal) := by
         by_cases h_zero : NeZero ν
-        · rw [h, div_self (ENNReal.toReal_ne_zero.mpr ⟨NeZero.ne _, measure_ne_top _ _⟩)]
-          simp [h]
-        · simp [not_neZero.mp h_zero]
+        swap; · simp [not_neZero.mp h_zero]
+        refine mul_nonneg (EReal.coe_nonneg.mpr ENNReal.toReal_nonneg) ?_
+        norm_cast
+        refine log_nonneg ((one_le_div ?_).mpr ?_)
+        · exact ENNReal.toReal_pos (NeZero.ne' _).symm (measure_ne_top _ _)
+        · gcongr
+          exact measure_ne_top _ _
   _ ≤ kl μ ν := kl_ge_mul_log _ _
 
 lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
