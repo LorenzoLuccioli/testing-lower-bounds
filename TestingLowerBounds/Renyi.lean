@@ -69,68 +69,12 @@ lemma integrable_rpow_rnDeriv_compProd_right_iff [CountableOrCountablyGenerated 
   refine integrable_hellingerDiv_iff' ha_pos ha_one ?_ h_ac
   simp_rw [← integrable_hellingerFun_iff_integrable_rpow ha_one, h_int]
 
---attempt at proving an auxiliary lemma for the DPI, it seems there are some difficulties related to the fact that log is not monotone everywhere, but only in the positive reals, in particular it's not monotone in 0, but the qualtity that we put inside the log can be 0, at least when the two measures are mutually singular. how should we do? Shall we define the Renyi div with the new extended log? that should be at least monotone on all the ENNReals, even though I don't know wether this is already proven or not
-
---find a better name
--- lemma EReal.monotone_const_mul_log_const_add_const_mul₂ (b : EReal) (c : ℝ) :
---     Monotone (fun (x : EReal) ↦ (c⁻¹ * EReal.log (b + c * x).toENNReal : EReal)) := by
---   rcases lt_trichotomy c 0 with (h | rfl | h)
---   ·
-
---     sorry
---   · simp [monotone_const]
---   ·
---     refine Monotone.const_mul ?_ ?_ (β := EReal)
---     -- (inv_nonneg_of_nonneg h.le)
---     apply?
-
---     sorry
-
-
-
-
-
---     sorry
-
-
--- lemma monotone_mul_log_add_mul₂ (a₁ b₁ a₂ b₂ c : ℝ) (ha : a₁ ≤ a₂) (hb : b₁ ≤ b₂) :
---     c⁻¹ * log (a₁ + c * b₁) ≤ c⁻¹ * log (a₂ + c * b₂) := by
---   rcases lt_trichotomy c 0 with (h | rfl | h)
---   ·
---     sorry
---   · norm_num
---   ·
---     gcongr c⁻¹ * log (?_ + c * ?_)
-
---     sorry
-
--- variable (x : Real) (y : ENNReal) (z : EReal)
--- #check x * z
--- #check x * y
--- #check y * x
--- #check y * z
--- #check x + y
--- #check y + x
--- #check x + z
--- #check y + z
--- #check y.toReal
--- #check z.toReal
--- #check x.toNNReal
--- -- #check z.toENNreal
-
--- variable (a : ℝ) (μ ν : Measure α)
-
--- #check (hellingerDiv a μ ν)
--- #check (a - 1) * (hellingerDiv a μ ν)
--- #check (ν Set.univ)
--- -- #check (ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)
-
 /-- Rényi divergence of order `a`. If `a = 1`, it is defined as `kl μ ν`, otherwise as
 `(a - 1)⁻¹ * log (ν(α) + (a - 1) * Hₐ(μ, ν))`.
 If `ν` is a probability measure then this becomes the more usual definition
 `(a - 1)⁻¹ * log (1 + (a - 1) * Hₐ(μ, ν))`, but this definition maintains some useful properties
 also for a general finite measure `ν`, in particular the integral form
-`Rₐ(μ, ν) = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x).toReal ^ a ∂ν)`. -/
+`Rₐ(μ, ν) = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x) ^ a ∂ν)`. -/
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 1 then kl μ ν
   else (a - 1)⁻¹ * EReal.log ((↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal)
@@ -613,8 +557,6 @@ end Conditional
 section DataProcessingInequality
 
 variable {β : Type*} {mβ : MeasurableSpace β} {κ η : kernel α β}
-
---failed attempt at proving the data processing inequality for the Rényi divergence, see also the comment at the beginning of the file about `monotone_const_mul_log_const_add_const_mul₂`
 
 lemma le_renyiDiv_of_le_hellingerDiv {a : ℝ} {μ₁ ν₁ : Measure α} {μ₂ ν₂ : Measure β}
     [SigmaFinite μ₁] [SigmaFinite ν₁] [SigmaFinite μ₂] [SigmaFinite ν₂]
