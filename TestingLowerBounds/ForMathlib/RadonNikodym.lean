@@ -95,7 +95,7 @@ lemma Measure.mutuallySingular_compProd_right' (μ ν : Measure α) [SFinite μ]
   apply Measure.mutuallySingular_compProd_right
   simp_rw [Measure.MutuallySingular.comm, hκη]
 
---the sorries should not be too hard to prove, we just need the right measurability lemmas about kernels
+--TODO: the sorries should not be too hard to prove, we just need the right measurability lemmas about kernels
 lemma Measure.mutuallySingular_of_mutuallySingular_compProd {μ ν ξ : Measure α} [SFinite μ] [SFinite ν]
     {κ η : kernel α γ} [IsSFiniteKernel κ] [IsSFiniteKernel η] (h : μ ⊗ₘ κ ⟂ₘ ν ⊗ₘ η) (hμ : ξ ≪ μ) (hν : ξ ≪ ν) :
     ∀ᵐ x ∂ξ, κ x ⟂ₘ η x := by
