@@ -130,14 +130,14 @@ Since Rényi divergences are monotone transfomations of f-divergences, every ine
 
 \begin{theorem}[Data-processing]
   \label{thm:renyi_data_proc}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.renyiDiv_comp_right_le}
+  \leanok
   \uses{def:Renyi}
-  Let $\mu, \nu$ be two measures on $\mathcal X$ and let $\kappa : \mathcal X \rightsquigarrow \mathcal Y$ be a Markov kernel.
+  Let $\mu, \nu$ be two finite measures on $\mathcal X$ and let $\kappa : \mathcal X \rightsquigarrow \mathcal Y$ be a Markov kernel.
   Then $R_\alpha(\kappa \circ \mu, \kappa \circ \nu) \le R_\alpha(\mu, \nu)$.
 \end{theorem}
 
-\begin{proof}
+\begin{proof} \leanok
 \uses{thm:fDiv_data_proc}
 The function $x \mapsto \frac{1}{\alpha - 1}\log (1 + (\alpha - 1)x)$ is non-decreasing and $D_f$ satisfies the DPI (Theorem~\ref{thm:fDiv_data_proc}), hence we get the DPI for $R_\alpha$.
 \end{proof}
