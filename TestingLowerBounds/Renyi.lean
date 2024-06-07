@@ -550,8 +550,7 @@ lemma le_renyiDiv_of_le_hellingerDiv {a : ℝ} {μ₁ ν₁ : Measure α} {μ₂
     simp_rw [← neg_mul, ← EReal.coe_neg, neg_inv, neg_sub]
     gcongr
     · simp only [EReal.coe_nonneg, inv_nonneg, sub_nonneg, ha.le]
-    refine EReal.log_mono ?_
-    apply EReal.toENNReal_le_toENNReal
+    refine EReal.log_mono <| EReal.toENNReal_le_toENNReal ?_
     gcongr (ν₂ Set.univ) + ?_
     apply EReal.neg_le_neg_iff.mp
     norm_cast
