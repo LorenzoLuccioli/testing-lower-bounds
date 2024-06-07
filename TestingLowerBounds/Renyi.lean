@@ -490,30 +490,12 @@ lemma condRenyiDiv_ne_top_iff_of_one_lt [CountableOrCountablyGenerated α β] (h
   push_neg
   rfl
 
--- TODO: we need some lemma that carachterizes when two compProd are mutually singular, we have one direction in `Measure.mutuallySingular_compProd_left` and the following lemmas, but these only provide sufficient conditions for the compProd to be mutually singular, we need a necessary and sufficient condition. I suspect that this condition is of the form `∀ᵐ x ∂ξ, κ x ⟂ₘ η x` for some `ξ ≪ μ, ν`, and ξ should be somehow constructed starting from `μ` and `ν`, a possibility could be something like `ξ = ∂μ/∂ν · ν + ∂ν/∂μ · μ`, but I didn't manage to prove it. I (almost) proved the fact that forall `ξ ≪ μ, ν` this condition is necessary in `mutuallySingular_of_mutuallySingular_compProd`.
---Maybe `singularPart_compProd'` can help, but I'm not sure.
---For now I am leaving it like this.
 lemma condRenyiDiv_eq_top_iff_of_lt_one [CountableOrCountablyGenerated α β]
     (ha_nonneg : 0 ≤ a) (ha : a < 1)
     (κ η : kernel α β) (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
-    condRenyiDiv a κ η μ = ⊤ ↔ μ ⊗ₘ κ ⟂ₘ μ ⊗ₘ η := by
-  rw [condRenyiDiv, renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha_nonneg ha]
-
--- lemma condRenyiDiv_ne_top_iff_of_lt_one [CountableOrCountablyGenerated α β] (ha_nonneg : 0 ≤ a)
---     (ha : a < 1) (κ η : kernel α β) (μ : Measure α)
---     [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
---     condRenyiDiv a κ η μ ≠ ⊤
---     ↔ (∀ᵐ x ∂μ, Integrable (fun b ↦ hellingerFun a ((∂κ x/∂η x) b).toReal) (η x))
---       ∧ Integrable (fun x ↦ ∫ (b : β), hellingerFun a ((∂κ x/∂η x) b).toReal ∂η x) μ := by
---   rw [ne_eq, condRenyiDiv_eq_top_iff_of_lt_one ha_nonneg ha]
---   push_neg
---   rfl
-
--- lemma condRenyiDiv_ne_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) (κ η : kernel α β)
---     (μ : Measure α) [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ] :
---     condRenyiDiv a κ η μ ≠ ⊤ := by
---   rw [condRenyiDiv, ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top]
---   exact hellingerDiv_ne_top_of_lt_one ha_nonneg ha _ _
+    condRenyiDiv a κ η μ = ⊤ ↔ ∀ᵐ a ∂μ, κ a ⟂ₘ η a := by
+  rw [condRenyiDiv, renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha_nonneg ha,
+    kernel.Measure.mutuallySingular_compProd_iff_of_same_left]
 
 lemma condRenyiDiv_of_not_ae_integrable_of_one_lt [CountableOrCountablyGenerated α β] (ha : 1 < a)
     [IsFiniteKernel κ] [IsFiniteKernel η] [IsFiniteMeasure μ]
