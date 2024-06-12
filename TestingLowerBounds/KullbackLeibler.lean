@@ -217,16 +217,37 @@ lemma kl_nonneg' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
 lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
     0 ≤ kl μ ν := kl_nonneg' μ ν (by simp)
 
-lemma kl_eq_zero_iff [SigmaFinite μ] [SigmaFinite ν] : kl μ ν = 0 ↔ μ = ν := by
-  constructor <;> intro h
-  · by_cases hμν : μ ≪ ν
-    swap; · rw [kl_of_not_ac hμν] at h; simp_all only [EReal.top_ne_zero]
-    by_cases h_int : Integrable (llr μ ν) μ
-    swap; · rw [kl_of_not_integrable h_int] at h; simp_all only [EReal.top_ne_zero]
-    sorry -- TODO : decide what proof strategy to use here, maybe we could use the fact that
-    -- jensen's inequality is an equality iff the function is constant a.e., but I don't know wether
-    -- this is in mathlib
-  · exact h ▸ kl_self ν
+#check StrictConvexOn.ae_eq_const_or_map_average_lt
+#check Real.strictConvexOn_mul_log
+
+/-- **Converse Gibbs' inequality**: the Kullback-Leibler divergence between two probability
+distributions is zero if and only if the two distributions are equal. -/
+lemma kl_eq_zero_iff [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_mass : μ Set.univ = ν Set.univ) :
+    kl μ ν = 0 ↔ μ = ν := by
+  refine ⟨fun h ↦ ?_, fun h ↦ h ▸ kl_self ν⟩
+  by_cases hμν : μ ≪ ν
+  swap; · rw [kl_of_not_ac hμν] at h; simp_all only [EReal.top_ne_zero]
+  by_cases h_int : Integrable (llr μ ν) μ
+  swap; · rw [kl_of_not_integrable h_int] at h; simp_all only [EReal.top_ne_zero]
+  by_cases hμ_zero : μ = 0
+  · rw [hμ_zero] at h_mass ⊢
+    rw [Measure.measure_univ_eq_zero.mp h_mass.symm]
+  classical
+  rw [kl_eq_fDiv, fDiv_of_derivAtTop_eq_top derivAtTop_mul_log,
+      if_pos ⟨(integrable_rnDeriv_mul_log_iff hμν).mpr h_int, hμν⟩, EReal.coe_eq_zero,] at h
+  have h_eq := StrictConvexOn.ae_eq_const_or_map_average_lt Real.strictConvexOn_mul_log
+    Real.continuous_mul_log.continuousOn isClosed_Ici (by simp) Measure.integrable_toReal_rnDeriv
+    (integrable_rnDeriv_mul_log_iff hμν |>.mpr h_int)
+  simp only [average, integral_smul_measure, smul_eq_mul, h, mul_zero, ← h_mass] at h_eq
+  rw [Measure.integral_toReal_rnDeriv hμν, ← ENNReal.toReal_mul,
+    ENNReal.inv_mul_cancel (Measure.measure_univ_ne_zero.mpr hμ_zero) (measure_ne_top μ _)] at h_eq
+  simp only [ENNReal.one_toReal, Function.const_one, log_one, mul_zero, lt_self_iff_false,
+    or_false] at h_eq
+
+  -- we need some theorem saying that if the rnderiv is one a.e. then the measure is the same, it should be somewhere, but I cannot find it, if there isn't it should not be too hard to prove, using the radon-nikodym theorem, the problem would be more about finding the right statement in full generality, but for this case it should be easy
+
+  sorry
+
 
 end kl_nonneg
 
