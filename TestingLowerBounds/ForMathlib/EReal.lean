@@ -113,12 +113,12 @@ lemma add_sub_cancel (x : EReal) (y : ℝ) : x + y - y = x := by
 lemma add_sub_cancel' (x : EReal) (y : ℝ) : y + x - y = x := by
   rw [add_comm, EReal.add_sub_cancel]
 
-lemma neg_add {x y : EReal} (h1 : (x ≠ ⊥) ∨ (y ≠ ⊤)) (h2 : (x ≠ ⊤) ∨ (y ≠ ⊥)) :
+lemma neg_add {x y : EReal} (h1 : x ≠ ⊥ ∨ y ≠ ⊤) (h2 : x ≠ ⊤ ∨ y ≠ ⊥) :
     - (x + y) = - x - y := by
   induction x using EReal.rec <;> induction y using EReal.rec <;> try tauto
   rw [← coe_add, ← coe_neg, ← coe_neg, ← coe_sub, neg_add']
 
-lemma neg_sub {x y : EReal} (h1 : (x ≠ ⊥) ∨ (y ≠ ⊥)) (h2 : (x ≠ ⊤) ∨ (y ≠ ⊤)) :
+lemma neg_sub {x y : EReal} (h1 : x ≠ ⊥ ∨ y ≠ ⊥) (h2 : x ≠ ⊤ ∨ y ≠ ⊤) :
     - (x - y) = - x + y := by
   rw [sub_eq_add_neg, neg_add _ _, sub_eq_add_neg, neg_neg] <;> simp_all
 
@@ -260,29 +260,6 @@ instance : MeasurableAdd₂ EReal := ⟨EReal.lowerSemicontinuous_add.measurable
 instance : MeasurableMul₂ EReal := by
   constructor
   sorry
-
---We probabily don't need this, but for now I'm keeping it just in case
--- /-- Reinterpret an EReal number `x` as a NNReal number. Returns `0` if `x < 0` or `x = ⊤`. -/
--- noncomputable def toNNReal (x : EReal) : NNReal :=
---   if x = ⊤ then 0
---   else if h : 0 ≤ x then ⟨x.toReal, toReal_nonneg h⟩
---   else 0
-
--- @[simp]
--- theorem toNNReal_top : (⊤ : EReal).toNNReal = 0 := rfl
-
--- @[simp]
--- theorem toNNReal_neg {x : EReal} (hx : x < 0) : x.toNNReal = 0 := by
---   rw [toNNReal, if_neg hx.ne_top, dif_neg (not_le_of_gt hx)]
-
--- theorem toNNReal_of_nonneg_of_finite {x : EReal} (hx : 0 ≤ x) (h_top : x ≠ ⊤) :
---     x.toNNReal = ⟨x.toReal, toReal_nonneg hx⟩ := by
---   rw [toNNReal, if_neg h_top, dif_pos hx]
-
--- theorem coe_toNNReal {x : EReal} (hx : 0 ≤ x) (h_top : x ≠ ⊤) : (x.toNNReal : EReal) = x := by
---   rw [toNNReal_of_nonneg_of_finite hx h_top, ← Real.toNNReal_of_nonneg, coe_nnreal_eq_coe_real,
---     Real.coe_toNNReal _ (toReal_nonneg hx), coe_toReal h_top _]
---   exact fun h ↦ by simp_all only [le_bot_iff, zero_ne_bot]
 
 /-- Reinterpret an EReal number `x` as an ENNReal number. Returns `0` if `x < 0`. -/
 noncomputable def toENNReal (x : EReal) : ENNReal :=
