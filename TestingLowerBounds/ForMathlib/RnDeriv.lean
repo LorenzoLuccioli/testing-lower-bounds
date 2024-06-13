@@ -277,6 +277,12 @@ lemma ae_integrable_of_ae_integrable_mul_rnDeriv {κ : α → Measure β} [Sigma
   apply isUnit_iff_ne_zero.mpr
   linarith
 
+--in mathlib this could be put just before `MeasureTheory.Measure.rnDeriv_eq_zero_of_mutuallySingular`
+lemma rnDeriv_eq_one_iff_eq {μ ν : Measure α} [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
+    μ.rnDeriv ν =ᵐ[ν] 1 ↔ μ = ν := by
+  refine ⟨fun h ↦ ?_, fun h ↦ h ▸ Measure.rnDeriv_self ν⟩
+  rw [← withDensity_rnDeriv_eq _ _ hμν, MeasureTheory.withDensity_congr_ae h, withDensity_one]
+
 end MeasureTheory.Measure
 
 namespace MeasurableEmbedding
