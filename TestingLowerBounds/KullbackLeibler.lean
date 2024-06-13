@@ -219,9 +219,6 @@ nonnegative. -/
 lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
     0 ≤ kl μ ν := kl_nonneg' μ ν (by simp)
 
-#check StrictConvexOn.ae_eq_const_or_map_average_lt
-#check Real.strictConvexOn_mul_log
-
 /-- **Converse Gibbs' inequality**: the Kullback-Leibler divergence between two probability
 distributions is zero if and only if the two distributions are equal. -/
 lemma kl_eq_zero_iff [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_mass : μ Set.univ = ν Set.univ) :
@@ -245,11 +242,8 @@ lemma kl_eq_zero_iff [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_mass : μ Set.
     ENNReal.inv_mul_cancel (Measure.measure_univ_ne_zero.mpr hμ_zero) (measure_ne_top μ _)] at h_eq
   simp only [ENNReal.one_toReal, Function.const_one, log_one, mul_zero, lt_self_iff_false,
     or_false] at h_eq
-
-  -- we need some theorem saying that if the rnderiv is one a.e. then the measure is the same, it should be somewhere, but I cannot find it, if there isn't it should not be too hard to prove, using the radon-nikodym theorem, the problem would be more about finding the right statement in full generality, but for this case it should be easy
-
-  sorry
-
+  exact (Measure.rnDeriv_eq_one_iff_eq hμν).mp <| ENNReal.eventuallyEq_of_toReal_eventuallyEq
+    (Measure.rnDeriv_ne_top _ _) (eventually_of_forall fun _ ↦ ENNReal.one_ne_top) h_eq
 
 end kl_nonneg
 
