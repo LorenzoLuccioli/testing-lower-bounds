@@ -74,7 +74,11 @@ lemma integrable_rpow_rnDeriv_compProd_right_iff [CountableOrCountablyGenerated 
 If `ν` is a probability measure then this becomes the more usual definition
 `(a - 1)⁻¹ * log (1 + (a - 1) * Hₐ(μ, ν))`, but this definition maintains some useful properties
 also for a general finite measure `ν`, in particular the integral form
-`Rₐ(μ, ν) = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x) ^ a ∂ν)`. -/
+`Rₐ(μ, ν) = (a - 1)⁻¹ * log (∫ x, ((∂μ/∂ν) x) ^ a ∂ν)`.
+We use EReal.log instead of Real.log, because it is monotone on `ℝ≥0∞`, while the real log is
+monotone only on `(0, ∞)` (`Real.log 0 = 0`). This allows us to transfer inequalities from the
+Hellinger divergence to the Rényi divergence. -/
+
 noncomputable def renyiDiv (a : ℝ) (μ ν : Measure α) : EReal :=
   if a = 1 then kl μ ν
   else (a - 1)⁻¹ * EReal.log ((↑(ν Set.univ) + (a - 1) * (hellingerDiv a μ ν)).toENNReal)
@@ -101,11 +105,11 @@ lemma renyiDiv_of_ne_one (ha_ne_one : a ≠ 1) (μ ν : Measure α) :
   rw [renyiDiv, if_neg ha_ne_one]
 
 @[simp]
-lemma renyiDiv_zero_measure (ν : Measure α) [IsFiniteMeasure ν] :
+lemma renyiDiv_zero_measure_left (ν : Measure α) [IsFiniteMeasure ν] :
     renyiDiv a 0 ν = sign (a - 1) * ⊥ := by
   by_cases ha : a = 1
   · simp [ha]
-  rw_mod_cast [renyiDiv_of_ne_one ha, hellingerDiv_zero_measure, ← mul_assoc, ← neg_sub a 1,
+  rw_mod_cast [renyiDiv_of_ne_one ha, hellingerDiv_zero_measure_left, ← mul_assoc, ← neg_sub a 1,
     ← neg_inv, ← neg_mul_eq_mul_neg, mul_inv_cancel (sub_ne_zero.mpr ha)]
   simp only [EReal.coe_neg, EReal.coe_one, neg_mul, one_mul, ← sub_eq_add_neg,
     EReal.sub_self_le_zero, EReal.toENNReal_of_nonpos, EReal.log_zero]
@@ -187,34 +191,6 @@ lemma renyiDiv_ne_top_iff_of_one_lt (ha : 1 < a) [SigmaFinite μ] [IsFiniteMeasu
   rw [ne_eq, renyiDiv_eq_top_iff_of_one_lt ha]
   simp
 
--- the only advantage of these two lemmas over the previous ones is that they also work for `a = 1`,
--- but I don't think it's worth it to keep them, it's probaly better to switch to the convention of
--- using only `(fun x ↦ ((∂μ/∂ν) x).toReal ^ a)` and not `hellingerFun`
-
--- lemma renyiDiv_eq_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
---     [SigmaFinite μ] [IsFiniteMeasure ν] :
---     renyiDiv a μ ν = ⊤
---       ↔ ¬ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν ∨ ¬ μ ≪ ν := by
---   rw [renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_le ha, hellingerDiv_eq_top_iff_of_one_le ha]
-
--- lemma renyiDiv_ne_top_iff_of_one_le (ha : 1 ≤ a) (μ ν : Measure α)
---     [SigmaFinite μ] [IsFiniteMeasure ν] :
---     renyiDiv a μ ν ≠ ⊤
---       ↔ Integrable (fun x ↦ hellingerFun a ((∂μ/∂ν) x).toReal) ν ∧ μ ≪ ν := by
---   rw [ne_eq, renyiDiv_eq_top_iff_hellingerDiv_eq_top_of_one_le ha,
---     hellingerDiv_eq_top_iff_of_one_le ha]
---   push_neg
---   rfl
-
-
-/-TODO: prove that this ↓ holds forall a, we can use the monotonocity of the Renyi div, but we would
-have to prove it before.
-Maybe it's not true actually, see `Theorem 24` of the paper `Renyi divergence and Kullback-Leibler divergence`.
-It says that `μ ⟂ ν` is equivalent to the fact that for every a `Rₐ(μ, ν) = ⊤`, but it may happen
-that `Rₐ(μ, ν) = ⊤` for some `a ≥ 1`, but not for all `a`, it may not imply that `μ ⟂ ν`. Actually
-this is most likely the case, otherwise we would have that `Rₐ(μ, ν) = ⊤` for some `a` iff
-`Rₐ(μ, ν) = ⊤` for all `a`, which  think is not true.
--/
 lemma renyiDiv_eq_top_iff_mutuallySingular_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
     renyiDiv a μ ν = ⊤ ↔ μ ⟂ₘ ν := by
@@ -222,7 +198,7 @@ lemma renyiDiv_eq_top_iff_mutuallySingular_of_lt_one (ha_nonneg : 0 ≤ a) (ha :
     ← toENNReal_meas_univ_add_mul_hellingerDiv_eq_zero_iff_of_lt_one ha_nonneg ha]
   simp [ha, not_lt_of_gt ha]
 
-lemma renyiDiv_ne_bot_of_le_one (ha : a ≤ 1) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+lemma renyiDiv_ne_bot_of_le_one (ha : a ≤ 1) [IsFiniteMeasure ν] :
     renyiDiv a μ ν ≠ ⊥ := by
   by_cases ha_one : a = 1
   · rw [ha_one, renyiDiv_one]
@@ -247,9 +223,6 @@ lemma renyiDiv_ne_bot [hμ : NeZero μ] [IsFiniteMeasure μ] [IsFiniteMeasure ν
   rcases le_or_lt a 1 with (ha | ha)
   · exact renyiDiv_ne_bot_of_le_one ha
   · exact (renyiDiv_eq_bot_iff_of_one_lt ha).mp.mt hμ.out
-
--- lemma renyiDiv_eq_top_iff_of_one_lt (ha : 1 < a) [SigmaFinite μ] [IsFiniteMeasure ν] :
---     renyiDiv a μ ν = ⊤ ↔ ¬ Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ a) ν ∨ ¬ μ ≪ ν := by
 
 /- TODO: it may be possible to handle also the cases where `ν` is infinite in many of the lemmas
 in this section, since in this case, if `a < 1`, then `Rₐ(μ, ν) = ⊥`, it is likely possible to
@@ -283,7 +256,7 @@ lemma renyiDiv_of_one_le_of_not_ac (ha : 1 ≤ a) (h_ac : ¬ μ ≪ ν)
 
 end RenyiEq
 
-lemma renyiDiv_eq_top_forall_of_eq_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) [NeZero μ]
+lemma forall_renyiDiv_eq_top_of_eq_top_of_lt_one (ha_nonneg : 0 ≤ a) (ha : a < 1) [NeZero μ]
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h : renyiDiv a μ ν = ⊤) :
     ∀ a', 0 ≤ a' → renyiDiv a' μ ν = ⊤ := by
   rw [renyiDiv_eq_top_iff_mutuallySingular_of_lt_one ha_nonneg ha] at h
@@ -373,15 +346,13 @@ lemma coe_cgf_llr_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
     cgf (llr μ ν) ν a = (a - 1) * renyiDiv a μ ν := by
   rw_mod_cast [renyiDiv_eq_log_integral_of_lt_one ha_pos ha, ← mul_assoc,
     mul_inv_cancel (by linarith), one_mul, cgf, mgf]
-  have h_ms : ¬ μ ⟂ₘ ν := by
-    intro h
-    exact hν.out <| Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular hνμ h.symm
+  have h_ms : ¬ μ ⟂ₘ ν :=
+    fun h ↦ hν.out <| Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular hνμ h.symm
   rw [EReal.log_ofReal_of_pos]
   swap
-  · refine integral_rpow_rnDeriv_pos_iff_mutuallySingular ha_pos.ne' ?_ |>.mpr h_ms
+  · refine integral_rpow_rnDeriv_pos_iff_not_mutuallySingular ha_pos.ne' ?_ |>.mpr h_ms
     exact integrable_rpow_rnDeriv_of_lt_one ha_pos.le ha
-  congr 2
-  exact integral_congr_ae (exp_mul_llr hνμ)
+  rw [integral_congr_ae (exp_mul_llr hνμ)]
 
 lemma cgf_llr_of_lt_one (ha_pos : 0 < a) (ha : a < 1)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hνμ : ν ≪ μ) :
@@ -402,18 +373,12 @@ lemma coe_cgf_llr' (ha_pos : 0 < a) [hν : NeZero μ] [IsFiniteMeasure μ] [IsFi
     cgf (llr μ ν) μ a = a * renyiDiv (1 + a) μ ν := by
   rw_mod_cast [renyiDiv_eq_log_integral' (by linarith) (by linarith) h_int hμν, ← mul_assoc,
     add_sub_cancel_left, mul_inv_cancel ha_pos.ne', one_mul, cgf, mgf]
-  have h_ms : ¬ μ ⟂ₘ ν := by
-    intro h
-    exact hν.out <| Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular hμν h
-  rw [EReal.log_ofReal_of_pos]
-  swap;
-  · rw [← integral_rnDeriv_smul hμν]
-    simp_rw [smul_eq_mul, mul_comm ((∂μ/∂ν) _).toReal,
-      ← Real.rpow_add_one' ENNReal.toReal_nonneg (by linarith), add_comm a]
-    exact integral_rpow_rnDeriv_pos_iff_mutuallySingular (by linarith) h_int |>.mpr h_ms
-  congr 2
-  refine integral_congr_ae (exp_mul_llr' hμν)
-
+  have h_ms : ¬ μ ⟂ₘ ν :=
+    fun h ↦ hν.out <| Measure.eq_zero_of_absolutelyContinuous_of_mutuallySingular hμν h
+  rw [EReal.log_ofReal_of_pos _, integral_congr_ae (exp_mul_llr' hμν)]
+  simp_rw [← integral_rnDeriv_smul hμν, smul_eq_mul, mul_comm ((∂μ/∂ν) _).toReal,
+    ← Real.rpow_add_one' ENNReal.toReal_nonneg (by linarith), add_comm a]
+  exact integral_rpow_rnDeriv_pos_iff_not_mutuallySingular (by linarith) h_int |>.mpr h_ms
 
 lemma cgf_llr' (ha_pos : 0 < a) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (h_int : Integrable (fun x ↦ ((∂μ/∂ν) x).toReal ^ (1 + a)) ν) (hμν : μ ≪ ν) :
@@ -594,8 +559,8 @@ lemma renyiDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α] (ha_pos : 
     (hellingerDiv_comp_le_compProd ha_pos μ ν κ η)
 
 lemma renyiDiv_comp_left_le [Nonempty α] [StandardBorelSpace α]
-    [CountableOrCountablyGenerated α β] (ha_pos : 0 < a) (μ : Measure α) [IsFiniteMeasure μ]
-    (κ η : kernel α β) [IsFiniteKernel κ] [∀ a, NeZero (κ a)] [IsFiniteKernel η] :
+    (ha_pos : 0 < a) (μ : Measure α) [IsFiniteMeasure μ]
+    (κ η : kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     renyiDiv a (μ ∘ₘ κ) (μ ∘ₘ η) ≤ condRenyiDiv a κ η μ :=
   le_renyiDiv_of_le_hellingerDiv (Measure.snd_compProd μ η ▸ Measure.snd_univ)
     (hellingerDiv_comp_le_compProd ha_pos μ μ κ η)
