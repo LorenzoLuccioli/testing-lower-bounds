@@ -7,6 +7,7 @@ import TestingLowerBounds.Testing.Binary
 import TestingLowerBounds.FDiv.Basic
 import Mathlib.Analysis.Calculus.Monotone
 import Mathlib.Analysis.Convex.Deriv
+import TestingLowerBounds.ForMathlib.MonotoneOnTendsto
 
 /-!
 # Hockey-stick divergence
@@ -50,71 +51,6 @@ example (f : ℝ → ℝ)  : rightDeriv f = 0 := by
 
   sorry
 
-#check Monotone.tendsto_nhdsWithin_Iio
--- theorem Monotone.tendsto_nhdsWithin_Iio {α β : Type*} [LinearOrder α] [TopologicalSpace α]
---     [OrderTopology α] [ConditionallyCompleteLinearOrder β] [TopologicalSpace β] [OrderTopology β]
---     {f : α → β} (Mf : Monotone f) (x : α) : Tendsto f (𝓝[<] x) (𝓝 (sSup (f '' Iio x))) := by
---   rcases eq_empty_or_nonempty (Iio x) with (h | h); · simp [h]
---   refine tendsto_order.2 ⟨fun l hl => ?_, fun m hm => ?_⟩
---   · obtain ⟨z, zx, lz⟩ : ∃ a : α, a < x ∧ l < f a := by
---       simpa only [mem_image, exists_prop, exists_exists_and_eq_and] using
---         exists_lt_of_lt_csSup (h.image _) hl
---     exact mem_of_superset (Ioo_mem_nhdsWithin_Iio' zx) fun y hy => lz.trans_le (Mf hy.1.le)
---   · refine mem_of_superset self_mem_nhdsWithin fun _ hy => lt_of_le_of_lt ?_ hm
---     exact le_csSup (Mf.map_bddAbove bddAbove_Iio) (mem_image_of_mem _ hy)
--- #align monotone.tendsto_nhds_within_Iio Monotone.tendsto_nhdsWithin_Iio
-
-lemma MonotoneOn.tendsto_nhdsWithin_Iio {α β : Type*} [LinearOrder α] [TopologicalSpace α]
-    [OrderTopology α] [ConditionallyCompleteLinearOrder β] [TopologicalSpace β] [OrderTopology β]
-    {f : α → β} {x : α} (Mf : MonotoneOn f (Iio x)) (h_bdd : BddAbove (f '' Iio x)) :
-    Tendsto f (𝓝[<] x) (𝓝 (sSup (f '' Iio x))) := by
-  rcases eq_empty_or_nonempty (Iio x) with (h | h); · simp [h]
-  refine tendsto_order.2 ⟨fun l hl => ?_, fun m hm => ?_⟩
-  · obtain ⟨z, zx, lz⟩ : ∃ a : α, a < x ∧ l < f a := by
-      simpa only [mem_image, exists_prop, exists_exists_and_eq_and] using
-        exists_lt_of_lt_csSup (h.image _) hl
-    exact mem_of_superset (Ioo_mem_nhdsWithin_Iio' zx) fun y hy => lz.trans_le (Mf zx hy.2 hy.1.le)
-  · refine mem_of_superset self_mem_nhdsWithin fun y hy => lt_of_le_of_lt ?_ hm
-    exact le_csSup h_bdd (mem_image_of_mem _ hy)
-
---This alternative version works with monotonicity on finite intervals, but requires the first space to be densely ordered to handle the case where Ioo y x = ∅
-lemma MonotoneOn.tendsto_nhdsWithin_Iio' {α β : Type*} [LinearOrder α]
-    [TopologicalSpace α] [OrderTopology α]
-    [ConditionallyCompleteLinearOrder β] [TopologicalSpace β] [OrderTopology β]
-    {f : α → β} {x y : α} (h_nonempty : (Ioo y x).Nonempty) (Mf : MonotoneOn f (Ioo y x))
-    (h_bdd : BddAbove (f '' Ioo y x)) :
-    Tendsto f (𝓝[<] x) (𝓝 (sSup (f '' Ioo y x))) := by
-  -- rcases eq_empty_or_nonempty (Ioo y x) with (h | h)
-  -- · exact (not_nonempty_empty (h ▸ nonempty_Ioo.mpr hxy)).elim
-  refine tendsto_order.2 ⟨fun l hl => ?_, fun m hm => ?_⟩
-  · obtain ⟨z, ⟨yz, zx⟩, lz⟩ : ∃ a : α, a ∈ Ioo y x ∧ l < f a := by
-      simpa only [mem_image, exists_prop, exists_exists_and_eq_and] using
-        exists_lt_of_lt_csSup (h_nonempty.image _) hl
-    refine mem_of_superset (Ioo_mem_nhdsWithin_Iio' zx) fun w hw => ?_
-    exact lz.trans_le <| Mf ⟨yz, zx⟩ ⟨yz.trans_le hw.1.le, hw.2⟩ hw.1.le
-  ·
-    have ⟨_, ha, hb⟩ := h_nonempty
-    have hxy : y < x := by exact h_nonempty.2.1.trans h_nonempty.2.2
-    refine mem_of_superset (Ioo_mem_nhdsWithin_Iio' hxy) fun w hw => lt_of_le_of_lt ?_ hm
-    refine le_csSup h_bdd (mem_image_of_mem _ ?_)
-    simp [hw]
-
---this may be something to write on zulip, there should not be any bugs with (kernel)
-lemma MonotoneOn.tendsto_nhdsWithin_Iio' {α β : Type*} [LinearOrder α]
-    {x y : α} (h_nonempty : (Ioo y x).Nonempty) :
-    True := by
-  have ⟨_, ha, hb⟩ := h_nonempty
-  have hxy : y < x := by exact ha.trans hb --this works
-  have hxy : y < x := by exact h_nonempty.2.1.trans h_nonempty.2.2 --this does not work
-  simp
-
---this is already in mathlib, this is just an alternative proof using the more general version, if we substitute it remove the prime (') at the end of the name
-/-- A monotone map has a limit to the left of any point `x`, equal to `sSup (f '' (Iio x))`. -/
-theorem Monotone.tendsto_nhdsWithin_Iio' {α β : Type*} [LinearOrder α] [TopologicalSpace α]
-    [OrderTopology α] [ConditionallyCompleteLinearOrder β] [TopologicalSpace β] [OrderTopology β]
-    {f : α → β} (Mf : Monotone f) (x : α) : Tendsto f (𝓝[<] x) (𝓝 (sSup (f '' Iio x))) :=
-  MonotoneOn.tendsto_nhdsWithin_Iio (Mf.monotoneOn _) (Mf.map_bddAbove bddAbove_Iio)
-
 namespace Convex
 
 lemma hasRightDerivAt_of_convexOn {S : Set ℝ} {f : ℝ → ℝ} {x : ℝ}
@@ -124,6 +60,17 @@ lemma hasRightDerivAt_of_convexOn {S : Set ℝ} {f : ℝ → ℝ} {x : ℝ}
   simp_rw [hasFDerivWithinAt_iff_hasDerivWithinAt]
   simp_rw [hasDerivWithinAt_iff_tendsto_slope]
   simp only [mem_Ioi, lt_self_iff_false, not_false_eq_true, diff_singleton_eq_self]
+  have h_slope_mono : MonotoneOn (slope f x) (Set.Ioi x) := by
+
+    sorry
+  refine ⟨?_, ?_⟩
+  ·
+    refine
+    sorry
+  ·
+    refine MonotoneOn.tendsto_nhdsWithin_Ioi h_slope_mono ?_
+    sorry
+
 
 
   --we need some lemma that says that if a function is monotone then it has a right limit at every point, we have
