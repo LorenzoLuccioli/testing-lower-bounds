@@ -53,37 +53,26 @@ example (f : ℝ → ℝ)  : rightDeriv f = 0 := by
 
 namespace Convex
 
-lemma hasRightDerivAt_of_convexOn {S : Set ℝ} {f : ℝ → ℝ} {x : ℝ}
-    (hfc : ConvexOn ℝ S f) (hx : x ∈ S) :
+#check convexOn_iff_slope_mono_adjacent
+
+-- TODO: this can be generalized to a set S, where the function is convex, but I still need to figure out what hp to require, since the minimal assumption I think is that there exist a right interval of x that is contained in S (so x itself does not have to be in S), i.e. (x, y) ⊆ S, I don't know if. To generalize we will need MonotoneOn.tendsto_nhdsWithin_Ioo_right. However there are dirrerent kinds of sufficient conditions that could be given, for example S open and x in S or x in the interior of S. Discuss this with Remy. Maybe the minimal hp I described is not sufficient, I also need to assure some kind of boundedness of the slope, this should be assured if x is in the interior of S, because then we can take a point to the left of x but stilll inside S and use the monotonicity of the solpe in S, but can we do better?
+lemma hasRightDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     DifferentiableWithinAt ℝ f (Set.Ioi x) x := by
-  unfold DifferentiableWithinAt
-  simp_rw [hasFDerivWithinAt_iff_hasDerivWithinAt]
-  simp_rw [hasDerivWithinAt_iff_tendsto_slope]
+  simp_rw [DifferentiableWithinAt, hasFDerivWithinAt_iff_hasDerivWithinAt,
+    hasDerivWithinAt_iff_tendsto_slope]
   simp only [mem_Ioi, lt_self_iff_false, not_false_eq_true, diff_singleton_eq_self]
-  have h_slope_mono : MonotoneOn (slope f x) (Set.Ioi x) := by
-
-    sorry
-  refine ⟨?_, ?_⟩
-  ·
-    refine
-    sorry
-  ·
-    refine MonotoneOn.tendsto_nhdsWithin_Ioi h_slope_mono ?_
-    sorry
-
-
-
-  --we need some lemma that says that if a function is monotone then it has a right limit at every point, we have
-
-  use 0
-  --say that the incremental ratio is increasing
-
-  -- have h_monotone :
-  --so there exist a limit
-
-  --use that limit as f'
-  --show that the limit satisfies the definition of derivative
-  sorry
+  have h_mono : MonotoneOn (slope f x) (Set.Ioi x) := by
+    refine monotoneOn_iff_forall_lt.mpr fun y hy z hz hz' ↦ ?_
+    simp_rw [slope_def_field]
+    exact ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_lt hy))
+      (Ne.symm (ne_of_lt hz)) hz'.le
+  refine ⟨sInf (slope f x '' Ioi x) • ContinuousLinearMap.id _ _, ?_⟩
+  convert MonotoneOn.tendsto_nhdsWithin_Ioi h_mono ?_
+  · simp
+  · refine bddBelow_iff_subset_Ici.mpr ⟨(slope f x (x - 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
+    simp_rw [mem_Ici, ← hz', slope_def_field]
+    refine ConvexOn.secant_mono hfc trivial trivial trivial (pred_ne_self x)
+      (Ne.symm (ne_of_lt hz)) (by linarith [mem_Ioi.mp hz])
 
 --we want some version of ConvexOn.monotoneOn_derivWithin that works for the right derivative, we cannot directly use this because here the set S is fixed, while in our case it depends on x
 --but first we need to show that the function is actually differentiable. maybe for now I prove this lemma with this hp and then we prove the differentiability and remove the hp
@@ -123,18 +112,6 @@ lemma rightDeriv_mono (f : ℝ → ℝ) (h : ConvexOn ℝ Set.univ f) (x y : ℝ
 
   sorry
 
-lemma hasRightDerivAt_of_convexOn {S : Set ℝ} {f : ℝ → ℝ} {x : ℝ}
-    (hfc : ConvexOn ℝ S f) (hx : x ∈ S) :
-    DifferentiableWithinAt ℝ f (Set.Ioi x) x := by
-
-  --say that the incremental ratio is increasing
-
-  -- have h_monotone :
-  --so there exist a limit
-
-  --use that limit as f'
-  --show that the limit satisfies the definition of derivative
-  sorry
 
 #check convexOn_iff_slope_mono_adjacent
 #check ConvexOn.right_deriv_le_slope
@@ -143,7 +120,7 @@ noncomputable
 def _root_.StieltjesFunction.rightDeriv_of_convex (f : ℝ → ℝ) (hf : ConvexOn ℝ Set.univ f) : StieltjesFunction where
   toFun := rightDeriv f
   mono' _ _ := by
-    refine ConvexOn.monotoneOn_derivWithin ?_ ?_
+    -- refine ConvexOn.monotoneOn_derivWithin ?_ ?_
     sorry
   right_continuous' _ := by sorry
 
@@ -162,7 +139,7 @@ def hockeyStickFun (γ x : ℝ) : ℝ := if γ < 1 then max 0 (γ - x) else max 
 
 noncomputable
 def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (hockeyStickFun γ) μ ν
-  right_continuous' _ := sorry
+  -- right_continuous' _ := sorry
 
 noncomputable
 def curvatureMeasure (f : ℝ → ℝ) {s : Set ℝ} (hf : ConvexOn ℝ s f) : Measure s := sorry
