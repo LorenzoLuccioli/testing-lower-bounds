@@ -74,6 +74,24 @@ lemma hasRightDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn �
     refine ConvexOn.secant_mono hfc trivial trivial trivial (pred_ne_self x)
       (Ne.symm (ne_of_lt hz)) (by linarith [mem_Ioi.mp hz])
 
+lemma hasLeftDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
+    DifferentiableWithinAt ℝ f (Set.Iio x) x := by
+  simp_rw [DifferentiableWithinAt, hasFDerivWithinAt_iff_hasDerivWithinAt,
+    hasDerivWithinAt_iff_tendsto_slope]
+  simp only [mem_Iio, lt_self_iff_false, not_false_eq_true, diff_singleton_eq_self]
+  have h_mono : MonotoneOn (slope f x) (Set.Iio x) := by
+    refine monotoneOn_iff_forall_lt.mpr fun y hy z hz hz' ↦ ?_
+    simp_rw [slope_def_field]
+    exact ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hy))
+      (Ne.symm (ne_of_gt hz)) hz'.le
+  refine ⟨sSup (slope f x '' Iio x) • ContinuousLinearMap.id _ _, ?_⟩
+  convert MonotoneOn.tendsto_nhdsWithin_Iio h_mono ?_
+  · simp
+  · refine bddAbove_iff_subset_Iic.mpr ⟨(slope f x (x + 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
+    simp_rw [mem_Iic, ← hz', slope_def_field]
+    refine ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hz))
+      (succ_ne_self x) (by linarith [mem_Iio.mp hz])
+
 --we want some version of ConvexOn.monotoneOn_derivWithin that works for the right derivative, we cannot directly use this because here the set S is fixed, while in our case it depends on x
 --but first we need to show that the function is actually differentiable. maybe for now I prove this lemma with this hp and then we prove the differentiability and remove the hp
 #check ConvexOn.monotoneOn_derivWithin
