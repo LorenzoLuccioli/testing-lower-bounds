@@ -146,40 +146,20 @@ lemma leftDeriv_eq_sSup_slope_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : Con
 #check ConvexOn.monotoneOn_derivWithin
 #check ConvexOn.right_deriv_le_slope
 #check ConvexOn.slope_le_left_deriv
--- lemma monotoneOn_derivWithin (hfc : ConvexOn ℝ S f) (hfd : DifferentiableOn ℝ f S) :
---     MonotoneOn (derivWithin f S) S := by
---   intro x hx y hy hxy
---   rcases eq_or_lt_of_le hxy with rfl | hxy'
---   · rfl
---   exact (hfc.derivWithin_le_slope hx hy hxy' (hfd x hx)).trans
---     (hfc.slope_le_derivWithin hx hy hxy' (hfd y hy))
 
-lemma monotoneOn_rightDeriv {S : Set ℝ} {f : ℝ → ℝ} (hfc : ConvexOn ℝ S f)
-    (hfrd : ∀ x ∈ S, DifferentiableWithinAt ℝ f (Set.Ioi x) x)
-    (hfld : ∀ x ∈ S, DifferentiableWithinAt ℝ f (Set.Iio x) x) :
-    MonotoneOn (rightDeriv f) S := by
-  intro x hx y hy hxy
-  rcases eq_or_lt_of_le hxy with rfl | hxy'
-  · rfl
-  unfold rightDeriv
-  have h1 := ConvexOn.right_deriv_le_slope hfc hx hy hxy' (hfrd x hx)
-  have h2 := ConvexOn.slope_le_left_deriv hfc hx hy hxy' (hfld y hy)
-  have h3 := h1.trans h2
-  refine h3.trans ?_
+lemma rightDeriv_mono {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
+    Monotone (rightDeriv f) := by
+  intro x y hxy
+  rcases eq_or_lt_of_le hxy with rfl | hxy; · rfl
+  simp_rw [rightDeriv_eq_sInf_slope_of_convexOn _ hf_cvx]
+  refine csInf_le_of_le (b := slope f x y) (bddBelow_slope_Ioi_of_convexOn x hf_cvx)
+    ⟨y, by simp [hxy]⟩ (le_csInf nonempty_of_nonempty_subtype ?_)
+  rintro a ⟨z, yz, rfl⟩
+  rw [slope_comm]
+  exact slope_mono hf_cvx trivial (mem_diff_of_mem trivial hxy.ne)
+    (mem_diff_of_mem trivial (Ne.symm (ne_of_lt yz))) (hxy.trans yz).le
 
-
-
-
-
-  sorry
-
-  -- exact (hfc.rightDeriv_le_slope hx hy hxy' (hfd x hx)).trans (hfc.slope_le_rightDeriv hx hy hxy' (hfd y hy))
-
-
-lemma rightDeriv_mono (f : ℝ → ℝ) (h : ConvexOn ℝ Set.univ f) (x y : ℝ) (hxy : x ≤ y) : rightDeriv f x ≤ rightDeriv f y := by
-
-  sorry
-
+lemma
 
 #check convexOn_iff_slope_mono_adjacent
 #check ConvexOn.right_deriv_le_slope
