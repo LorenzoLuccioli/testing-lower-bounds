@@ -44,8 +44,8 @@ def leftDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Set.Ii
 
 lemma leftDeriv_def (f : ℝ → ℝ) (x : ℝ) : leftDeriv f x = derivWithin f (Set.Iio x) x := rfl
 
-lemma rightDeriv_eq_leftDeriv (f : ℝ → ℝ) (x : ℝ) :
-    rightDeriv f x = - leftDeriv (f ∘ fun y ↦ -y) (-x) := by
+lemma rightDeriv_eq_leftDeriv_apply (f : ℝ → ℝ) (x : ℝ) :
+    rightDeriv f x = - leftDeriv (f ∘ Neg.neg) (-x) := by
   have h_map : MapsTo (fun y ↦ -y) (Set.Iio (-x)) (Set.Ioi x) :=
     fun _ hy ↦ mem_Ioi.mpr (lt_neg_of_lt_neg hy)
   have h_map' : MapsTo (fun y ↦ -y) (Set.Ioi x) (Set.Iio (-x)) :=
@@ -64,9 +64,17 @@ lemma rightDeriv_eq_leftDeriv (f : ℝ → ℝ) (x : ℝ) :
   swap; · exact uniqueDiffWithinAt_Iio _
   simp only [mul_neg, mul_one, neg_neg]
 
-lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) (x : ℝ) :
-    leftDeriv f x = - rightDeriv (f ∘ fun y ↦ -y) (-x) := by
-  simp [rightDeriv_eq_leftDeriv, Function.comp.assoc]
+lemma rightDeriv_eq_leftDeriv (f : ℝ → ℝ) : rightDeriv f = - leftDeriv (f ∘ Neg.neg) ∘ Neg.neg := by
+  ext x
+  simp [rightDeriv_eq_leftDeriv_apply]
+
+lemma leftDeriv_eq_rightDeriv_apply (f : ℝ → ℝ) (x : ℝ) :
+    leftDeriv f x = - rightDeriv (f ∘ Neg.neg) (-x) := by
+  simp [rightDeriv_eq_leftDeriv_apply, Function.comp.assoc]
+
+lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) : leftDeriv f = - rightDeriv (f ∘ Neg.neg) ∘ Neg.neg := by
+  ext x
+  simp [leftDeriv_eq_rightDeriv_apply]
 
 --need some hp on the existence of the limit? We probabily don't need this lemma
 lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun y ↦ (f y - f x) / (y - x)) (𝓝[>] x) (𝓝 (rightDeriv f x)) := by sorry
