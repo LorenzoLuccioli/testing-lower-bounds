@@ -189,7 +189,11 @@ lemma rightDeriv_mono {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
   exact slope_mono hf_cvx trivial (mem_diff_of_mem trivial hxy.ne)
     (mem_diff_of_mem trivial (Ne.symm (ne_of_lt yz))) (hxy.trans yz).le
 
-lemma
+lemma leftDeriv_mono {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
+    Monotone (leftDeriv f) := by
+  rw [leftDeriv_eq_rightDeriv]
+  refine (Monotone.comp_antitone ?_ fun _ _ h ↦ neg_le_neg_iff.mpr h).neg
+  exact rightDeriv_mono (ConvexOn.comp_neg hf_cvx)
 
 #check convexOn_iff_slope_mono_adjacent
 #check ConvexOn.right_deriv_le_slope
