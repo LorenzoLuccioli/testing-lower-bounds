@@ -64,6 +64,10 @@ lemma rightDeriv_eq_leftDeriv (f : ℝ → ℝ) (x : ℝ) :
   swap; · exact uniqueDiffWithinAt_Iio _
   simp only [mul_neg, mul_one, neg_neg]
 
+lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) (x : ℝ) :
+    leftDeriv f x = - rightDeriv (f ∘ fun y ↦ -y) (-x) := by
+  simp [rightDeriv_eq_leftDeriv, Function.comp.assoc]
+
 --need some hp on the existence of the limit? We probabily don't need this lemma
 lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun y ↦ (f y - f x) / (y - x)) (𝓝[>] x) (𝓝 (rightDeriv f x)) := by sorry
 
