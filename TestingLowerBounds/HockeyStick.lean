@@ -42,17 +42,8 @@ lemma rightDeriv_def (f : ℝ → ℝ) (x : ℝ) : rightDeriv f x = derivWithin 
 noncomputable
 def leftDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Set.Iio x) x
 
---need some hp on the existence of the limit?
+--need some hp on the existence of the limit? We probabily don't need this lemma
 lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun y ↦ (f y - f x) / (y - x)) (𝓝[>] x) (𝓝 (rightDeriv f x)) := by sorry
-
-example (f : ℝ → ℝ)  : rightDeriv f = 0 := by
-  ext x
-  unfold rightDeriv
-  unfold derivWithin
-  unfold fderivWithin
-  simp
-
-  sorry
 
 namespace Convex
 
