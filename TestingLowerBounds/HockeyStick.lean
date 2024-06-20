@@ -47,19 +47,34 @@ lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun
 
 namespace Convex
 
+section Slope
+
+variable {𝕜 : Type*} [LinearOrderedField 𝕜] {s : Set 𝕜} {f : 𝕜 → 𝕜} {x : 𝕜}
+
+--this could be put either in `Mathlib.Analysis.Convex.Slope` or in `Mathlib.LinearAlgebra.AffineSpace.Slope`, but either way I would have to import the other file. Maybe there is some more suitable file that already imports both.
+-- try to do a draft PR in mathlib adding it to Convex.Slope, the github bot should tell us how much of a change it is to add the import, then we can decide if it's worth it
+lemma slope_mono (hfc : ConvexOn 𝕜 s f) (hx : x ∈ s) : MonotoneOn (slope f x) (s \ {x}) := by
+  intro y hy z hz hz'
+  simp_rw [slope_def_field]
+  exact ConvexOn.secant_mono hfc hx (mem_of_mem_diff hy) (mem_of_mem_diff hz)
+    (not_mem_of_mem_diff hy :) (not_mem_of_mem_diff hz :) hz'
+
 lemma bddBelow_slope_Ioi_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     BddBelow (slope f x '' Ioi x) := by
   refine bddBelow_iff_subset_Ici.mpr ⟨(slope f x (x - 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
-  simp_rw [mem_Ici, ← hz', slope_def_field]
-  refine ConvexOn.secant_mono hfc trivial trivial trivial (pred_ne_self x)
-    (Ne.symm (ne_of_lt hz)) (by linarith [mem_Ioi.mp hz])
+  simp_rw [mem_Ici, ← hz']
+  exact slope_mono hfc trivial (by simp) (mem_diff_of_mem trivial (mem_Ioi.mp hz).ne')
+    (by linarith [mem_Ioi.mp hz])
 
 lemma bddAbove_slope_Iio_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     BddAbove (slope f x '' Iio x) := by
   refine bddAbove_iff_subset_Iic.mpr ⟨(slope f x (x + 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
-  simp_rw [mem_Iic, ← hz', slope_def_field]
-  refine ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hz))
-    (succ_ne_self x) (by linarith [mem_Iio.mp hz])
+  simp_rw [mem_Iic, ← hz']
+  exact slope_mono hfc (mem_univ x) (mem_diff_of_mem trivial (mem_Iio.mp hz).ne) (by simp)
+    (by linarith [mem_Iio.mp hz])
+
+end Slope
+
 
 #check convexOn_iff_slope_mono_adjacent
 
