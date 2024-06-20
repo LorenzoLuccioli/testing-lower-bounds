@@ -47,6 +47,20 @@ lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun
 
 namespace Convex
 
+lemma bddBelow_slope_Ioi_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
+    BddBelow (slope f x '' Ioi x) := by
+  refine bddBelow_iff_subset_Ici.mpr ⟨(slope f x (x - 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
+  simp_rw [mem_Ici, ← hz', slope_def_field]
+  refine ConvexOn.secant_mono hfc trivial trivial trivial (pred_ne_self x)
+    (Ne.symm (ne_of_lt hz)) (by linarith [mem_Ioi.mp hz])
+
+lemma bddAbove_slope_Iio_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
+    BddAbove (slope f x '' Iio x) := by
+  refine bddAbove_iff_subset_Iic.mpr ⟨(slope f x (x + 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
+  simp_rw [mem_Iic, ← hz', slope_def_field]
+  refine ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hz))
+    (succ_ne_self x) (by linarith [mem_Iio.mp hz])
+
 #check convexOn_iff_slope_mono_adjacent
 
 -- TODO: this can be generalized to a set S, where the function is convex, but I still need to figure out what hp to require, since the minimal assumption I think is that there exist a right interval of x that is contained in S (so x itself does not have to be in S), i.e. (x, y) ⊆ S, I don't know if. To generalize we will need MonotoneOn.tendsto_nhdsWithin_Ioo_right. However there are dirrerent kinds of sufficient conditions that could be given, for example S open and x in S or x in the interior of S. Discuss this with Remy. Maybe the minimal hp I described is not sufficient, I also need to assure some kind of boundedness of the slope, this should be assured if x is in the interior of S, because then we can take a point to the left of x but still inside S and use the monotonicity of the solpe in S, but can we do better?
@@ -60,11 +74,7 @@ lemma hasRightDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn �
     simp_rw [slope_def_field]
     exact ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_lt hy))
       (Ne.symm (ne_of_lt hz)) hz'.le
-  convert MonotoneOn.tendsto_nhdsWithin_Ioi h_mono ?_
-  refine bddBelow_iff_subset_Ici.mpr ⟨(slope f x (x - 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
-  simp_rw [mem_Ici, ← hz', slope_def_field]
-  refine ConvexOn.secant_mono hfc trivial trivial trivial (pred_ne_self x)
-    (Ne.symm (ne_of_lt hz)) (by linarith [mem_Ioi.mp hz])
+  exact MonotoneOn.tendsto_nhdsWithin_Ioi h_mono (bddBelow_slope_Ioi_of_convexOn x hfc)
 
 --maybe this isn0t even really needed, anyway it may be worth it to change the name, same with the left version
 lemma hasRightDerivAt_of_convexOn' {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
@@ -80,11 +90,7 @@ lemma hasLeftDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ
     simp_rw [slope_def_field]
     exact ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hy))
       (Ne.symm (ne_of_gt hz)) hz'.le
-  convert MonotoneOn.tendsto_nhdsWithin_Iio h_mono ?_
-  refine bddAbove_iff_subset_Iic.mpr ⟨(slope f x (x + 1)), fun y ⟨z, hz, hz'⟩ ↦ ?_⟩
-  simp_rw [mem_Iic, ← hz', slope_def_field]
-  refine ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hz))
-    (succ_ne_self x) (by linarith [mem_Iio.mp hz])
+  exact MonotoneOn.tendsto_nhdsWithin_Iio h_mono (bddAbove_slope_Iio_of_convexOn x hfc)
 
 lemma hasLeftDerivAt_of_convexOn' {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     DifferentiableWithinAt ℝ f (Set.Iio x) x :=
