@@ -42,6 +42,28 @@ lemma rightDeriv_def (f : ℝ → ℝ) (x : ℝ) : rightDeriv f x = derivWithin 
 noncomputable
 def leftDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Set.Iio x) x
 
+lemma leftDeriv_def (f : ℝ → ℝ) (x : ℝ) : leftDeriv f x = derivWithin f (Set.Iio x) x := rfl
+
+lemma rightDeriv_eq_leftDeriv (f : ℝ → ℝ) (x : ℝ) :
+    rightDeriv f x = - leftDeriv (f ∘ fun y ↦ -y) (-x) := by
+  have h_map : MapsTo (fun y ↦ -y) (Set.Iio (-x)) (Set.Ioi x) :=
+    fun _ hy ↦ mem_Ioi.mpr (lt_neg_of_lt_neg hy)
+  have h_map' : MapsTo (fun y ↦ -y) (Set.Ioi x) (Set.Iio (-x)) :=
+    fun _ hy ↦ mem_Iio.mpr (neg_lt_neg hy)
+  by_cases hf_diff : DifferentiableWithinAt ℝ f (Ioi x) x
+  swap
+  · rw [rightDeriv_def, leftDeriv_def, derivWithin_zero_of_not_differentiableWithinAt hf_diff,
+      derivWithin_zero_of_not_differentiableWithinAt, neg_zero]
+    contrapose! hf_diff
+    convert DifferentiableWithinAt.comp x hf_diff ((differentiable_neg _).differentiableWithinAt)
+      h_map' using 1
+    simp [Function.comp.assoc]
+  simp_rw [leftDeriv]
+  rw [derivWithin.comp _ ((neg_neg x).symm ▸ hf_diff) (differentiable_neg _).differentiableWithinAt
+    h_map (uniqueDiffWithinAt_Iio (-x)), neg_neg, ← rightDeriv_def, derivWithin_neg]
+  swap; · exact uniqueDiffWithinAt_Iio _
+  simp only [mul_neg, mul_one, neg_neg]
+
 --need some hp on the existence of the limit? We probabily don't need this lemma
 lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun y ↦ (f y - f x) / (y - x)) (𝓝[>] x) (𝓝 (rightDeriv f x)) := by sorry
 
