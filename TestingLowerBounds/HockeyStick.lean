@@ -81,6 +81,24 @@ lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun
 
 namespace Convex
 
+lemma ConvexOn.comp_neg {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
+    [OrderedAddCommMonoid β] [Module 𝕜 F] [SMul 𝕜 β] {f : F → β} {s : Set F}
+    (hf : ConvexOn 𝕜 s f) :
+    ConvexOn 𝕜 (-s) (f ∘ Neg.neg) := by
+  rcases hf with ⟨hs, hfc⟩
+  refine ⟨hs.neg, fun x hx y hy a b ha hb hab ↦ ?_⟩
+  simp only [Function.comp_apply, neg_add_rev]
+  simp_rw [← smul_neg, add_comm]
+  exact hfc hx hy ha hb hab
+
+lemma ConvexOn.comp_neg_iff {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
+    [OrderedAddCommMonoid β] [Module 𝕜 F] [SMul 𝕜 β] {f : F → β} {s : Set F}  :
+    ConvexOn 𝕜 (-s) (f ∘ Neg.neg) ↔ ConvexOn 𝕜 s f := by
+  refine ⟨fun h ↦ ?_, fun h ↦ ConvexOn.comp_neg h⟩
+  convert ConvexOn.comp_neg h
+  · exact (InvolutiveNeg.neg_neg s).symm
+  · simp [Function.comp.assoc, neg_comp_neg]
+
 section Slope
 
 variable {𝕜 : Type*} [LinearOrderedField 𝕜] {s : Set 𝕜} {f : 𝕜 → 𝕜} {x : 𝕜}
