@@ -144,7 +144,7 @@ lemma hasRightDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn �
   exact MonotoneOn.tendsto_nhdsWithin_Ioi h_mono (bddBelow_slope_Ioi_of_convexOn x hfc)
 
 --maybe this isn0t even really needed, anyway it may be worth it to change the name, same with the left version
-lemma hasRightDerivAt_of_convexOn' {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
+lemma differentiableWithinAt_Ioi_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     DifferentiableWithinAt ℝ f (Set.Ioi x) x :=
   (hasRightDerivAt_of_convexOn x hfc).differentiableWithinAt
 
@@ -159,7 +159,7 @@ lemma hasLeftDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ
       (Ne.symm (ne_of_gt hz)) hz'.le
   exact MonotoneOn.tendsto_nhdsWithin_Iio h_mono (bddAbove_slope_Iio_of_convexOn x hfc)
 
-lemma hasLeftDerivAt_of_convexOn' {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
+lemma differentiableWithinAt_Iio_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     DifferentiableWithinAt ℝ f (Set.Iio x) x :=
   (hasLeftDerivAt_of_convexOn x hfc).differentiableWithinAt
 
