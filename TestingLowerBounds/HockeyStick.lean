@@ -249,15 +249,12 @@ end ConvexOn
 #check ConvexOn.right_deriv_le_slope
 
 noncomputable
-def _root_.StieltjesFunction.rightDeriv_of_convex (f : ℝ → ℝ) (hf : ConvexOn ℝ Set.univ f) : StieltjesFunction where
+def _root_.StieltjesFunction.rightDeriv_of_convex (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : StieltjesFunction where
   toFun := rightDeriv f
-  mono' _ _ := by
-    -- refine ConvexOn.monotoneOn_derivWithin ?_ ?_
-    sorry
-  right_continuous' _ := by sorry
+  mono' _ _ := fun h ↦ ConvexOn.rightDeriv_mono hf h
+  right_continuous' _ := ConvexOn.rightDeriv_right_continuous_of_convexOn _ hf
 
 
-end Convex
 
 
 namespace ProbabilityTheory
