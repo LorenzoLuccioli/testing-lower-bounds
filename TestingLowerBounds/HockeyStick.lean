@@ -195,6 +195,49 @@ lemma leftDeriv_mono {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
   refine (Monotone.comp_antitone ?_ fun _ _ h ↦ neg_le_neg_iff.mpr h).neg
   exact rightDeriv_mono (ConvexOn.comp_neg hf_cvx)
 
+lemma leftDeriv_le_rightDeriv {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
+    leftDeriv f ≤ rightDeriv f := by
+  intro x
+  rw [rightDeriv_eq_sInf_slope_of_convexOn _ hf_cvx, leftDeriv_eq_sSup_slope_of_convexOn _ hf_cvx]
+  refine csSup_le nonempty_of_nonempty_subtype ?_
+  rintro _ ⟨z, zx, rfl⟩
+  refine le_csInf nonempty_of_nonempty_subtype ?_
+  rintro _ ⟨y, xy, rfl⟩
+  refine slope_mono hf_cvx trivial ?_ ?_ ((mem_Iio.mp zx).trans xy).le
+  · exact mem_diff_of_mem trivial (mem_Iio.mp zx).ne
+  · exact mem_diff_of_mem trivial (Ne.symm (ne_of_lt xy))
+
+--a proof is in the book Convex Functions by Roberts and Varberg, page 6
+--change w to x after the proof is done, I'm using w since it is the notation of the book
+lemma rightDeriv_right_continuous {f : ℝ → ℝ} (w : ℝ) (hf_cvx : ConvexOn ℝ univ f) :
+    ContinuousWithinAt (rightDeriv f) (Ici w) w := by
+  -- rw [← continuousWithinAt_Ioi_iff_Ici, Monotone.continuousWithinAt_Ioi_iff_rightLim_eq]
+  rw [← continuousWithinAt_Ioi_iff_Ici]
+  unfold ContinuousWithinAt
+  have h_lim := MonotoneOn.tendsto_nhdsWithin_Ioi ((rightDeriv_mono hf_cvx).monotoneOn (Ioi w))
+    (Monotone.map_bddBelow (rightDeriv_mono hf_cvx) bddBelow_Ioi)
+  set l := sInf (rightDeriv f '' Ioi w)
+  convert h_lim
+  refine (LE.le.le_iff_eq ?_).mp ?_ --any better way to split an equality goal into the two inequalitites?
+  · rw [rightDeriv_eq_sInf_slope_of_convexOn _ hf_cvx]
+    refine le_csInf nonempty_of_nonempty_subtype ?_ --is there any way to avoid the rintro here? if I just use fun inside the refine it does not work, it seems that the rfl inside the pattern is not supported by the refine tactic
+    rintro _ ⟨y, wy, rfl⟩
+    have slope_lim : Tendsto (slope f y) (𝓝[>] w) (𝓝 (slope f y w)) := by
+      have hf_cont : ContinuousWithinAt f (Ioi w) w := -- I would like to replace this with a lemma that derives the continuity from the convexity, it seems that this result is still not in mathlib, see https://leanprover.zulipchat.com/#narrow/stream/116395-maths/topic/Continuity.20.20of.20convex.20functions, they are in the process of proving it in the LeanCamCombi project
+        DifferentiableWithinAt.continuousWithinAt (differentiableWithinAt_Ioi_of_convexOn w hf_cvx)
+      exact ((continuousWithinAt_id.sub continuousWithinAt_const).inv₀
+        (sub_ne_zero.2 <| ne_of_lt <| mem_Ioi.mp wy)).smul
+        (hf_cont.sub continuousWithinAt_const) |>.tendsto
+    rw [slope_comm] at slope_lim
+    refine le_of_tendsto_of_tendsto h_lim slope_lim ?_
+    rw [← nhdsWithin_Ioo_eq_nhdsWithin_Ioi (show w < y from wy)]
+    refine eventually_nhdsWithin_of_forall fun z hz ↦ ?_
+    rw [slope_comm, rightDeriv_eq_sInf_slope_of_convexOn _ hf_cvx]
+    exact csInf_le (bddBelow_slope_Ioi_of_convexOn z hf_cvx) ⟨y, hz.2, rfl⟩
+  · exact ge_of_tendsto h_lim <| eventually_nhdsWithin_of_forall
+      fun y hy ↦ rightDeriv_mono hf_cvx (le_of_lt hy)
+
+
 #check convexOn_iff_slope_mono_adjacent
 #check ConvexOn.right_deriv_le_slope
 
