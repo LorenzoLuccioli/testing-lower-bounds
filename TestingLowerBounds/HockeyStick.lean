@@ -35,20 +35,19 @@ open scoped ENNReal NNReal
 #check hasDerivWithinAt_iff_tendsto_slope
 --put this in the right namespace, or better find the equivalent definition in mathlib
 noncomputable
-def rightDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Set.Ioi x) x
+def rightDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Ioi x) x
 
-lemma rightDeriv_def (f : ℝ → ℝ) (x : ℝ) : rightDeriv f x = derivWithin f (Set.Ioi x) x := rfl
+lemma rightDeriv_def (f : ℝ → ℝ) (x : ℝ) : rightDeriv f x = derivWithin f (Ioi x) x := rfl
 
 noncomputable
-def leftDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Set.Iio x) x
+def leftDeriv (f : ℝ → ℝ) : ℝ → ℝ := fun x ↦ derivWithin f (Iio x) x
 
-lemma leftDeriv_def (f : ℝ → ℝ) (x : ℝ) : leftDeriv f x = derivWithin f (Set.Iio x) x := rfl
+lemma leftDeriv_def (f : ℝ → ℝ) (x : ℝ) : leftDeriv f x = derivWithin f (Iio x) x := rfl
 
 lemma rightDeriv_eq_leftDeriv_apply (f : ℝ → ℝ) (x : ℝ) :
     rightDeriv f x = - leftDeriv (f ∘ Neg.neg) (-x) := by
-  have h_map : MapsTo (fun y ↦ -y) (Set.Iio (-x)) (Set.Ioi x) :=
-    fun _ hy ↦ mem_Ioi.mpr (lt_neg_of_lt_neg hy)
-  have h_map' : MapsTo (fun y ↦ -y) (Set.Ioi x) (Set.Iio (-x)) :=
+  have h_map : MapsTo Neg.neg (Iio (-x)) (Ioi x) := fun _ hy ↦ mem_Ioi.mpr (lt_neg_of_lt_neg hy)
+  have h_map' : MapsTo Neg.neg (Ioi x) (Iio (-x)) :=
     fun _ hy ↦ mem_Iio.mpr (neg_lt_neg hy)
   by_cases hf_diff : DifferentiableWithinAt ℝ f (Ioi x) x
   swap
@@ -79,9 +78,9 @@ lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) : leftDeriv f = - rightDeriv (f 
 --need some hp on the existence of the limit? We probabily don't need this lemma
 lemma slope_tendsto_rightDeriv (f : ℝ → ℝ) (x : ℝ) : Filter.Tendsto (fun y ↦ (f y - f x) / (y - x)) (𝓝[>] x) (𝓝 (rightDeriv f x)) := by sorry
 
-namespace Convex
+namespace ConvexOn
 
-lemma ConvexOn.comp_neg {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
+lemma comp_neg {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
     [OrderedAddCommMonoid β] [Module 𝕜 F] [SMul 𝕜 β] {f : F → β} {s : Set F}
     (hf : ConvexOn 𝕜 s f) :
     ConvexOn 𝕜 (-s) (f ∘ Neg.neg) := by
@@ -91,7 +90,7 @@ lemma ConvexOn.comp_neg {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGr
   simp_rw [← smul_neg, add_comm]
   exact hfc hx hy ha hb hab
 
-lemma ConvexOn.comp_neg_iff {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
+lemma comp_neg_iff {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
     [OrderedAddCommMonoid β] [Module 𝕜 F] [SMul 𝕜 β] {f : F → β} {s : Set F}  :
     ConvexOn 𝕜 (-s) (f ∘ Neg.neg) ↔ ConvexOn 𝕜 s f := by
   refine ⟨fun h ↦ ?_, fun h ↦ ConvexOn.comp_neg h⟩
@@ -129,14 +128,14 @@ end Slope
 
 
 #check convexOn_iff_slope_mono_adjacent
+#check ConvexOn.secant_mono
 
--- TODO: this can be generalized to a set S, where the function is convex, but I still need to figure out what hp to require, since the minimal assumption I think is that there exist a right interval of x that is contained in S (so x itself does not have to be in S), i.e. (x, y) ⊆ S, I don't know if. To generalize we will need MonotoneOn.tendsto_nhdsWithin_Ioo_right. However there are dirrerent kinds of sufficient conditions that could be given, for example S open and x in S or x in the interior of S. Discuss this with Remy. Maybe the minimal hp I described is not sufficient, I also need to assure some kind of boundedness of the slope, this should be assured if x is in the interior of S, because then we can take a point to the left of x but still inside S and use the monotonicity of the solpe in S, but can we do better?
---maybe this should be modified to use hasderivwithinat instead of differentiablewithinat, and then prove this using that version, so we already have the info of what is the derivative
+-- TODO: this can be generalized to a set S, where the function is convex, but I still need to figure out what hp to require, since the minimal assumption I think is that there exist a right interval of x that is contained in S (so x itself does not have to be in S), i.e. (x, y) ⊆ S, I don't know if. To generalize we will need MonotoneOn.tendsto_nhdsWithin_Ioo_right. However there are dirrerent kinds of sufficient conditions that could be given, for example S open and x in S or x in the interior of S. Discuss this with Remy. Maybe the minimal hp I described is not sufficient, I also need to assure some kind of boundedness of the slope, this should be assured if x is in the interior of S, because then we can take a point to the left of x but still inside S and use the monotonicity of the solpe in S, but can we do better? For now we an leave it like this
 lemma hasRightDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
-    HasDerivWithinAt f (sInf (slope f x '' Ioi x)) (Set.Ioi x) x := by
+    HasDerivWithinAt f (sInf (slope f x '' Ioi x)) (Ioi x) x := by
   simp_rw [hasDerivWithinAt_iff_tendsto_slope]
   simp only [mem_Ioi, lt_self_iff_false, not_false_eq_true, diff_singleton_eq_self]
-  have h_mono : MonotoneOn (slope f x) (Set.Ioi x) := by
+  have h_mono : MonotoneOn (slope f x) (Ioi x) := by
     refine monotoneOn_iff_forall_lt.mpr fun y hy z hz hz' ↦ ?_
     simp_rw [slope_def_field]
     exact ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_lt hy))
@@ -145,14 +144,14 @@ lemma hasRightDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn �
 
 --maybe this isn0t even really needed, anyway it may be worth it to change the name, same with the left version
 lemma differentiableWithinAt_Ioi_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
-    DifferentiableWithinAt ℝ f (Set.Ioi x) x :=
+    DifferentiableWithinAt ℝ f (Ioi x) x :=
   (hasRightDerivAt_of_convexOn x hfc).differentiableWithinAt
 
 lemma hasLeftDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
-    HasDerivWithinAt f (sSup (slope f x '' Iio x)) (Set.Iio x) x := by
+    HasDerivWithinAt f (sSup (slope f x '' Iio x)) (Iio x) x := by
   simp_rw [hasDerivWithinAt_iff_tendsto_slope]
   simp only [mem_Iio, lt_self_iff_false, not_false_eq_true, diff_singleton_eq_self]
-  have h_mono : MonotoneOn (slope f x) (Set.Iio x) := by
+  have h_mono : MonotoneOn (slope f x) (Iio x) := by
     refine monotoneOn_iff_forall_lt.mpr fun y hy z hz hz' ↦ ?_
     simp_rw [slope_def_field]
     exact ConvexOn.secant_mono hfc trivial trivial trivial (Ne.symm (ne_of_gt hy))
@@ -160,7 +159,7 @@ lemma hasLeftDerivAt_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ
   exact MonotoneOn.tendsto_nhdsWithin_Iio h_mono (bddAbove_slope_Iio_of_convexOn x hfc)
 
 lemma differentiableWithinAt_Iio_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
-    DifferentiableWithinAt ℝ f (Set.Iio x) x :=
+    DifferentiableWithinAt ℝ f (Iio x) x :=
   (hasLeftDerivAt_of_convexOn x hfc).differentiableWithinAt
 
 lemma rightDeriv_eq_sInf_slope_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
@@ -184,7 +183,7 @@ lemma rightDeriv_mono {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
   simp_rw [rightDeriv_eq_sInf_slope_of_convexOn _ hf_cvx]
   refine csInf_le_of_le (b := slope f x y) (bddBelow_slope_Ioi_of_convexOn x hf_cvx)
     ⟨y, by simp [hxy]⟩ (le_csInf nonempty_of_nonempty_subtype ?_)
-  rintro a ⟨z, yz, rfl⟩
+  rintro _ ⟨z, yz, rfl⟩
   rw [slope_comm]
   exact slope_mono hf_cvx trivial (mem_diff_of_mem trivial hxy.ne)
     (mem_diff_of_mem trivial (Ne.symm (ne_of_lt yz))) (hxy.trans yz).le
@@ -209,7 +208,7 @@ lemma leftDeriv_le_rightDeriv {f : ℝ → ℝ} (hf_cvx : ConvexOn ℝ univ f) :
 
 --a proof is in the book Convex Functions by Roberts and Varberg, page 6
 --change w to x after the proof is done, I'm using w since it is the notation of the book
-lemma rightDeriv_right_continuous {f : ℝ → ℝ} (w : ℝ) (hf_cvx : ConvexOn ℝ univ f) :
+lemma rightDeriv_right_continuous_of_convexOn {f : ℝ → ℝ} (w : ℝ) (hf_cvx : ConvexOn ℝ univ f) :
     ContinuousWithinAt (rightDeriv f) (Ici w) w := by
   -- rw [← continuousWithinAt_Ioi_iff_Ici, Monotone.continuousWithinAt_Ioi_iff_rightLim_eq]
   rw [← continuousWithinAt_Ioi_iff_Ici]
