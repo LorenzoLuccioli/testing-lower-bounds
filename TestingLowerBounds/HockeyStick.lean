@@ -84,31 +84,28 @@ lemma comp_neg {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
     [OrderedAddCommMonoid β] [Module 𝕜 F] [SMul 𝕜 β] {f : F → β} {s : Set F}
     (hf : ConvexOn 𝕜 s f) :
     ConvexOn 𝕜 (-s) (f ∘ Neg.neg) := by
-  rcases hf with ⟨hs, hfc⟩
-  refine ⟨hs.neg, fun x hx y hy a b ha hb hab ↦ ?_⟩
-  simp only [Function.comp_apply, neg_add_rev]
-  simp_rw [← smul_neg, add_comm]
-  exact hfc hx hy ha hb hab
+  refine ⟨hf.1.neg, fun x hx y hy a b ha hb hab ↦ ?_⟩
+  simp_rw [Function.comp_apply, neg_add_rev, ← smul_neg, add_comm]
+  exact hf.2 hx hy ha hb hab
 
 lemma comp_neg_iff {𝕜 F β : Type*} [LinearOrderedField 𝕜] [AddCommGroup F]
     [OrderedAddCommMonoid β] [Module 𝕜 F] [SMul 𝕜 β] {f : F → β} {s : Set F}  :
     ConvexOn 𝕜 (-s) (f ∘ Neg.neg) ↔ ConvexOn 𝕜 s f := by
   refine ⟨fun h ↦ ?_, fun h ↦ ConvexOn.comp_neg h⟩
-  convert ConvexOn.comp_neg h
-  · exact (InvolutiveNeg.neg_neg s).symm
-  · simp [Function.comp.assoc, neg_comp_neg]
-
+  rw [← neg_neg s, ← Function.comp_id f, ← neg_comp_neg, ← Function.comp.assoc]
+  exact h.comp_neg
+/-
+[Mathlib.Analysis.Convex.Function]
+-/
 section Slope
 
 variable {𝕜 : Type*} [LinearOrderedField 𝕜] {s : Set 𝕜} {f : 𝕜 → 𝕜} {x : 𝕜}
 
 --this could be put either in `Mathlib.Analysis.Convex.Slope` or in `Mathlib.LinearAlgebra.AffineSpace.Slope`, but either way I would have to import the other file. Maybe there is some more suitable file that already imports both.
 -- try to do a draft PR in mathlib adding it to Convex.Slope, the github bot should tell us how much of a change it is to add the import, then we can decide if it's worth it
-lemma slope_mono (hfc : ConvexOn 𝕜 s f) (hx : x ∈ s) : MonotoneOn (slope f x) (s \ {x}) := by
-  intro y hy z hz hz'
-  simp_rw [slope_def_field]
-  exact ConvexOn.secant_mono hfc hx (mem_of_mem_diff hy) (mem_of_mem_diff hz)
-    (not_mem_of_mem_diff hy :) (not_mem_of_mem_diff hz :) hz'
+lemma slope_mono (hfc : ConvexOn 𝕜 s f) (hx : x ∈ s) : MonotoneOn (slope f x) (s \ {x}) :=
+  (slope_fun_def_field f _).symm ▸ fun _ hy _ hz hz' ↦ hfc.secant_mono hx (mem_of_mem_diff hy)
+    (mem_of_mem_diff hz) (not_mem_of_mem_diff hy :) (not_mem_of_mem_diff hz :) hz'
 
 lemma bddBelow_slope_Ioi_of_convexOn {f : ℝ → ℝ} (x : ℝ) (hfc : ConvexOn ℝ univ f) :
     BddBelow (slope f x '' Ioi x) := by
