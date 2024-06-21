@@ -236,6 +236,14 @@ lemma rightDeriv_right_continuous_of_convexOn {f : ℝ → ℝ} (w : ℝ) (hf_cv
   · exact ge_of_tendsto h_lim <| eventually_nhdsWithin_of_forall
       fun y hy ↦ rightDeriv_mono hf_cvx (le_of_lt hy)
 
+lemma leftDeriv_left_continuous_convexOn {f : ℝ → ℝ} (w : ℝ) (hf_cvx : ConvexOn ℝ univ f) :
+    ContinuousWithinAt (leftDeriv f) (Iic w) w := by
+  have h_map : MapsTo Neg.neg (Iic w) (Ici (-w)) := fun _ hy ↦ mem_Ici.mpr (neg_le_neg_iff.mpr hy)
+  rw [leftDeriv_eq_rightDeriv]
+  refine ContinuousWithinAt.comp ?_ continuousWithinAt_neg h_map |>.neg
+  exact rightDeriv_right_continuous_of_convexOn (-w) hf_cvx.comp_neg
+
+end ConvexOn
 
 #check convexOn_iff_slope_mono_adjacent
 #check ConvexOn.right_deriv_le_slope
