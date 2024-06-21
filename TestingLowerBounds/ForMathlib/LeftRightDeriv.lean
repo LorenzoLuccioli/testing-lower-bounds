@@ -100,6 +100,10 @@ lemma hasRightDerivAt_of_convexOn (x : ℝ) :
 lemma differentiableWithinAt_Ioi_of_convexOn (x : ℝ) : DifferentiableWithinAt ℝ f (Ioi x) x :=
   (hasRightDerivAt_of_convexOn hfc x).differentiableWithinAt
 
+lemma hadDerivWithinAt_rightDeriv_of_convexOn (x : ℝ) :
+    HasDerivWithinAt f (rightDeriv f x) (Ioi x) x :=
+  (differentiableWithinAt_Ioi_of_convexOn hfc x).hasDerivWithinAt
+
 lemma hasLeftDerivAt_of_convexOn (x : ℝ) :
     HasDerivWithinAt f (sSup (slope f x '' Iio x)) (Iio x) x := by
   simp_rw [hasDerivWithinAt_iff_tendsto_slope]
@@ -113,6 +117,10 @@ lemma hasLeftDerivAt_of_convexOn (x : ℝ) :
 
 lemma differentiableWithinAt_Iio_of_convexOn (x : ℝ) : DifferentiableWithinAt ℝ f (Iio x) x :=
   (hasLeftDerivAt_of_convexOn hfc x).differentiableWithinAt
+
+lemma hadDerivWithinAt_leftDeriv_of_convexOn (x : ℝ) :
+    HasDerivWithinAt f (leftDeriv f x) (Iio x) x :=
+  (differentiableWithinAt_Iio_of_convexOn hfc x).hasDerivWithinAt
 
 lemma rightDeriv_eq_sInf_slope_of_convexOn (x : ℝ) : rightDeriv f x = sInf (slope f x '' Ioi x) :=
   (hasRightDerivAt_of_convexOn hfc x).derivWithin (uniqueDiffWithinAt_Ioi x)
