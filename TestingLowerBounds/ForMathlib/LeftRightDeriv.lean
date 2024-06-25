@@ -184,11 +184,11 @@ lemma leftDeriv_left_continuous_convexOn (w : ℝ) : ContinuousWithinAt (leftDer
   refine ContinuousWithinAt.comp ?_ continuousWithinAt_neg h_map |>.neg
   exact rightDeriv_right_continuous_of_convexOn hfc.comp_neg (-w)
 
+end ConvexOn
+
 noncomputable
-def _root_.StieltjesFunction.rightDeriv_of_convex (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) :
+def StieltjesFunction.rightDeriv_of_convex (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) :
     StieltjesFunction where
   toFun := rightDeriv f
   mono' _ _ := fun h ↦ ConvexOn.rightDeriv_mono hf h
   right_continuous' _ := ConvexOn.rightDeriv_right_continuous_of_convexOn hf _
-
-end ConvexOn
