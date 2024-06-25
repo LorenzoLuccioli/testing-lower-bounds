@@ -1,11 +1,4 @@
-import TestingLowerBounds.Testing.Binary
-import TestingLowerBounds.FDiv.Basic
-import Mathlib.Analysis.Calculus.Monotone
-import Mathlib.Analysis.Convex.Deriv
-import Mathlib.MeasureTheory.Integral.FundThmCalculus
-import Mathlib.Analysis.SpecialFunctions.Integrals
-import TestingLowerBounds.ForMathlib.MonotoneOnTendsto
-import TestingLowerBounds.ForMathlib.LeftRightDeriv
+import Mathlib.MeasureTheory.Integral.IntervalIntegral
 
 /-!
 Here there is the statement of a version of the integration by parts theorem for the Riemann-Stieltjes integral.
@@ -20,11 +13,9 @@ See also https://math.ryerson.ca/~niushan/Stieltjes-integrals.pdf for some facts
 Here I am stating the results in terms of Lebesgue integrals, since it is what I need and the RS integral is equal to the Lebesgue one if one of the functions is increasing and right continuous and the other is bounded and measurable (see 4.1 in the previous link).
 To prove the general result it may be better to develop a theory of the Riemann-Stieltjes integral in mathlib adn then prove the results for that integral and translate them for the lebesgue integral when possible.
 -/
-#check intervalIntegral.integral_deriv_mul_eq_sub_of_hasDeriv_right --one of the versions of the integratio by parts that is currently in mathlib
-
-open Set
+-- #check intervalIntegral.integral_deriv_mul_eq_sub_of_hasDeriv_right --one of the versions of the integratio by parts that is currently in mathlib
 
 lemma integral_stieltjes_meas_by_parts (f g : StieltjesFunction) (a b : ℝ) :
-    ∫ (x : ℝ) in Ioc a b, f x ∂g.measure
-      = (f b) * (g b) - (f a) * (g a) - ∫ (x : ℝ) in Ioc a b, g x ∂f.measure := by
+    ∫ x in a..b, f x ∂g.measure = (f b) * (g b) - (f a) * (g a) - ∫ x in a..b, g x ∂f.measure := by
   sorry
+--maybe post this on Zulip?
