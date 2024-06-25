@@ -34,44 +34,45 @@ open scoped ENNReal NNReal
 namespace ProbabilityTheory
 
 variable {𝒳 𝒳' : Type*} {m𝒳 : MeasurableSpace 𝒳} {m𝒳' : MeasurableSpace 𝒳'}
-  {μ ν : Measure 𝒳} {p : ℝ≥0∞} {f : ℝ → ℝ} {γ x t : ℝ}
+  {μ ν : Measure 𝒳} {p : ℝ≥0∞} {f : ℝ → ℝ} {β γ x t : ℝ}
 
 noncomputable
 def statInfoFun (β γ x : ℝ) : ℝ := if γ ≤ β then max 0 (γ - β * x) else max 0 (β * x - γ)
+
+lemma statInfoFun_nonneg (β γ x : ℝ) : 0 ≤ statInfoFun β γ x := by
+  simp_rw [statInfoFun]
+  split_ifs <;> simp
+
+lemma statInfoFun_of_one : statInfoFun 1 γ x = if γ ≤ 1 then max 0 (γ - x) else max 0 (x - γ) := by
+  simp_rw [statInfoFun, one_mul]
 
 --TODO: for now I will leave the continuity assumption in some lemmas, it should be derived from the convexity but the lemma is not yet in mathlib, when it gets there we can remove this assumption
 
 --There are two ways to separate the cases: `γ ≤ 1` and `γ > 1` or `γ < 1` and `γ > 1`. The first one seems the correct one for now.
 
---we still have to figure out if the right condition is γ < 1 or γ ≤ 1
-noncomputable
-def hockeyStickFun (γ x : ℝ) : ℝ := if γ ≤ 1 then max 0 (γ - x) else max 0 (x - γ)
+lemma statInfoFun_of_one_of_le_one (h : γ ≤ 1) : statInfoFun 1 γ x = max 0 (γ - x) :=
+  statInfoFun_of_one ▸ if_pos h
 
-lemma hockeyStickFun_nonneg (γ x : ℝ) : 0 ≤ hockeyStickFun γ x := by
-  simp_rw [hockeyStickFun]
-  split_ifs <;> simp
+lemma statInfoFun_of_one_of_one_lt (h : 1 < γ) : statInfoFun 1 γ x = max 0 (x - γ) :=
+  statInfoFun_of_one ▸ if_neg h.not_le
 
-lemma hockeyStickFun_of_le_one (h : γ ≤ 1) : hockeyStickFun γ x = max 0 (γ - x) := if_pos h
+lemma statInfoFun_of_one_of_le_one_of_le (h : γ ≤ 1) (hx : x ≤ γ) : statInfoFun 1 γ x = γ - x :=
+  statInfoFun_of_one_of_le_one h ▸ max_eq_right_iff.mpr (sub_nonneg.mpr hx)
 
-lemma hockeyStickFun_of_one_lt (h : 1 < γ) : hockeyStickFun γ x = max 0 (x - γ) := if_neg h.not_le
+lemma statInfoFun_of_one_of_le_one_of_ge (h : γ ≤ 1) (hx : x ≥ γ) : statInfoFun 1 γ x = 0 :=
+  statInfoFun_of_one_of_le_one h ▸ max_eq_left_iff.mpr (sub_nonpos.mpr hx)
 
-lemma hockeyStickFun_of_le_one_of_le (h : γ ≤ 1) (hx : x ≤ γ) : hockeyStickFun γ x = γ - x :=
-  hockeyStickFun_of_le_one h ▸ max_eq_right_iff.mpr (sub_nonneg.mpr hx)
+lemma statInfoFun_of_one_of_one_lt_of_le (h : 1 < γ) (hx : x ≤ γ) : statInfoFun 1 γ x = 0 :=
+  statInfoFun_of_one_of_one_lt h ▸ max_eq_left_iff.mpr (sub_nonpos.mpr hx)
 
-lemma hockeyStickFun_of_le_one_of_ge (h : γ ≤ 1) (hx : x ≥ γ) : hockeyStickFun γ x = 0 :=
-  hockeyStickFun_of_le_one h ▸ max_eq_left_iff.mpr (sub_nonpos.mpr hx)
+lemma statInfoFun_of_one_of_one_lt_of_ge (h : 1 < γ) (hx : x ≥ γ) : statInfoFun 1 γ x = x - γ :=
+  statInfoFun_of_one_of_one_lt h ▸ max_eq_right_iff.mpr (sub_nonneg.mpr hx)
 
-lemma hockeyStickFun_of_one_lt_of_le (h : 1 < γ) (hx : x ≤ γ) : hockeyStickFun γ x = 0 :=
-  hockeyStickFun_of_one_lt h ▸ max_eq_left_iff.mpr (sub_nonpos.mpr hx)
-
-lemma hockeyStickFun_of_one_lt_of_ge (h : 1 < γ) (hx : x ≥ γ) : hockeyStickFun γ x = x - γ :=
-  hockeyStickFun_of_one_lt h ▸ max_eq_right_iff.mpr (sub_nonneg.mpr hx)
-
-noncomputable
-def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (hockeyStickFun γ) μ ν
-  -- right_continuous' _ := sorry
+noncomputable-- maybe this will not be needed, eGamma will be defined from the risk
+def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (statInfoFun 1 γ) μ ν
 
 --should we define this to be some junk value if f is not convex? this way we could avoid having to state the convexity every time
+-- this may be put in some other place, maybe directly in the stieltjes file
 noncomputable
 def curvatureMeasure (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : Measure ℝ :=
   (StieltjesFunction.rightDeriv_of_convex f hf).measure
@@ -90,9 +91,9 @@ lemma generalized_taylor (hf : ConvexOn ℝ univ f) (hf_cont : Continuous f) {a 
     zero_mul, zero_sub, measure_add, measure_const, add_zero, neg_sub, sub_neg_eq_add, g]
   rfl
 
-lemma fun_eq_integral_hockeyStickFun_curvatureMeasure_of_one_le (hf_cvx : ConvexOn ℝ univ f)
+lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f)
     (hf_cont : Continuous f) (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) :
-    f t = ∫ y, hockeyStickFun y t ∂(curvatureMeasure f hf_cvx) := by
+    f t = ∫ y, statInfoFun 1 y t ∂(curvatureMeasure f hf_cvx) := by
   have h :
       f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure f hf_cvx) :=
     generalized_taylor hf_cvx hf_cont
@@ -107,26 +108,27 @@ lemma fun_eq_integral_hockeyStickFun_curvatureMeasure_of_one_le (hf_cvx : Convex
     swap
     · intro _ ⟨_, _⟩
       simp_all
-    have h : ∀ x ∈ Iic 1, max 0 (x - t) = hockeyStickFun x t :=
-      fun x hx ↦ (hockeyStickFun_of_le_one hx).symm
+    have h : ∀ x ∈ Iic 1, max 0 (x - t) = statInfoFun 1 x t :=
+      fun x hx ↦ (statInfoFun_of_one_of_le_one hx).symm
     rw [setIntegral_congr measurableSet_Iic h,
       setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx ↦ ?_]
     rw [mem_Iic, not_le] at hx
-    rw [hockeyStickFun_of_one_lt_of_le hx (ht.trans hx.le)]
+    rw [statInfoFun_of_one_of_one_lt_of_le hx (ht.trans hx.le)]
   · simp_rw [intervalIntegral.integral_of_le ht]
     have h : ∀ x ∈ Ioc 1 t, t - x = max 0 (t - x) := by aesop
     rw [setIntegral_congr measurableSet_Ioc h,
       ← setIntegral_eq_of_subset_of_forall_diff_eq_zero measurableSet_Ioi Ioc_subset_Ioi_self]
     swap
     · intro _ ⟨_, hxt⟩
-      simp_all only [mem_Ioc, mem_Ioi, true_and, not_le, max_eq_left_iff, tsub_le_iff_right, zero_add]
+      simp_all only [mem_Ioc, mem_Ioi, true_and, not_le, max_eq_left_iff, tsub_le_iff_right,
+        zero_add]
       exact hxt.le
-    have h : ∀ x ∈ Ioi 1, max 0 (t - x) = hockeyStickFun x t :=
-      fun _ (hx : 1 < _) ↦ (hockeyStickFun_of_one_lt hx).symm
+    have h : ∀ x ∈ Ioi 1, max 0 (t - x) = statInfoFun 1 x t :=
+      fun _ (hx : 1 < _) ↦ (statInfoFun_of_one_of_one_lt hx).symm
     rw [setIntegral_congr measurableSet_Ioi h,
       setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx ↦ ?_]
     rw [mem_Ioi, not_lt] at hx
-    exact hockeyStickFun_of_le_one_of_ge hx (hx.trans ht)
+    exact statInfoFun_of_one_of_le_one_of_ge hx (hx.trans ht)
 
 --next steps:
 -- define statInfoFun and refactor everything in terms of that, delete the hockeystick function
