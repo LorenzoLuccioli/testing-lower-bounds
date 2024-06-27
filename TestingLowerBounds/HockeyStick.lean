@@ -200,6 +200,15 @@ lemma lintegral_nnnorm_statInfoFun_le {μ : Measure ℝ} (β x : ℝ) :
       _ = μ (Ι (β * x) β) * ENNReal.ofReal |β - β * x| := by
         rw [uIoc_of_ge hβxβ, mul_comm, abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr hβxβ)]
 
+lemma convexOn_statInfoFun : ConvexOn ℝ univ (fun x ↦ statInfoFun β γ x) := by
+  unfold statInfoFun
+  by_cases h : γ ≤ β <;>
+  · simp only [h, ↓reduceIte]
+    refine (convexOn_const 0 convex_univ).sup ⟨convex_univ, fun x _ y _ a b _ _ hab ↦ le_of_eq ?_⟩
+    dsimp
+    ring_nf
+    simp only [← mul_add, hab, mul_one, show (-(a * γ) - b * γ) = -(a + b) * γ from by ring,
+      add_assoc, sub_eq_add_neg, neg_mul, one_mul]
 
 lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
   apply Measurable.stronglyMeasurable
