@@ -147,9 +147,12 @@ lemma statInfoFun_le_of_nonpos_of_one_le_right (hβ : β ≤ 0) (hx : 1 ≤ x) :
   refine indicator_rel_indicator le_rfl fun ⟨_, hγ⟩ ↦ ?_
   simp [hγ]
 
---PR this to mathlib replacing uIoc_of_lt
+--PR this to mathlib replacing uIoc_of_lt, is it ok to replace a lemma? the olter lemma has #align from the port, should it be removed?
 @[simp] lemma uIoc_of_ge {α : Type u_1} [LinearOrder α] {a b : α} (h : b ≤ a) :
   Ι a b = Ioc b a := by simp [uIoc, h]
+--PR this also to mathlib
+lemma uIoc_subset_uIcc {α : Type u_1} [LinearOrder α] {a b : α} :
+    Ι a b ⊆ uIcc a b := Ioc_subset_Icc_self
 
 lemma lintegral_nnnorm_statInfoFun_le {μ : Measure ℝ} (β x : ℝ) :
     ∫⁻ γ, ↑‖statInfoFun β γ x‖₊ ∂μ ≤ (μ (uIoc (β * x) β)) * (ENNReal.ofReal |β - β * x|) := by
