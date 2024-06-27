@@ -74,6 +74,88 @@ lemma statInfoFun_of_one_of_one_lt_of_le (h : 1 < γ) (hx : x ≤ γ) : statInfo
 lemma statInfoFun_of_one_of_one_lt_of_ge (h : 1 < γ) (hx : x ≥ γ) : statInfoFun 1 γ x = x - γ :=
   statInfoFun_of_one_of_one_lt h ▸ max_eq_right_iff.mpr (sub_nonneg.mpr hx)
 
+lemma statInfoFun_of_nonneg_of_right_le_one (hβ : 0 ≤ β) (hx : x ≤ 1) :
+    statInfoFun β γ x = (Ioc (β * x) β).indicator (fun y ↦ y - β * x) γ := by
+  by_cases hγβ : γ ≤ β
+  · by_cases hβxγ : β * x < γ
+    · simp [statInfoFun, indicator, hβxγ, hβxγ.le]
+    · simp [statInfoFun, hγβ, hβxγ, (le_of_not_gt hβxγ)]
+  · simp only [statInfoFun, hγβ, ↓reduceIte, indicator, mem_Ioc, and_false, max_eq_left_iff,
+      tsub_le_iff_right, zero_add]
+    exact (mul_le_of_le_one_right hβ hx).trans (le_of_not_ge hγβ)
+
+lemma statInfoFun_of_nonneg_of_one_le_right (hβ : 0 ≤ β) (hx : 1 ≤ x) :
+    statInfoFun β γ x = (Ioc β (β * x)).indicator (fun y ↦ β * x - y) γ := by
+  by_cases hγβ : γ ≤ β
+  · simp [statInfoFun, hγβ, indicator, hγβ.trans (le_mul_of_one_le_right hβ hx), hγβ.not_lt]
+  · by_cases hγβx : γ ≤ β * x
+    · simp [statInfoFun, hγβ, hγβx, lt_of_not_ge hγβ]
+    · simp [statInfoFun, hγβ, hγβx, le_of_not_ge hγβx]
+
+lemma statInfoFun_of_nonpos_of_right_le_one (hβ : β ≤ 0) (hx : x ≤ 1) :
+    statInfoFun β γ x = (Ioc β (β * x)).indicator (fun y ↦ β * x - y) γ := by
+  by_cases hγβ : γ ≤ β
+  · simp only [statInfoFun, hγβ, ↓reduceIte, indicator, mem_Ioc, hγβ.not_lt, false_and,
+      max_eq_left_iff, tsub_le_iff_right, zero_add]
+    suffices -β * x ≤ -γ from by simpa only [neg_mul, neg_le_neg_iff]
+    exact (mul_le_of_le_one_right (neg_nonneg.mpr hβ) hx).trans (neg_le_neg_iff.mpr hγβ)
+  · by_cases hγβx : γ ≤ β * x
+    · simp [statInfoFun, hγβx, lt_of_not_ge hγβ]
+    · simp [statInfoFun, hγβ, hγβx, le_of_not_ge hγβx]
+
+lemma statInfoFun_of_nonpos_of_one_le_right (hβ : β ≤ 0) (hx : 1 ≤ x) :
+    statInfoFun β γ x = (Ioc (β * x) β).indicator (fun y ↦ y - β * x) γ := by
+  by_cases hγβ : γ ≤ β
+  · by_cases hβxγ : β * x < γ
+    · simp [statInfoFun, indicator, hβxγ, hβxγ.le]
+    · simp [statInfoFun, hγβ, hβxγ, (le_of_not_gt hβxγ)]
+  · simp only [statInfoFun, hγβ, ↓reduceIte, mem_Ioc, and_false, not_false_eq_true,
+      indicator_of_not_mem, max_eq_left_iff, tsub_le_iff_right, zero_add]
+    suffices -β * x ≥ -γ from by simpa only [neg_mul, neg_le_neg_iff]
+    exact ((neg_lt_neg_iff.mpr (lt_of_not_ge hγβ)).trans_le
+      ((le_mul_of_one_le_right (neg_nonneg.mpr hβ) hx))).le
+
+lemma statInfoFun_of_one_of_one_le_right (h : 1 ≤ x) :
+    statInfoFun 1 γ x = (Ioc 1 x).indicator (fun y ↦ x - y) γ := by
+  convert statInfoFun_of_nonneg_of_one_le_right _ h <;> simp
+
+lemma statInfoFun_of_one_of_right_le_one (h : x ≤ 1) :
+    statInfoFun 1 γ x = (Ioc x 1).indicator (fun y ↦ y - x) γ := by
+  convert statInfoFun_of_nonneg_of_right_le_one _ h <;> simp
+
+lemma statInfoFun_le_of_nonneg_of_right_le_one (hβ : 0 ≤ β) (hx : x ≤ 1) :
+    statInfoFun β γ x ≤ (Ioc (β * x) β).indicator (fun _ ↦ β - β * x) γ := by
+  rw [statInfoFun_of_nonneg_of_right_le_one hβ hx]
+  refine indicator_rel_indicator le_rfl fun ⟨_, hγ⟩ ↦ ?_
+  simp [hγ]
+
+lemma statInfoFun_le_of_nonneg_of_one_le_right (hβ : 0 ≤ β) (hx : 1 ≤ x) :
+    statInfoFun β γ x ≤ (Ioc β (β * x)).indicator (fun _ ↦ β * x - β) γ := by
+  rw [statInfoFun_of_nonneg_of_one_le_right hβ hx]
+  refine indicator_rel_indicator le_rfl fun ⟨hβγ, _⟩ ↦ ?_
+  simp only [sub_eq_add_neg, add_le_add_iff_left, neg_le_neg_iff, hβγ.le]
+
+lemma statInfoFun_le_of_nonpos_of_right_le_one (hβ : β ≤ 0) (hx : x ≤ 1) :
+    statInfoFun β γ x ≤ (Ioc β (β * x)).indicator (fun _ ↦ β * x - β) γ := by
+  rw [statInfoFun_of_nonpos_of_right_le_one hβ hx]
+  refine indicator_rel_indicator le_rfl fun ⟨hγβ, _⟩ ↦ ?_
+  simp only [sub_eq_add_neg, add_le_add_iff_left, neg_le_neg_iff, hγβ.le]
+
+lemma statInfoFun_le_of_nonpos_of_one_le_right (hβ : β ≤ 0) (hx : 1 ≤ x) :
+    statInfoFun β γ x ≤ (Ioc (β * x) β).indicator (fun _ ↦ β - β * x) γ := by
+  rw [statInfoFun_of_nonpos_of_one_le_right hβ hx]
+  refine indicator_rel_indicator le_rfl fun ⟨_, hγ⟩ ↦ ?_
+  simp [hγ]
+
+lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
+  apply Measurable.stronglyMeasurable
+  change Measurable (fun (p : (ℝ × ℝ) × ℝ) ↦ if p.1.2 ≤ p.1.1 then max 0 (p.1.2 - p.1.1 * p.2)
+    else max 0 (p.1.1 * p.2 - p.1.2))
+  apply Measurable.ite
+  · exact measurableSet_le (by fun_prop) (by fun_prop)
+  · fun_prop
+  · fun_prop
+
 noncomputable-- maybe this will not be needed, eGamma will be defined from the risk
 def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (statInfoFun 1 γ) μ ν
 
