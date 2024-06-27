@@ -7,7 +7,8 @@ import TestingLowerBounds.ForMathlib.ByParts
 import TestingLowerBounds.ForMathlib.LeftRightDeriv
 import TestingLowerBounds.ForMathlib.Stieltjes
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
-
+import Mathlib.Tactic.FunProp.Measurable
+import Mathlib.MeasureTheory.Constructions.Prod.Integral
 
 /-!
 # Hockey-stick divergence
@@ -36,6 +37,7 @@ namespace ProbabilityTheory
 variable {𝒳 𝒳' : Type*} {m𝒳 : MeasurableSpace 𝒳} {m𝒳' : MeasurableSpace 𝒳'}
   {μ ν : Measure 𝒳} {p : ℝ≥0∞} {f : ℝ → ℝ} {β γ x t : ℝ}
 
+-- To play with this function go to https://www.geogebra.org/calculator/jaymzqtm, there the notation is: b for β, c for γ, X for x. h is statInfoFun seen as a function of x, f is statInfoFun seen as a function of γ.
 noncomputable
 def statInfoFun (β γ x : ℝ) : ℝ := if γ ≤ β then max 0 (γ - β * x) else max 0 (β * x - γ)
 
@@ -43,8 +45,12 @@ lemma statInfoFun_nonneg (β γ x : ℝ) : 0 ≤ statInfoFun β γ x := by
   simp_rw [statInfoFun]
   split_ifs <;> simp
 
+@[simp]
 lemma statInfoFun_of_one : statInfoFun 1 γ x = if γ ≤ 1 then max 0 (γ - x) else max 0 (x - γ) := by
   simp_rw [statInfoFun, one_mul]
+
+@[simp]
+lemma statInfoFun_of_zero : statInfoFun 0 γ x = 0 := by simp_all [statInfoFun, le_of_lt]
 
 --TODO: for now I will leave the continuity assumption in some lemmas, it should be derived from the convexity but the lemma is not yet in mathlib, when it gets there we can remove this assumption
 
