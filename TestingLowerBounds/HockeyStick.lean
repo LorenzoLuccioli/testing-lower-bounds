@@ -165,6 +165,10 @@ noncomputable
 def curvatureMeasure (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : Measure ℝ :=
   (StieltjesFunction.rightDeriv_of_convex f hf).measure
 
+instance (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : IsLocallyFiniteMeasure (curvatureMeasure f hf) := by
+  unfold curvatureMeasure
+  infer_instance
+
 lemma generalized_taylor (hf : ConvexOn ℝ univ f) (hf_cont : Continuous f) {a b : ℝ} :
     f b - f a - (rightDeriv f a) * (b - a)  = ∫ x in a..b, b - x ∂(curvatureMeasure f hf) := by
   have h_int : IntervalIntegrable (rightDeriv f) ℙ a b := hf.rightDeriv_mono.intervalIntegrable
