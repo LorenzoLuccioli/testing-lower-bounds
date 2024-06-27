@@ -1,6 +1,6 @@
 import Mathlib.MeasureTheory.Measure.Stieltjes
 
---The content of this file has beed PRed to mathlib, see #14115
+--The content of this file has beed PRed to mathlib, see #14115. it is now merged, the next time we bump we can remove this file
 
 open scoped Classical
 open Set Filter Function ENNReal NNReal Topology MeasureTheory
