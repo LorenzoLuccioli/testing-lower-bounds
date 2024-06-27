@@ -256,39 +256,75 @@ lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f
   rw [hf_one, hfderiv_one, sub_zero, zero_mul, sub_zero] at h
   rw [h]
   rcases le_total t 1 with (ht | ht)
-  · simp_rw [intervalIntegral.integral_of_ge ht, ← integral_neg, neg_sub]
-    have h : ∀ x ∈ Ioc t 1, x - t = max 0 (x - t) :=
-      fun x hx ↦ (max_eq_right (sub_nonneg.mpr hx.1.le)).symm
-    rw [setIntegral_congr measurableSet_Ioc h,
-      ← setIntegral_eq_of_subset_of_forall_diff_eq_zero measurableSet_Iic Ioc_subset_Iic_self]
-    swap
-    · intro _ ⟨_, _⟩
-      simp_all
-    have h : ∀ x ∈ Iic 1, max 0 (x - t) = statInfoFun 1 x t :=
-      fun x hx ↦ (statInfoFun_of_one_of_le_one hx).symm
-    rw [setIntegral_congr measurableSet_Iic h,
-      setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx ↦ ?_]
-    rw [mem_Iic, not_le] at hx
-    rw [statInfoFun_of_one_of_one_lt_of_le hx (ht.trans hx.le)]
-  · simp_rw [intervalIntegral.integral_of_le ht]
-    have h : ∀ x ∈ Ioc 1 t, t - x = max 0 (t - x) := by aesop
-    rw [setIntegral_congr measurableSet_Ioc h,
-      ← setIntegral_eq_of_subset_of_forall_diff_eq_zero measurableSet_Ioi Ioc_subset_Ioi_self]
-    swap
-    · intro _ ⟨_, hxt⟩
-      simp_all only [mem_Ioc, mem_Ioi, true_and, not_le, max_eq_left_iff, tsub_le_iff_right,
-        zero_add]
-      exact hxt.le
-    have h : ∀ x ∈ Ioi 1, max 0 (t - x) = statInfoFun 1 x t :=
-      fun _ (hx : 1 < _) ↦ (statInfoFun_of_one_of_one_lt hx).symm
-    rw [setIntegral_congr measurableSet_Ioi h,
-      setIntegral_eq_integral_of_forall_compl_eq_zero fun x hx ↦ ?_]
-    rw [mem_Ioi, not_lt] at hx
-    exact statInfoFun_of_one_of_le_one_of_ge hx (hx.trans ht)
+  · simp_rw [statInfoFun_of_one_of_right_le_one ht, integral_indicator measurableSet_Ioc,
+      intervalIntegral.integral_of_ge ht, ← integral_neg, neg_sub]
+  · simp_rw [statInfoFun_of_one_of_one_le_right ht, integral_indicator measurableSet_Ioc,
+      intervalIntegral.integral_of_le ht]
 
---next steps:
--- define statInfoFun and refactor everything in terms of that, delete the hockeystick function
+lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous [SigmaFinite ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
+    (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
+    (h_ac : μ ≪ ν) :
+    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f hf_cvx) := by
+  by_cases h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν
+  swap
+  · rw [fDiv_of_not_integrable h_int]
+    --clearly this is not possible because the rhs must be finite, so this integrability condition should be put as a hypothesis, but I would like to understand if it it enough to assume this in order to obtain also the other integrability condition needed or if I should assume other things
+    sorry
 
+  --I'm not sure if this is actually true, for now I am going to assume it is, maybe I have to derive it from the other assumptions, or maybe it is necessary to assume it or some other thing that implies it
+  -- also if needed it is enough to assume this a.e. wrt ∂curvatureMeasure f hf_cvx
+  have h_int' (γ : ℝ) : Integrable (fun x ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ν := by
+
+    sorry
+
+  classical
+  rw [fDiv_of_absolutelyContinuous h_ac, if_pos h_int, EReal.coe_eq_coe_iff]
+  simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (h_int' _), EReal.toReal_coe,
+    fun_eq_integral_statInfoFun_curvatureMeasure hf_cvx hf_cont hf_one hfderiv_one]
+  --now we have to apply tonelli's theorem, first we have to convert the integral to a lintegral integral_eq_lintegral_of_nonneg_ae
+  --then we can use lintegral_lintegral_swap
+
+  -- we could use this to directly swap the two integrals, the problem is that then we need to prove the joint integrability of `fun x y ↦ statInfoFun 1 y ((∂μ/∂ν) x).toReal)` and I'm not sure if it is easier than the other way
+  -- refine MeasureTheory.integral_integral_swap ?_
+
+
+  -- this is an attempt to apply tonellli's theorem instead of Fubini's theorem, we don't need the integrability, but it seems to be more complicated, because we have to go from the Bochner integral to the lintegral for 4 separate integrals,
+  have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry := by
+    change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (xγ : 𝒳 × ℝ) ↦ ((1, xγ.2), ((∂μ/∂ν) xγ.1).toReal)))
+    refine stronglymeasurable_statInfoFun.measurable.comp ?_
+    refine (measurable_const.prod_mk measurable_snd).prod_mk ?_
+    exact ((Measure.measurable_rnDeriv μ ν).comp measurable_fst).ennreal_toReal
+  have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure f hf_cvx ∂ν
+      = (∫⁻ x, ∫⁻ γ, ENNReal.ofReal (statInfoFun 1 γ ((∂μ/∂ν) x).toReal)
+        ∂curvatureMeasure f hf_cvx ∂ν).toReal := by
+    rw [integral_eq_lintegral_of_nonneg_ae]
+    rotate_left
+    · exact eventually_of_forall fun _ ↦ (integral_nonneg (fun _ ↦ statInfoFun_nonneg _ _ _))
+    · refine (StronglyMeasurable.integral_prod_left ?_).aestronglyMeasurable
+      exact (measurable_swap_iff.mpr h_meas).stronglyMeasurable
+    congr with x --if needed here we can have a ν-a.e. equality
+    rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun y ↦ statInfoFun_nonneg _ _ _)
+      h_meas.of_uncurry_left.stronglyMeasurable.aestronglyMeasurable]
+    refine  ENNReal.ofReal_toReal ?_
+    --maybe we need some other hp?
+    sorry
+
+  rw [int_eq_lint, lintegral_lintegral_swap h_meas.ennreal_ofReal.aemeasurable,
+    integral_eq_lintegral_of_nonneg_ae]
+  rotate_left
+  · exact eventually_of_forall fun _ ↦ (integral_nonneg (fun _ ↦ statInfoFun_nonneg _ _ _))
+  · exact h_meas.stronglyMeasurable.integral_prod_left.aestronglyMeasurable
+  congr with γ --if needed here we can have a `curvatureMeasure f hf_cvx`-a.e. equality and use a filter_upwards
+  rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun _ ↦ statInfoFun_nonneg _ _ _)
+    h_meas.of_uncurry_right.stronglyMeasurable.aestronglyMeasurable]
+  rw [ENNReal.ofReal_toReal]
+  have h_lt_top := (h_int' γ).hasFiniteIntegral
+  simp_rw [HasFiniteIntegral, lt_top_iff_ne_top] at h_lt_top
+  convert h_lt_top
+  rw [← ENNReal.toReal_eq_toReal ENNReal.ofReal_ne_top ENNReal.coe_ne_top, toReal_coe_nnnorm,
+    ENNReal.toReal_ofReal (statInfoFun_nonneg _ _ _),
+    Real.norm_of_nonneg (statInfoFun_nonneg _ _ _)]
 
 
 
@@ -297,6 +333,8 @@ lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f
 - how to handle the integral in the generalized taylor theorem, since the measure is defined on a subset of ℝ, not on all of ℝ and I need to further restrict that to the interval [min a b, max a b]
 -/
 
+--this will be useful later
+#check fDiv_eq_add_withDensity_singularPart
 
 end ProbabilityTheory
 -- strange error:
