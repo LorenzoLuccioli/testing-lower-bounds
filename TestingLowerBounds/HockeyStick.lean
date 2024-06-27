@@ -210,6 +210,16 @@ lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.un
   · fun_prop
   · fun_prop
 
+lemma integrable_statInfoFun {μ : Measure ℝ} [IsLocallyFiniteMeasure μ] :
+    Integrable (fun γ ↦ statInfoFun β γ x) μ := by
+  refine ⟨?_, ?_⟩
+  · refine (Measurable.stronglyMeasurable ?_).aestronglyMeasurable
+    change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (γ : ℝ) ↦ ((β, γ), x)))
+    exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
+  · refine ((lintegral_nnnorm_statInfoFun_le _ _).trans_lt ?_)
+    refine ENNReal.mul_lt_top ?_ ENNReal.ofReal_ne_top
+    exact (measure_mono uIoc_subset_uIcc).trans_lt isCompact_uIcc.measure_lt_top |>.ne
+
 noncomputable-- maybe this will not be needed, eGamma will be defined from the risk
 def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (statInfoFun 1 γ) μ ν
 
