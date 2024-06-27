@@ -147,6 +147,57 @@ lemma statInfoFun_le_of_nonpos_of_one_le_right (hβ : β ≤ 0) (hx : 1 ≤ x) :
   refine indicator_rel_indicator le_rfl fun ⟨_, hγ⟩ ↦ ?_
   simp [hγ]
 
+--PR this to mathlib replacing uIoc_of_lt
+@[simp] lemma uIoc_of_ge {α : Type u_1} [LinearOrder α] {a b : α} (h : b ≤ a) :
+  Ι a b = Ioc b a := by simp [uIoc, h]
+
+lemma lintegral_nnnorm_statInfoFun_le {μ : Measure ℝ} (β x : ℝ) :
+    ∫⁻ γ, ↑‖statInfoFun β γ x‖₊ ∂μ ≤ (μ (uIoc (β * x) β)) * (ENNReal.ofReal |β - β * x|) := by
+  simp_rw [Real.nnnorm_of_nonneg (statInfoFun_nonneg _ _ _),
+    ← ENNReal.ofReal_eq_coe_nnreal (statInfoFun_nonneg _ _ _)]
+  rcases le_total β 0 with (hβ | hβ) <;> rcases le_total x 1 with (hx | hx)
+  · have hββx : β ≤ β * x := by exact le_mul_of_le_one_right hβ hx
+    calc
+      _ ≤ ∫⁻ γ, ENNReal.ofReal ((Ioc β (β * x)).indicator (fun _ ↦ β * x - β) γ) ∂μ :=
+        lintegral_mono fun _ ↦ ENNReal.ofReal_le_ofReal <|
+          statInfoFun_le_of_nonpos_of_right_le_one hβ hx
+      _ = ∫⁻ γ,  ((Ioc β (β * x)).indicator (fun _ ↦ ENNReal.ofReal (β * x - β)) γ) ∂μ := by
+        simp [Set.comp_indicator]
+      _ ≤ ENNReal.ofReal (β * x - β) * μ (Ioc β (β * x)) := lintegral_indicator_const_le _ _
+      _ = μ (Ι (β * x) β) * ENNReal.ofReal |β - β * x| := by
+        rw [uIoc_of_ge hββx, mul_comm, abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr hββx)]
+  · have hβxβ : β * x ≤ β := by exact mul_le_of_one_le_right hβ hx
+    calc
+      _ ≤ ∫⁻ γ, ENNReal.ofReal ((Ioc (β * x) β).indicator (fun _ ↦ β - β * x) γ) ∂μ :=
+        lintegral_mono fun _ ↦ ENNReal.ofReal_le_ofReal <|
+          statInfoFun_le_of_nonpos_of_one_le_right hβ hx
+      _ = ∫⁻ γ,  ((Ioc (β * x) β).indicator (fun _ ↦ ENNReal.ofReal (β - β * x)) γ) ∂μ := by
+        simp [Set.comp_indicator]
+      _ ≤ ENNReal.ofReal (β - β * x) * μ (Ioc (β * x) β) := lintegral_indicator_const_le _ _
+      _ = μ (Ι (β * x) β) * ENNReal.ofReal |β - β * x| := by
+        rw [uIoc_comm, uIoc_of_ge hβxβ, abs_of_nonneg (sub_nonneg.mpr hβxβ), mul_comm]
+  · have hββx : β * x ≤ β := by exact mul_le_of_le_one_right hβ hx
+    calc
+      _ ≤ ∫⁻ γ, ENNReal.ofReal ((Ioc (β * x) β).indicator (fun _ ↦ β - β * x) γ) ∂μ :=
+        lintegral_mono fun _ ↦ ENNReal.ofReal_le_ofReal <|
+          statInfoFun_le_of_nonneg_of_right_le_one hβ hx
+      _ = ∫⁻ γ,  ((Ioc (β * x) β).indicator (fun _ ↦ ENNReal.ofReal (β - β * x)) γ) ∂μ := by
+        simp [Set.comp_indicator]
+      _ ≤ ENNReal.ofReal (β - β * x) * μ (Ioc (β * x) β) := lintegral_indicator_const_le _ _
+      _ = μ (Ι (β * x) β) * ENNReal.ofReal |β - β * x| := by
+        rw [uIoc_comm, uIoc_of_ge hββx, abs_of_nonneg (sub_nonneg.mpr hββx), mul_comm]
+  · have hβxβ : β ≤ β * x := by exact le_mul_of_one_le_right hβ hx
+    calc
+      _ ≤ ∫⁻ γ, ENNReal.ofReal ((Ioc β (β * x)).indicator (fun _ ↦ β * x - β) γ) ∂μ :=
+        lintegral_mono fun _ ↦ ENNReal.ofReal_le_ofReal <|
+          statInfoFun_le_of_nonneg_of_one_le_right hβ hx
+      _ = ∫⁻ γ,  ((Ioc β (β * x)).indicator (fun _ ↦ ENNReal.ofReal (β * x - β)) γ) ∂μ := by
+        simp [Set.comp_indicator]
+      _ ≤ ENNReal.ofReal (β * x - β) * μ (Ioc β (β * x)) := lintegral_indicator_const_le _ _
+      _ = μ (Ι (β * x) β) * ENNReal.ofReal |β - β * x| := by
+        rw [uIoc_of_ge hβxβ, mul_comm, abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr hβxβ)]
+
+
 lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
   apply Measurable.stronglyMeasurable
   change Measurable (fun (p : (ℝ × ℝ) × ℝ) ↦ if p.1.2 ≤ p.1.1 then max 0 (p.1.2 - p.1.1 * p.2)
