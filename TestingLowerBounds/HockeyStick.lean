@@ -56,6 +56,68 @@ lemma statInfoFun_of_zero : statInfoFun 0 γ x = 0 := by simp_all [statInfoFun, 
 
 --There are two ways to separate the cases: `γ ≤ 1` and `γ > 1` or `γ < 1` and `γ > 1`. The first one seems the correct one for now.
 
+--TODO: separate these lemmas in some sections, maybe we could put together the lemmas that see `γ` as the variable and the ones that see `x` as the variable, and under those we could further separate the lemmas that have β = 1
+
+section Measurability
+
+lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
+  apply Measurable.stronglyMeasurable
+  change Measurable (fun (p : (ℝ × ℝ) × ℝ) ↦ if p.1.2 ≤ p.1.1 then max 0 (p.1.2 - p.1.1 * p.2)
+    else max 0 (p.1.1 * p.2 - p.1.2))
+  apply Measurable.ite
+  · exact measurableSet_le (by fun_prop) (by fun_prop)
+  · fun_prop
+  · fun_prop
+
+lemma measurable_statInfoFun2 : Measurable fun γ ↦ statInfoFun β γ x := by
+  change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (γ : ℝ) ↦ ((β, γ), x)))
+  exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
+
+lemma measurable_statInfoFun3 : Measurable fun x ↦ statInfoFun β γ x := by
+  change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (x : ℝ) ↦ ((β, γ), x)))
+  exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
+
+end Measurability
+
+section statInfoFun_x
+-- Lemmas useful when we want to consider `statInfoFun` as a function of `x`
+
+lemma statInfoFun_of_le (h : γ ≤ β) : statInfoFun β γ x = max 0 (γ - β * x) := if_pos h
+
+lemma statInfoFun_of_gt (h : γ > β) : statInfoFun β γ x = max 0 (β * x - γ) := if_neg h.not_le
+
+lemma statInfoFun_of_pos_of_le_of_le (hβ : 0 < β) (hγ : γ ≤ β) (hx : x ≤ γ / β) :
+    statInfoFun β γ x = γ - β * x :=
+  statInfoFun_of_le hγ ▸ max_eq_right_iff.mpr <| sub_nonneg.mpr <| (le_div_iff' hβ).mp hx
+
+lemma statInfoFun_of_pos_of_le_of_ge (hβ : 0 < β) (hγ : γ ≤ β) (hx : x ≥ γ / β) :
+    statInfoFun β γ x = 0 :=
+  statInfoFun_of_le hγ ▸ max_eq_left_iff.mpr <| sub_nonpos.mpr <| (div_le_iff' hβ).mp hx
+
+lemma statInfoFun_of_pos_of_gt_of_le (hβ : 0 < β) (hγ : γ > β) (hx : x ≤ γ / β) :
+    statInfoFun β γ x = 0 :=
+  statInfoFun_of_gt hγ ▸ max_eq_left_iff.mpr <| sub_nonpos.mpr <| (le_div_iff' hβ).mp hx
+
+lemma statInfoFun_of_pos_of_gt_of_ge (hβ : 0 < β) (hγ : γ > β) (hx : x ≥ γ / β) :
+    statInfoFun β γ x = β * x - γ :=
+  statInfoFun_of_gt hγ ▸ max_eq_right_iff.mpr <| sub_nonneg.mpr <| (div_le_iff' hβ).mp hx
+
+lemma statInfoFun_of_neg_of_le_of_le (hβ : β < 0) (hγ : γ ≤ β) (hx : x ≤ γ / β) :
+    statInfoFun β γ x = 0 :=
+  statInfoFun_of_le hγ ▸  max_eq_left_iff.mpr <| sub_nonpos.mpr <| (le_div_iff_of_neg' hβ).mp hx
+
+lemma statInfoFun_of_neg_of_le_of_ge (hβ : β < 0) (hγ : γ ≤ β) (hx : x ≥ γ / β) :
+    statInfoFun β γ x = γ - β * x :=
+  statInfoFun_of_le hγ ▸ max_eq_right_iff.mpr <| sub_nonneg.mpr <| (div_le_iff_of_neg' hβ).mp hx
+
+lemma statInfoFun_of_neg_of_gt_of_le (hβ : β < 0) (hγ : γ > β) (hx : x ≤ γ / β) :
+    statInfoFun β γ x = β * x - γ :=
+  statInfoFun_of_gt hγ ▸ max_eq_right_iff.mpr <| sub_nonneg.mpr <| (le_div_iff_of_neg' hβ).mp hx
+
+lemma statInfoFun_of_neg_of_gt_of_ge (hβ : β < 0) (hγ : γ > β) (hx : x ≥ γ / β) :
+    statInfoFun β γ x = 0 :=
+  statInfoFun_of_gt hγ ▸ max_eq_left_iff.mpr <| sub_nonpos.mpr <| (div_le_iff_of_neg' hβ).mp hx
+
 lemma statInfoFun_of_one_of_le_one (h : γ ≤ 1) : statInfoFun 1 γ x = max 0 (γ - x) :=
   statInfoFun_of_one ▸ if_pos h
 
@@ -199,33 +261,6 @@ lemma lintegral_nnnorm_statInfoFun_le {μ : Measure ℝ} (β x : ℝ) :
       _ ≤ ENNReal.ofReal (β * x - β) * μ (Ioc β (β * x)) := lintegral_indicator_const_le _ _
       _ = μ (Ι (β * x) β) * ENNReal.ofReal |β - β * x| := by
         rw [uIoc_of_ge hβxβ, mul_comm, abs_sub_comm, abs_of_nonneg (sub_nonneg.mpr hβxβ)]
-
-lemma convexOn_statInfoFun : ConvexOn ℝ univ (fun x ↦ statInfoFun β γ x) := by
-  unfold statInfoFun
-  by_cases h : γ ≤ β <;>
-  · simp only [h, ↓reduceIte]
-    refine (convexOn_const 0 convex_univ).sup ⟨convex_univ, fun x _ y _ a b _ _ hab ↦ le_of_eq ?_⟩
-    dsimp
-    ring_nf
-    simp only [← mul_add, hab, mul_one, show (-(a * γ) - b * γ) = -(a + b) * γ from by ring,
-      add_assoc, sub_eq_add_neg, neg_mul, one_mul]
-
-lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
-  apply Measurable.stronglyMeasurable
-  change Measurable (fun (p : (ℝ × ℝ) × ℝ) ↦ if p.1.2 ≤ p.1.1 then max 0 (p.1.2 - p.1.1 * p.2)
-    else max 0 (p.1.1 * p.2 - p.1.2))
-  apply Measurable.ite
-  · exact measurableSet_le (by fun_prop) (by fun_prop)
-  · fun_prop
-  · fun_prop
-
-lemma measurable_statInfoFun2 : Measurable fun γ ↦ statInfoFun β γ x := by
-  change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (γ : ℝ) ↦ ((β, γ), x)))
-  exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
-
-lemma measurable_statInfoFun3 : Measurable fun x ↦ statInfoFun β γ x := by
-  change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (x : ℝ) ↦ ((β, γ), x)))
-  exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
 
 lemma integrable_statInfoFun {μ : Measure ℝ} [IsLocallyFiniteMeasure μ] (β x : ℝ) :
     Integrable (fun γ ↦ statInfoFun β γ x) μ := by
