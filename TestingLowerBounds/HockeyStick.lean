@@ -285,10 +285,9 @@ lemma statInfoFun_le_of_nonpos_of_one_le_right (hβ : β ≤ 0) (hx : 1 ≤ x) :
   refine indicator_rel_indicator le_rfl fun ⟨_, hγ⟩ ↦ ?_
   simp [hγ]
 
---PR this to mathlib replacing uIoc_of_lt, is it ok to replace a lemma? the olter lemma has #align from the port, should it be removed?
+--PRed to mathlib, see #14199, when it gets merged and we bump remove these 2 lemmas
 @[simp] lemma uIoc_of_ge {α : Type u_1} [LinearOrder α] {a b : α} (h : b ≤ a) :
   Ι a b = Ioc b a := by simp [uIoc, h]
---PR this also to mathlib
 lemma uIoc_subset_uIcc {α : Type u_1} [LinearOrder α] {a b : α} :
     Ι a b ⊆ uIcc a b := Ioc_subset_Icc_self
 
@@ -345,6 +344,8 @@ lemma integrable_statInfoFun {μ : Measure ℝ} [IsLocallyFiniteMeasure μ] (β 
   refine ENNReal.mul_lt_top ?_ ENNReal.ofReal_ne_top
   exact (measure_mono uIoc_subset_uIcc).trans_lt isCompact_uIcc.measure_lt_top |>.ne
 
+end statInfoFun_γ
+
 noncomputable-- maybe this will not be needed, eGamma will be defined from the risk
 def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (statInfoFun 1 γ) μ ν
 
@@ -386,23 +387,26 @@ lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f
   · simp_rw [statInfoFun_of_one_of_one_le_right ht, integral_indicator measurableSet_Ioc,
       intervalIntegral.integral_of_le ht]
 
-lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous [SigmaFinite ν]
+-- TODO: think about the case when the function is not integrable (`h_int`), can we prove that in this case the rhs is also not integrable?
+
+lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
     (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
     fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f hf_cvx) := by
-  by_cases h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν
-  swap
-  · rw [fDiv_of_not_integrable h_int]
-    --clearly this is not possible because the rhs must be finite, so this integrability condition should be put as a hypothesis, but I would like to understand if it it enough to assume this in order to obtain also the other integrability condition needed or if I should assume other things
-    sorry
-
   --I'm not sure if this is actually true, for now I am going to assume it is, maybe I have to derive it from the other assumptions, or maybe it is necessary to assume it or some other thing that implies it
   -- also if needed it is enough to assume this a.e. wrt ∂curvatureMeasure f hf_cvx
   have h_int' (γ : ℝ) : Integrable (fun x ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ν := by
-
-    sorry
-
+    --this should solve our problem, maybe I need to prove some proerties of the function first, but it should be fine
+    #check ProbabilityTheory.integrable_f_rnDeriv_of_derivAtTop_ne_top
+    refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _ measurable_statInfoFun3.stronglyMeasurable ?_ ?_
+    · exact ConvexOn.subset (convexOn_statInfoFun 1 γ) (fun _ _ ↦ trivial) (convex_Ici 0)
+    · by_cases h : γ ≤ 1
+      · rw [derivAtTop_statInfoFun_of_nonneg_of_le (zero_le_one) h]
+        exact EReal.zero_ne_top
+      · rw [derivAtTop_statInfoFun_of_nonneg_of_gt (zero_le_one) (lt_of_not_ge h)]
+        exact EReal.coe_ne_top 1
   classical
   rw [fDiv_of_absolutelyContinuous h_ac, if_pos h_int, EReal.coe_eq_coe_iff]
   simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (h_int' _), EReal.toReal_coe,
@@ -431,10 +435,8 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     congr with x --if needed here we can have a ν-a.e. equality
     rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun y ↦ statInfoFun_nonneg _ _ _)
       h_meas.of_uncurry_left.stronglyMeasurable.aestronglyMeasurable]
-    refine  ENNReal.ofReal_toReal ?_
-    --maybe we need some other hp?
-    sorry
-
+    refine ENNReal.ofReal_toReal <| (lintegral_ofReal_le_lintegral_nnnorm _).trans_lt ?_ |>.ne
+    exact (integrable_statInfoFun 1 _).hasFiniteIntegral
   rw [int_eq_lint, lintegral_lintegral_swap h_meas.ennreal_ofReal.aemeasurable,
     integral_eq_lintegral_of_nonneg_ae]
   rotate_left
