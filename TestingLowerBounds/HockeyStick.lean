@@ -136,6 +136,82 @@ lemma statInfoFun_of_one_of_one_lt_of_le (h : 1 < γ) (hx : x ≤ γ) : statInfo
 lemma statInfoFun_of_one_of_one_lt_of_ge (h : 1 < γ) (hx : x ≥ γ) : statInfoFun 1 γ x = x - γ :=
   statInfoFun_of_one_of_one_lt h ▸ max_eq_right_iff.mpr (sub_nonneg.mpr hx)
 
+lemma convexOn_statInfoFun (β γ : ℝ) : ConvexOn ℝ univ (fun x ↦ statInfoFun β γ x) := by
+  unfold statInfoFun
+  by_cases h : γ ≤ β <;>
+  · simp only [h, ↓reduceIte]
+    refine (convexOn_const 0 convex_univ).sup ⟨convex_univ, fun x _ y _ a b _ _ hab ↦ le_of_eq ?_⟩
+    dsimp
+    ring_nf
+    simp only [← mul_add, hab, mul_one, show (-(a * γ) - b * γ) = -(a + b) * γ from by ring,
+      add_assoc, sub_eq_add_neg, neg_mul, one_mul]
+
+section derivAtTop
+
+lemma tendsto_statInfoFun_div_at_top_of_pos_of_le (hβ : 0 < β) (hγ : γ ≤ β) :
+    Tendsto (fun x ↦ statInfoFun β γ x / x) atTop (𝓝 0) := by
+  refine tendsto_atTop_of_eventually_const (fun x hx ↦ ?_) (i₀ := γ / β)
+  rw [statInfoFun_of_le hγ, div_eq_zero_iff]
+  exact Or.inl <| max_eq_left_iff.mpr <| tsub_nonpos.mpr <| (div_le_iff' hβ).mp hx
+
+lemma tendsto_statInfoFun_div_at_top_of_pos_of_gt (hβ : 0 < β) (hγ : γ > β) :
+    Tendsto (fun x ↦ statInfoFun β γ x / x) atTop (𝓝 β) := by
+  have h : (fun x ↦ β + -γ / x) =ᶠ[atTop] fun x ↦ statInfoFun β γ x / x := by
+    filter_upwards [eventually_ge_atTop (γ / β), eventually_ne_atTop 0] with x hx hx'
+    rw [statInfoFun_of_pos_of_gt_of_ge hβ hγ hx]
+    ring_nf
+    simp_rw [mul_assoc, mul_inv_cancel hx', mul_one]
+  nth_rw 2 [← add_zero β]
+  refine Tendsto.congr' h (Tendsto.const_add β ?_)
+  exact Tendsto.div_atTop tendsto_const_nhds fun _ a ↦ a
+
+lemma tendsto_statInfoFun_div_at_top_of_neg_of_le (hβ : β < 0) (hγ : γ ≤ β) :
+    Tendsto (fun x ↦ statInfoFun β γ x / x) atTop (𝓝 (-β)) := by
+  have h : (fun x ↦ γ / x - β) =ᶠ[atTop] fun x ↦ statInfoFun β γ x / x := by
+    filter_upwards [eventually_ge_atTop (γ / β), eventually_ne_atTop 0] with x hx hx'
+    rw [statInfoFun_of_neg_of_le_of_ge hβ hγ hx]
+    ring_nf
+    simp_rw [mul_inv_cancel hx', one_mul]
+  rw [neg_eq_zero_sub β]
+  refine Tendsto.congr' h (Tendsto.sub_const ?_ β)
+  exact Tendsto.div_atTop tendsto_const_nhds fun _ a ↦ a
+
+lemma tendsto_statInfoFun_div_at_top_of_neg_of_gt (hβ : β < 0) (hγ : γ > β) :
+    Tendsto (fun x ↦ statInfoFun β γ x / x) atTop (𝓝 0) := by
+  refine tendsto_atTop_of_eventually_const (fun x hx ↦ ?_) (i₀ := γ / β)
+  rw [statInfoFun_of_gt hγ, div_eq_zero_iff]
+  refine Or.inl <| max_eq_left_iff.mpr <| tsub_nonpos.mpr <| (div_le_iff_of_neg' hβ).mp hx
+
+lemma derivAtTop_statInfoFun_of_nonneg_of_le (hβ : 0 ≤ β) (hγ : γ ≤ β) :
+    derivAtTop (fun x ↦ statInfoFun β γ x) = 0 := by
+  rcases eq_or_lt_of_le hβ with (rfl | hβ)
+  · simp
+  exact derivAtTop_of_tendsto (tendsto_statInfoFun_div_at_top_of_pos_of_le hβ hγ)
+
+lemma derivAtTop_statInfoFun_of_nonneg_of_gt (hβ : 0 ≤ β) (hγ : γ > β) :
+    derivAtTop (fun x ↦ statInfoFun β γ x) = β := by
+  rcases eq_or_lt_of_le hβ with (rfl | hβ)
+  · simp
+  exact derivAtTop_of_tendsto (tendsto_statInfoFun_div_at_top_of_pos_of_gt hβ hγ)
+
+lemma derivAtTop_statInfoFun_of_nonpos_of_le (hβ : β ≤ 0) (hγ : γ ≤ β) :
+    derivAtTop (fun x ↦ statInfoFun β γ x) = -β := by
+  rcases eq_or_lt_of_le hβ with (rfl | hβ)
+  · simp
+  exact derivAtTop_of_tendsto (tendsto_statInfoFun_div_at_top_of_neg_of_le hβ hγ)
+
+lemma derivAtTop_statInfoFun_of_nonpos_of_gt (hβ : β ≤ 0) (hγ : γ > β) :
+    derivAtTop (fun x ↦ statInfoFun β γ x) = 0 := by
+  rcases eq_or_lt_of_le hβ with (rfl | hβ)
+  · simp
+  exact derivAtTop_of_tendsto (tendsto_statInfoFun_div_at_top_of_neg_of_gt hβ hγ)
+
+end derivAtTop
+
+end statInfoFun_x
+
+section statInfoFun_γ
+
 lemma statInfoFun_of_nonneg_of_right_le_one (hβ : 0 ≤ β) (hx : x ≤ 1) :
     statInfoFun β γ x = (Ioc (β * x) β).indicator (fun y ↦ y - β * x) γ := by
   by_cases hγβ : γ ≤ β
