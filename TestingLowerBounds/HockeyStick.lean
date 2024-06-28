@@ -346,6 +346,26 @@ lemma integrable_statInfoFun {μ : Measure ℝ} [IsLocallyFiniteMeasure μ] (β 
 
 end statInfoFun_γ
 
+section fDiv
+
+lemma nnReal_mul_fDiv {a : NNReal} :
+    a * fDiv (fun x ↦ statInfoFun β γ x) μ ν
+      = fDiv (fun x ↦ statInfoFun β (a * γ) x) (a • μ) ν := by
+  by_cases h_int : Integrable (fun x ↦ statInfoFun β γ ((∂μ/∂ν) x).toReal) ν
+  ·
+    simp [fDiv_of_integrable h_int]
+    sorry
+  ·
+    simp [fDiv_of_not_integrable h_int]
+    sorry
+
+
+
+
+end fDiv
+
+
+
 noncomputable-- maybe this will not be needed, eGamma will be defined from the risk
 def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (statInfoFun 1 γ) μ ν
 
