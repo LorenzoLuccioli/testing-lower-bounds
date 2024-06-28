@@ -395,32 +395,21 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
     fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f hf_cvx) := by
-  --I'm not sure if this is actually true, for now I am going to assume it is, maybe I have to derive it from the other assumptions, or maybe it is necessary to assume it or some other thing that implies it
-  -- also if needed it is enough to assume this a.e. wrt ∂curvatureMeasure f hf_cvx
   have h_int' (γ : ℝ) : Integrable (fun x ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ν := by
-    --this should solve our problem, maybe I need to prove some proerties of the function first, but it should be fine
-    #check ProbabilityTheory.integrable_f_rnDeriv_of_derivAtTop_ne_top
-    refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _ measurable_statInfoFun3.stronglyMeasurable ?_ ?_
-    · exact ConvexOn.subset (convexOn_statInfoFun 1 γ) (fun _ _ ↦ trivial) (convex_Ici 0)
+    refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _
+      measurable_statInfoFun3.stronglyMeasurable ?_ ?_
+    · exact (convexOn_statInfoFun 1 γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)
     · by_cases h : γ ≤ 1
-      · rw [derivAtTop_statInfoFun_of_nonneg_of_le (zero_le_one) h]
-        exact EReal.zero_ne_top
-      · rw [derivAtTop_statInfoFun_of_nonneg_of_gt (zero_le_one) (lt_of_not_ge h)]
-        exact EReal.coe_ne_top 1
+      · exact derivAtTop_statInfoFun_of_nonneg_of_le (zero_le_one) h ▸ EReal.zero_ne_top
+      · exact derivAtTop_statInfoFun_of_nonneg_of_gt (zero_le_one) (lt_of_not_ge h) ▸
+          EReal.coe_ne_top 1
   classical
   rw [fDiv_of_absolutelyContinuous h_ac, if_pos h_int, EReal.coe_eq_coe_iff]
   simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (h_int' _), EReal.toReal_coe,
     fun_eq_integral_statInfoFun_curvatureMeasure hf_cvx hf_cont hf_one hfderiv_one]
-  --now we have to apply tonelli's theorem, first we have to convert the integral to a lintegral integral_eq_lintegral_of_nonneg_ae
-  --then we can use lintegral_lintegral_swap
-
-  -- we could use this to directly swap the two integrals, the problem is that then we need to prove the joint integrability of `fun x y ↦ statInfoFun 1 y ((∂μ/∂ν) x).toReal)` and I'm not sure if it is easier than the other way
-  -- refine MeasureTheory.integral_integral_swap ?_
-
-
-  -- this is an attempt to apply tonellli's theorem instead of Fubini's theorem, we don't need the integrability, but it seems to be more complicated, because we have to go from the Bochner integral to the lintegral for 4 separate integrals,
   have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry := by
-    change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (xγ : 𝒳 × ℝ) ↦ ((1, xγ.2), ((∂μ/∂ν) xγ.1).toReal)))
+    change Measurable
+      (statInfoFun.uncurry.uncurry ∘ (fun (xγ : 𝒳 × ℝ) ↦ ((1, xγ.2), ((∂μ/∂ν) xγ.1).toReal)))
     refine stronglymeasurable_statInfoFun.measurable.comp ?_
     refine (measurable_const.prod_mk measurable_snd).prod_mk ?_
     exact ((Measure.measurable_rnDeriv μ ν).comp measurable_fst).ennreal_toReal
@@ -432,7 +421,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     · exact eventually_of_forall fun _ ↦ (integral_nonneg (fun _ ↦ statInfoFun_nonneg _ _ _))
     · refine (StronglyMeasurable.integral_prod_left ?_).aestronglyMeasurable
       exact (measurable_swap_iff.mpr h_meas).stronglyMeasurable
-    congr with x --if needed here we can have a ν-a.e. equality
+    congr with x
     rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun y ↦ statInfoFun_nonneg _ _ _)
       h_meas.of_uncurry_left.stronglyMeasurable.aestronglyMeasurable]
     refine ENNReal.ofReal_toReal <| (lintegral_ofReal_le_lintegral_nnnorm _).trans_lt ?_ |>.ne
@@ -442,10 +431,9 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
   rotate_left
   · exact eventually_of_forall fun _ ↦ (integral_nonneg (fun _ ↦ statInfoFun_nonneg _ _ _))
   · exact h_meas.stronglyMeasurable.integral_prod_left.aestronglyMeasurable
-  congr with γ --if needed here we can have a `curvatureMeasure f hf_cvx`-a.e. equality and use a filter_upwards
+  congr with γ
   rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun _ ↦ statInfoFun_nonneg _ _ _)
-    h_meas.of_uncurry_right.stronglyMeasurable.aestronglyMeasurable]
-  rw [ENNReal.ofReal_toReal]
+    h_meas.of_uncurry_right.stronglyMeasurable.aestronglyMeasurable, ENNReal.ofReal_toReal]
   have h_lt_top := (h_int' γ).hasFiniteIntegral
   simp_rw [HasFiniteIntegral, lt_top_iff_ne_top] at h_lt_top
   convert h_lt_top
