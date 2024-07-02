@@ -355,6 +355,12 @@ end statInfoFun_γ
 
 section fDiv
 
+lemma integrable_statInfoFun_rnDeriv [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    Integrable (fun x ↦ statInfoFun β γ ((∂μ/∂ν) x).toReal) ν := by
+  refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _ stronglyMeasurable_statInfoFun3 ?_ ?_
+  · exact (convexOn_statInfoFun β γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)
+  · exact derivAtTop_statInfoFun_ne_top β γ
+
 lemma nnReal_mul_fDiv {a : NNReal} :
     a * fDiv (fun x ↦ statInfoFun β γ x) μ ν
       = fDiv (fun x ↦ statInfoFun (a * β) (a * γ) x) μ ν := by
