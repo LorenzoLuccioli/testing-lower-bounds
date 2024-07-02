@@ -22,13 +22,13 @@ This is a simple generalization of both the DeGroot statistical information as w
 
 \begin{lemma}
   \label{lem:statInfo_self}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.statInfo_self}
+  \leanok
   \uses{def:statInfo}
   For $\mu \in \mathcal M(\mathcal X)$, $\mathcal I_\xi(\mu, \mu) = 0$~.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesBinaryRisk_self}
 Use Lemma~\ref{lem:bayesBinaryRisk_self}.
 \end{proof}
