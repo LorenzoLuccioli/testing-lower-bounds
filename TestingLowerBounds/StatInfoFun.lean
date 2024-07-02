@@ -75,9 +75,9 @@ lemma measurable_statInfoFun2 : Measurable fun γ ↦ statInfoFun β γ x := by
   change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (γ : ℝ) ↦ ((β, γ), x)))
   exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
 
-lemma measurable_statInfoFun3 : Measurable fun x ↦ statInfoFun β γ x := by
-  change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (x : ℝ) ↦ ((β, γ), x)))
-  exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
+lemma stronglyMeasurable_statInfoFun3 : StronglyMeasurable fun x ↦ statInfoFun β γ x := by
+  change StronglyMeasurable (statInfoFun.uncurry.uncurry ∘ (fun (x : ℝ) ↦ ((β, γ), x)))
+  refine stronglymeasurable_statInfoFun.measurable.comp (by fun_prop) |>.stronglyMeasurable
 
 end Measurability
 
@@ -410,7 +410,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f hf_cvx) := by
   have h_int' (γ : ℝ) : Integrable (fun x ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ν := by
     refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _
-      measurable_statInfoFun3.stronglyMeasurable ?_ ?_
+      stronglyMeasurable_statInfoFun3 ?_ ?_
     · exact (convexOn_statInfoFun 1 γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)
     · by_cases h : γ ≤ 1
       · exact derivAtTop_statInfoFun_of_nonneg_of_le (zero_le_one) h ▸ EReal.zero_ne_top
