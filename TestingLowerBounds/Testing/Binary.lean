@@ -262,7 +262,7 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
   sorry
 
 lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ ν π ≤ min (π {true} * μ Set.univ) (π {false} * ν Set.univ) := by
+    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
   sorry
 
 lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
