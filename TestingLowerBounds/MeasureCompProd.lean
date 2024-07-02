@@ -440,6 +440,16 @@ lemma compProd_univ_toReal [SFinite μ] [IsFiniteKernel κ] :
     ((μ ⊗ₘ κ) Set.univ).toReal = ∫ x, (κ x Set.univ).toReal ∂μ :=
   compProd_apply_toReal MeasurableSet.univ
 
+lemma Measure.compProd_apply_univ [SFinite μ] [IsMarkovKernel κ] :
+    (μ ⊗ₘ κ) Set.univ = μ (Set.univ) := by
+  rw [Measure.compProd_apply MeasurableSet.univ]
+  simp
+
+lemma Measure.comp_apply_univ [IsMarkovKernel κ] :
+    (μ ∘ₘ κ) Set.univ = μ (Set.univ) := by
+  rw [Measure.bind_apply MeasurableSet.univ (kernel.measurable κ)]
+  simp
+
 instance [SFinite μ] [IsSFiniteKernel κ] : SFinite (μ ∘ₘ κ) := by
   rw [Measure.comp_eq_snd_compProd]
   infer_instance
