@@ -60,10 +60,6 @@ lemma const_mul_statInfoFun {a : ℝ} (ha : 0 ≤ a) : a * statInfoFun β γ x =
 
 --TODO: for now I will leave the continuity assumption in some lemmas, it should be derived from the convexity but the lemma is not yet in mathlib, when it gets there we can remove this assumption
 
---There are two ways to separate the cases: `γ ≤ 1` and `γ > 1` or `γ < 1` and `γ > 1`. The first one seems the correct one for now.
-
---TODO: separate these lemmas in some sections, maybe we could put together the lemmas that see `γ` as the variable and the ones that see `x` as the variable, and under those we could further separate the lemmas that have β = 1
-
 section Measurability
 
 lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
@@ -362,14 +358,9 @@ lemma nnReal_mul_fDiv {a : NNReal} :
   simp_rw [const_mul_statInfoFun a.2]
   rfl
 
-
-
 end fDiv
 
-
-
-noncomputable-- maybe this will not be needed, eGamma will be defined from the risk
-def eGamma (γ : ℝ) (μ ν : Measure 𝒳) : EReal := fDiv (statInfoFun 1 γ) μ ν
+section CurvatureMeasure
 
 --should we define this to be some junk value if f is not convex? this way we could avoid having to state the convexity every time
 -- this may be put in some other place, maybe directly in the stieltjes file
@@ -463,7 +454,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     ENNReal.toReal_ofReal (statInfoFun_nonneg _ _ _),
     Real.norm_of_nonneg (statInfoFun_nonneg _ _ _)]
 
-
+end CurvatureMeasure
 
 /-things needed:
 - the stieltjes file only handles functions ℝ → ℝ, do we do the same or do we want to generalize to functions on subsets of ℝ? for example we may want to only consider functions on (0,∞), as they do in the paper Phi-divergences, sufficiency..., moreover the functions we have for the f divergences are convex only on half the real line, so it may be necessary to generalize the stieltjes file. solution: do everything on ℝ, then we can show that for every convex function on (0,∞) we can find a convex function on ℝ that coincides with the original on (0,∞) just by extending it to a linear function with slope equal to the right derivative at 0 on the negavites
