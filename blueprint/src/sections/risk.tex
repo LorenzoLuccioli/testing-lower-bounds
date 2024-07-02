@@ -393,8 +393,8 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
 
 \begin{lemma}
   \label{lem:bayesInv_binary}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesInv_twoHypKernel}
+  \leanok
   \uses{def:bayesInv}
   The Bayesian inverse of a kernel $P : \{0,1\} \rightsquigarrow \mathcal X$ with respect to a prior $\xi \in \mathcal M(\{0,1\})$ is $P_\xi^\dagger(x) = \left(\xi_0\frac{d P(0)}{d(P \circ \xi)}(x), \xi_1\frac{d P(1)}{d(P \circ \xi)}(x)\right)$ (almost surely w.r.t. $P \circ \xi = \xi_0 P(0) + \xi_1 P(1)$).
 \end{lemma}
