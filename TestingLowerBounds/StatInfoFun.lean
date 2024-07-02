@@ -356,15 +356,11 @@ section fDiv
 
 lemma nnReal_mul_fDiv {a : NNReal} :
     a * fDiv (fun x ↦ statInfoFun β γ x) μ ν
-      = fDiv (fun x ↦ statInfoFun β (a * γ) x) (a • μ) ν := by
-  by_cases h_int : Integrable (fun x ↦ statInfoFun β γ ((∂μ/∂ν) x).toReal) ν
-  ·
-    simp [fDiv_of_integrable h_int]
-    sorry
-  ·
-    simp [fDiv_of_not_integrable h_int]
-    sorry
-
+      = fDiv (fun x ↦ statInfoFun (a * β) (a * γ) x) μ ν := by
+  change (a.1 : EReal) * _ = _
+  rw [← fDiv_mul a.2 ((convexOn_statInfoFun β γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)) μ ν]
+  simp_rw [const_mul_statInfoFun a.2]
+  rfl
 
 
 
