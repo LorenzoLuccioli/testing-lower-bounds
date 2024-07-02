@@ -305,8 +305,8 @@ The following is a new definition, which is a natural generalization of the DeGr
 
 \begin{definition}
   \label{def:riskIncrease}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesRiskIncrease}
+  \leanok
   \uses{def:bayesRisk}
   The Bayes risk increase $I^P_{\pi}(\kappa)$ of a kernel $\kappa : \mathcal X \rightsquigarrow \mathcal X'$ with respect to the estimation problem $(P, y, \ell')$ and the prior $\pi \in \mathcal M(\Theta)$ is the difference of the Bayes risk of $(\kappa \circ P, y, \ell')$ and that of $(P, y, \ell')$. That is,
   \begin{align*}
@@ -338,14 +338,14 @@ Use Theorem~\ref{thm:data_proc_bayesRisk}.
 
 \begin{lemma}
   \label{lem:riskIncrease_comp}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesRiskIncrease_comp}
+  \leanok
   \uses{def:riskIncrease}
   For $\kappa : \mathcal X \rightsquigarrow \mathcal X'$ and $\eta : \mathcal X' \rightsquigarrow \mathcal X''$ two Markov kernels,
   $I^P_\pi(\eta \circ \kappa) = I^P_\pi(\kappa) + I^{\kappa \circ P}_\pi(\eta)$~.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{}
 \begin{align*}
 I^P_\pi(\kappa) + I^{\kappa \circ P}_\pi(\eta)
