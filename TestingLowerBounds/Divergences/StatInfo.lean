@@ -58,24 +58,7 @@ lemma toReal_statInfo_eq_toReal_sub [IsFiniteMeasure ν] [IsFiniteMeasure π] :
 lemma statInfo_le_min : statInfo μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) :=
   tsub_le_self
 
--- how do we write the inverted measure of π on the booleans? should we just use `(π {true} • Measure.dirac false + π {false} • Measure.dirac true)` ?
---maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
-noncomputable
-def boolMeasure (a b : ℝ≥0∞) : Measure Bool := a • Measure.dirac false + b • Measure.dirac true
-
-@[simp]
-lemma boolMeasure_apply_false (a b : ℝ≥0∞) : boolMeasure a b {false} = a := by simp [boolMeasure]
-
-@[simp]
-lemma boolMeasure_apply_true (a b : ℝ≥0∞) : boolMeasure a b {true} = b := by simp [boolMeasure]
-
--- lemma measure_eq_boolMeasure : π = boolMeasure (π {false}) (π {true}) := by
---   ext s
---   fin_cases s <;> simp_all [boolMeasure]
-  -- sorry
-
---with this definition we could have:
-
+--with the boolMeasure definition we could have:
 lemma statInfo_comm : statInfo μ ν π = statInfo ν μ (boolMeasure (π {true}) (π {false})) := by
   simp [statInfo, min_comm]
   --we need to prove the same for the bayesBinaryRisk before

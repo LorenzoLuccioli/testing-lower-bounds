@@ -250,19 +250,43 @@ lemma bayesBinaryRisk_eq (μ ν : Measure 𝒳) (π : Measure Bool) :
   rw [bayesianRisk, lintegral_fintype, mul_comm (π {false}), mul_comm (π {true})]
   simp
 
+--TODO: discuss if this is a good idea, if it is then put this in a separate file
+-- how do we write the inverted measure of π on the booleans? should we just use `(π {true} • Measure.dirac false + π {false} • Measure.dirac true)` ?
+--maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
+noncomputable
+def boolMeasure (a b : ℝ≥0∞) : Measure Bool := a • Measure.dirac false + b • Measure.dirac true
+
+@[simp]
+lemma boolMeasure_apply_false (a b : ℝ≥0∞) : boolMeasure a b {false} = a := by simp [boolMeasure]
+
+@[simp]
+lemma boolMeasure_apply_true (a b : ℝ≥0∞) : boolMeasure a b {true} = b := by simp [boolMeasure]
+
+-- lemma measure_eq_boolMeasure : π = boolMeasure (π {false}) (π {true}) := by
+--   ext s
+--   fin_cases s <;> simp_all [boolMeasure]
+  -- sorry
+
+lemma bayesBinaryRisk_smul_smul (μ ν : Measure 𝒳) (π : Measure Bool) (a b : ℝ≥0∞) :
+    bayesBinaryRisk (a • μ) (b • ν) π
+      = bayesBinaryRisk μ ν (boolMeasure (a * π {false}) (b * π {true})) := by
+  sorry
+
 /-- **Data processing inequality** for the Bayes binary risk. -/
 lemma bayesBinaryRisk_le_bayesBinaryRisk_comp (μ ν : Measure 𝒳) (π : Measure Bool)
     (η : kernel 𝒳 𝒳') [IsMarkovKernel η] :
     bayesBinaryRisk μ ν π ≤ bayesBinaryRisk (μ ∘ₘ η) (ν ∘ₘ η) π :=
   (bayesRiskPrior_le_bayesRiskPrior_comp _ _ η).trans_eq (by simp [bayesBinaryRisk])
 
+lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
+
+  sorry
+
 lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ μ π = min (π {true}) (π {false}) * μ Set.univ := by
   rw [bayesBinaryRisk_eq]
-  sorry
 
-lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
   sorry
 
 lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
@@ -282,6 +306,10 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     simp_rw [this]
     simp only [Measure.smul_apply, smul_eq_mul, mul_assoc]
   simp_rw [this]
+  sorry
+
+lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (boolMeasure (π {true}) (π {false})) := by
   sorry
 
 end ProbabilityTheory
