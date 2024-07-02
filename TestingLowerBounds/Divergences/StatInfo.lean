@@ -55,8 +55,10 @@ lemma toReal_statInfo_eq_toReal_sub [IsFiniteMeasure ν] [IsFiniteMeasure π] :
   · simp only [ne_eq, min_eq_top, not_and]
     exact fun _ ↦  ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
 
-lemma statInfo_le_min : statInfo μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
-  rw [statInfo]
-  exact tsub_le_self
+lemma statInfo_le_min : statInfo μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) :=
+  tsub_le_self
+
+
+
 
 end ProbabilityTheory
