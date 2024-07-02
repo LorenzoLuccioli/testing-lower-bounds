@@ -52,6 +52,12 @@ lemma statInfoFun_of_one : statInfoFun 1 γ x = if γ ≤ 1 then max 0 (γ - x) 
 @[simp]
 lemma statInfoFun_of_zero : statInfoFun 0 γ x = 0 := by simp_all [statInfoFun, le_of_lt]
 
+lemma const_mul_statInfoFun {a : ℝ} (ha : 0 ≤ a) : a * statInfoFun β γ x = statInfoFun (a * β) (a * γ) x := by
+  simp_rw [statInfoFun, mul_ite, mul_max_of_nonneg _ _ ha, mul_sub, mul_zero, mul_assoc]
+  rcases lt_or_eq_of_le ha with (ha | rfl)
+  · simp_rw [mul_le_mul_left ha]
+  · simp
+
 --TODO: for now I will leave the continuity assumption in some lemmas, it should be derived from the convexity but the lemma is not yet in mathlib, when it gets there we can remove this assumption
 
 --There are two ways to separate the cases: `γ ≤ 1` and `γ > 1` or `γ < 1` and `γ > 1`. The first one seems the correct one for now.
