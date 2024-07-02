@@ -397,6 +397,16 @@ lemma fDiv_statInfoFun_of_nonpos_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
 
 end fDiv
 
+lemma max_eq_add_add_abs_sub {α : Type u_1} [LinearOrderedField α] (a b : α) :
+    max a b = 2⁻¹ * (a + b + |a - b|) := by
+  rw [← max_add_min a, ← max_sub_min_eq_abs', add_sub_left_comm, add_sub_cancel_right]
+  ring
+
+lemma min_eq_add_sub_abs_sub {α : Type u_1} [LinearOrderedField α] (a b : α) :
+    min a b = 2⁻¹ * (a + b - |a - b|) := by
+  rw [← min_add_max a, ← max_sub_min_eq_abs', add_sub_assoc, sub_sub_cancel]
+  ring
+
 section CurvatureMeasure
 
 --should we define this to be some junk value if f is not convex? this way we could avoid having to state the convexity every time
