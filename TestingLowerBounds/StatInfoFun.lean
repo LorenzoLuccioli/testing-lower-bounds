@@ -5,9 +5,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import TestingLowerBounds.ForMathlib.ByParts
 import TestingLowerBounds.ForMathlib.LeftRightDeriv
-import TestingLowerBounds.ForMathlib.Stieltjes
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
-import Mathlib.Tactic.FunProp.Measurable
 import Mathlib.MeasureTheory.Constructions.Prod.Integral
 
 /-!
@@ -413,32 +411,32 @@ section CurvatureMeasure
 --should we define this to be some junk value if f is not convex? this way we could avoid having to state the convexity every time
 -- this may be put in some other place, maybe directly in the stieltjes file
 noncomputable
-def curvatureMeasure (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : Measure ℝ :=
-  (StieltjesFunction.rightDeriv_of_convex f hf).measure
+def curvatureMeasure {f : ℝ → ℝ} (hf : ConvexOn ℝ univ f) : Measure ℝ :=
+  hf.rightDerivStieltjes.measure
 
-instance (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : IsLocallyFiniteMeasure (curvatureMeasure f hf) := by
+instance (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : IsLocallyFiniteMeasure (curvatureMeasure hf) := by
   unfold curvatureMeasure
   infer_instance
 
 lemma generalized_taylor (hf : ConvexOn ℝ univ f) (hf_cont : Continuous f) {a b : ℝ} :
-    f b - f a - (rightDeriv f a) * (b - a)  = ∫ x in a..b, b - x ∂(curvatureMeasure f hf) := by
+    f b - f a - (rightDeriv f a) * (b - a)  = ∫ x in a..b, b - x ∂(curvatureMeasure hf) := by
   have h_int : IntervalIntegrable (rightDeriv f) ℙ a b := hf.rightDeriv_mono.intervalIntegrable
   rw [← intervalIntegral.integral_eq_sub_of_hasDeriv_right hf_cont.continuousOn
-    (fun x _ ↦ hf.hadDerivWithinAt_rightDeriv_of_convexOn x) h_int]
+    (fun x _ ↦ hf.hadDerivWithinAt_rightDeriv x) h_int]
   simp_rw [← neg_sub _ b, intervalIntegral.integral_neg, curvatureMeasure,
     mul_neg, sub_neg_eq_add, mul_comm _ (a - b)]
   let g := StieltjesFunction.id + StieltjesFunction.const (-b)
   have hg : g = fun x ↦ x - b := rfl
-  rw [← hg, integral_stieltjes_meas_by_parts g (rightDeriv_of_convex f hf)]
+  rw [← hg, integral_stieltjes_meas_by_parts g hf.rightDerivStieltjes]
   simp only [Real.volume_eq_stieltjes_id, add_apply, id_apply, id_eq, const_apply, add_right_neg,
     zero_mul, zero_sub, measure_add, measure_const, add_zero, neg_sub, sub_neg_eq_add, g]
   rfl
 
 lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f)
     (hf_cont : Continuous f) (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) :
-    f t = ∫ y, statInfoFun 1 y t ∂(curvatureMeasure f hf_cvx) := by
+    f t = ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) := by
   have h :
-      f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure f hf_cvx) :=
+      f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure hf_cvx) :=
     generalized_taylor hf_cvx hf_cont
   rw [hf_one, hfderiv_one, sub_zero, zero_mul, sub_zero] at h
   rw [h]
@@ -455,7 +453,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
     (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
-    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f hf_cvx) := by
+    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure hf_cvx) := by
   have h_int' (γ : ℝ) : Integrable (fun x ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ν := by
     refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _
       stronglyMeasurable_statInfoFun3 ?_ ?_
@@ -474,9 +472,9 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
     refine stronglymeasurable_statInfoFun.measurable.comp ?_
     refine (measurable_const.prod_mk measurable_snd).prod_mk ?_
     exact ((Measure.measurable_rnDeriv μ ν).comp measurable_fst).ennreal_toReal
-  have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure f hf_cvx ∂ν
+  have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure hf_cvx ∂ν
       = (∫⁻ x, ∫⁻ γ, ENNReal.ofReal (statInfoFun 1 γ ((∂μ/∂ν) x).toReal)
-        ∂curvatureMeasure f hf_cvx ∂ν).toReal := by
+        ∂curvatureMeasure hf_cvx ∂ν).toReal := by
     rw [integral_eq_lintegral_of_nonneg_ae]
     rotate_left
     · exact eventually_of_forall fun _ ↦ (integral_nonneg (fun _ ↦ statInfoFun_nonneg _ _ _))
