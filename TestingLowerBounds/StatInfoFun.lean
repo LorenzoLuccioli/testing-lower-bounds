@@ -355,8 +355,7 @@ lemma integrable_statInfoFun_rnDeriv [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
   · exact derivAtTop_statInfoFun_ne_top β γ
 
 lemma nnReal_mul_fDiv {a : NNReal} :
-    a * fDiv (fun x ↦ statInfoFun β γ x) μ ν
-      = fDiv (fun x ↦ statInfoFun (a * β) (a * γ) x) μ ν := by
+    a * fDiv (statInfoFun β γ) μ ν = fDiv (fun x ↦ statInfoFun (a * β) (a * γ) x) μ ν := by
   change (a.1 : EReal) * _ = _
   rw [← fDiv_mul a.2 ((convexOn_statInfoFun β γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)) μ ν]
   simp_rw [const_mul_statInfoFun a.2]
@@ -364,27 +363,27 @@ lemma nnReal_mul_fDiv {a : NNReal} :
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν := by
+    fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonneg_of_le hβ hγ, zero_mul, add_zero, statInfoFun_of_le hγ]
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : β < γ) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν
+    fDiv (statInfoFun β γ) μ ν
       = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν + β * (μ.singularPart ν) univ := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonneg_of_gt hβ hγ, statInfoFun_of_gt hγ]
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : γ ≤ β) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν
+    fDiv (statInfoFun β γ) μ ν
       = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν - β * (μ.singularPart ν) univ := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonpos_of_le hβ hγ, statInfoFun_of_le hγ, neg_mul, ← sub_eq_add_neg]
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : β < γ) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν := by
+    fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonpos_of_gt hβ hγ, statInfoFun_of_gt hγ, zero_mul, add_zero]
 
@@ -451,7 +450,7 @@ lemma integral_max_eq_integral_abs' [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
 
 lemma fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
+    fDiv (statInfoFun β γ) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
       + β * (μ.singularPart ν) univ + γ * ν univ - β * μ univ) := by
   rw [fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le hβ hγ, integral_max_eq_integral_abs,
     sub_eq_add_neg, add_assoc, add_comm (- _), ← add_assoc, ← sub_eq_add_neg, add_assoc,
@@ -461,7 +460,7 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le [IsFiniteMeasure μ] [IsF
 
 lemma fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : β < γ) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
+    fDiv (statInfoFun β γ) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
       + β * (μ.singularPart ν) univ + β * μ univ - γ * ν univ) := by
   have h_eq :
       (β : EReal) * ((μ.singularPart ν) univ)
@@ -476,7 +475,7 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_gt [IsFiniteMeasure μ] [IsF
 
 lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : γ ≤ β) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
+    fDiv (statInfoFun β γ) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
       - β * (μ.singularPart ν) univ + γ * ν univ - β * μ univ) := by
   have h_eq :
       (β : EReal) * ((μ.singularPart ν) univ)
@@ -491,7 +490,7 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_le [IsFiniteMeasure μ] [IsF
 
 lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : β < γ) :
-    fDiv (fun x ↦ statInfoFun β γ x) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
+    fDiv (statInfoFun β γ) μ ν = (2 : ℝ)⁻¹ * (∫ x, |β * ((∂μ/∂ν) x).toReal - γ| ∂ν
       - β * (μ.singularPart ν) univ + β * μ univ - γ * ν univ) := by
   rw [fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt hβ hγ, integral_max_eq_integral_abs']
   simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _), ← EReal.coe_mul, sub_eq_add_neg,
