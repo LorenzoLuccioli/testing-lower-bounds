@@ -250,6 +250,9 @@ lemma bayesBinaryRisk_eq (μ ν : Measure 𝒳) (π : Measure Bool) :
   rw [bayesianRisk, lintegral_fintype, mul_comm (π {false}), mul_comm (π {true})]
   simp
 
+variable (π : Measure Bool)
+--we can avoid using this new object at least for the case where we have to swap the values by using something like π.map swap
+#check π.map (Equiv.swap true false)
 --TODO: discuss if this is a good idea, if it is then put this in a separate file
 -- how do we write the inverted measure of π on the booleans? should we just use `(π {true} • Measure.dirac false + π {false} • Measure.dirac true)` ?
 --maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
