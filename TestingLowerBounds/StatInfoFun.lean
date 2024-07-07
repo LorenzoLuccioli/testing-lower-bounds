@@ -361,27 +361,27 @@ lemma nnReal_mul_fDiv {a : NNReal} :
   simp_rw [const_mul_statInfoFun a.2]
   rfl
 
-lemma fDiv_statInfoFun_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
     fDiv (fun x ↦ statInfoFun β γ x) μ ν = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonneg_of_le hβ hγ, zero_mul, add_zero, statInfoFun_of_le hγ]
 
-lemma fDiv_statInfoFun_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : β < γ) :
     fDiv (fun x ↦ statInfoFun β γ x) μ ν
       = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν + β * (μ.singularPart ν) univ := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonneg_of_gt hβ hγ, statInfoFun_of_gt hγ]
 
-lemma fDiv_statInfoFun_of_nonpos_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : γ ≤ β) :
     fDiv (fun x ↦ statInfoFun β γ x) μ ν
       = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν - β * (μ.singularPart ν) univ := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonpos_of_le hβ hγ, statInfoFun_of_le hγ, neg_mul, ← sub_eq_add_neg]
 
-lemma fDiv_statInfoFun_of_nonpos_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : β < γ) :
     fDiv (fun x ↦ statInfoFun β γ x) μ ν = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
