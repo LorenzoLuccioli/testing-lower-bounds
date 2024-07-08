@@ -22,6 +22,8 @@ import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 -/
 
+--TODO: this file is being merged into mathlib, see #14107, when it is merged and we bump remove this file
+
 open scoped ENNReal
 
 namespace EReal
