@@ -301,12 +301,6 @@ lemma bayesBinaryRisk_le_bayesBinaryRisk_comp (μ ν : Measure 𝒳) (π : Measu
     bayesBinaryRisk μ ν π ≤ bayesBinaryRisk (μ ∘ₘ η) (ν ∘ₘ η) π :=
   (bayesRiskPrior_le_bayesRiskPrior_comp _ _ η).trans_eq (by simp [bayesBinaryRisk])
 
-lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ μ π = min (π {true}) (π {false}) * μ Set.univ := by
-  rw [bayesBinaryRisk_eq]
-
-  sorry
-
 lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     bayesBinaryRisk (a • Measure.dirac x) (b • Measure.dirac x) π
       = min (π {true} * b) (π {false} * a) := by
@@ -329,6 +323,44 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
   --this is a consequence of the DPI and `bayesBinaryRisk_dirac`, if we take η as the forget kernel that sends everything to the unit type
   sorry
+
+lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ μ π = min (π {false}) (π {true}) * μ Set.univ := by
+  refine le_antisymm ?_ ?_
+  · convert bayesBinaryRisk_le_min μ μ π using 1
+    rw [min_mul_mul_right]
+  · rw [bayesBinaryRisk_eq]
+    calc
+      _ ≥ ⨅ (κ : kernel 𝒳 Bool), ⨅ (_ : IsMarkovKernel κ),
+          min (π {false}) (π {true}) * (μ ∘ₘ κ) {false}
+          + min (π {false}) (π {true}) * (μ ∘ₘ κ) {true} := by
+        gcongr <;> simp
+      _ = ⨅ (κ : kernel 𝒳 Bool), ⨅ (_ : IsMarkovKernel κ),
+          min (π {false}) (π {true}) * μ Set.univ := by
+        simp_rw [← mul_add, ← measure_union (show Disjoint {false} {true} from by simp)
+          (by trivial), (set_fintype_card_eq_univ_iff ({false} ∪ {true})).mp rfl,
+          Measure.comp_apply_univ]
+      _ = _ := by
+        rw [iInf_subtype']
+        convert iInf_const
+        simp
+        use
+        use fun _ ↦ (Measure.dirac true)
+        have : (fun x ↦ Measure.dirac true) ∈ kernel 𝒳 Bool := by
+
+
+          sorry
+
+
+
+        have (κ : kernel 𝒳 Bool) : ⨅ (hκ : IsMarkovKernel κ), min (π {false}) (π {true}) * μ Set.univ = min (π {false}) (π {true}) * μ Set.univ := by
+          rw [iInf_const]
+
+          sorry
+
+        -- simp_rw [iInf_const ]
+
+        sorry
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
