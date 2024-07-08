@@ -316,11 +316,10 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
         + π {false} * ((a • Measure.dirac x) ∘ₘ κ) {true}
       = (π {true} * b) * κ x {false} + (π {false} * a) * κ x {true} := by
     have (b : ℝ≥0∞) : (b • Measure.dirac x) ∘ₘ κ = b • κ x := by
-      ext s hs
-      simp only [Measure.bind_apply hs (kernel.measurable _), lintegral_smul_measure,
-        Measure.smul_apply, smul_eq_mul]
-      rw [lintegral_dirac']
-      exact kernel.measurable_coe _ hs
+      ext <;>
+      · rw [Measure.bind_apply (by trivial) (kernel.measurable _), lintegral_smul_measure,
+        Measure.smul_apply, smul_eq_mul, lintegral_dirac']
+        exact kernel.measurable_coe _ trivial
     simp_rw [this]
     simp only [Measure.smul_apply, smul_eq_mul, mul_assoc]
   simp_rw [this]
