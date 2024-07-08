@@ -83,16 +83,16 @@ lemma coe_mul_add_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
   by_cases hx0 : x = 0
   · simp [hx0]
   have hx_pos : 0 < x := hx_nonneg.lt_of_ne' hx0
-  induction' y using EReal.rec with y
+  induction y
   · simp [EReal.coe_mul_bot_of_pos hx_pos]
-  · induction' z using EReal.rec with z
+  · induction z
     · simp [EReal.coe_mul_bot_of_pos hx_pos]
     · norm_cast
       rw [mul_add]
     · simp only [coe_add_top, EReal.coe_mul_top_of_pos hx_pos]
       rw [← EReal.coe_mul, EReal.coe_add_top]
   · simp only [EReal.coe_mul_top_of_pos hx_pos]
-    induction' z using EReal.rec with z
+    induction z
     · simp [EReal.coe_mul_bot_of_pos hx_pos]
     · simp only [top_add_coe, EReal.coe_mul_top_of_pos hx_pos]
       rw [← EReal.coe_mul, EReal.top_add_coe]
@@ -104,7 +104,7 @@ lemma add_mul_coe_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
   exact EReal.coe_mul_add_of_nonneg hx_nonneg y z
 
 lemma add_sub_cancel (x : EReal) (y : ℝ) : x + y - y = x := by
-  induction' x using EReal.rec with x
+  induction x
   · simp
   · norm_cast
     ring
@@ -185,24 +185,24 @@ lemma coe_add_mul_of_nonneg (x : EReal) {y z : ℝ} (hy : 0 ≤ y) (hz : 0 ≤ z
   exact EReal.mul_add_coe_of_nonneg x hy hz
 
 lemma toReal_nonneg {x : EReal} (hx : 0 ≤ x) : 0 ≤ x.toReal := by
-  induction' x using EReal.rec with x
+  induction x
   · norm_num
   · simp only [toReal_coe]
     exact EReal.coe_nonneg.mp hx
   · norm_num
 
 lemma toReal_nonpos {x : EReal} (hx : x ≤ 0) : x.toReal ≤ 0 := by
-  induction' x using EReal.rec with x
+  induction x
   · norm_num
   · simp only [toReal_coe]
     exact EReal.coe_nonpos.mp hx
   · norm_num
 
 lemma toReal_ne_zero_iff {x : EReal} : x.toReal ≠ 0 ↔ x ≠ 0 ∧ x ≠ ⊤ ∧ x ≠ ⊥ := by
-  induction' x using EReal.rec with x <;> norm_num
+  induction x <;> norm_num
 
 lemma toReal_eq_zero_iff {x : EReal} : x.toReal = 0 ↔ x = 0 ∨ x = ⊤ ∨ x = ⊥ := by
-  induction' x using EReal.rec with x <;> norm_num
+  induction x <;> norm_num
 
 @[simp]
 lemma nsmul_eq_mul {n : ℕ} {x : EReal} : n • x = n * x := by
@@ -252,7 +252,7 @@ theorem toENNReal_of_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
   exact zero_ne_top hx
 
 theorem toENNReal_eq_zero_iff {x : EReal} : x.toENNReal = 0 ↔ x ≤ 0 := by
-  induction' x using EReal.rec with x <;> simp [toENNReal]
+  induction x <;> simp [toENNReal]
 
 @[simp]
 theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
@@ -273,13 +273,13 @@ theorem toENNReal_coe {x : ENNReal} : (x : EReal).toENNReal = x := by
   · simp [h_top]
 
 theorem toENNReal_le_toENNReal {x y : EReal} (h : x ≤ y) : x.toENNReal ≤ y.toENNReal := by
-  induction' x using EReal.rec with x
+  induction x
   · simp
   · by_cases hy_top : y = ⊤
     · simp [hy_top]
     simp_all [h, toENNReal]
     refine ENNReal.ofReal_le_ofReal ?_
-    refine EReal.toReal_le_toReal h (coe_ne_bot x) hy_top
+    refine EReal.toReal_le_toReal h (coe_ne_bot _) hy_top
   · simp_all
 
 end EReal
