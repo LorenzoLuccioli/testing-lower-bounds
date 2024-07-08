@@ -286,15 +286,14 @@ lemma boolMeasure_apply_false (a b : ℝ≥0∞) : boolMeasure a b {false} = a :
 @[simp]
 lemma boolMeasure_apply_true (a b : ℝ≥0∞) : boolMeasure a b {true} = b := by simp [boolMeasure]
 
--- lemma measure_eq_boolMeasure : π = boolMeasure (π {false}) (π {true}) := by
---   ext s
---   fin_cases s <;> simp_all [boolMeasure]
-  -- sorry
+lemma measure_eq_boolMeasure : π = boolMeasure (π {false}) (π {true}) := by
+  ext <;> simp
 
+/-- `B (a•μ, b•ν; π) = B (μ, ν; (a*π₀, b*π₁)).` -/
 lemma bayesBinaryRisk_smul_smul (μ ν : Measure 𝒳) (π : Measure Bool) (a b : ℝ≥0∞) :
     bayesBinaryRisk (a • μ) (b • ν) π
-      = bayesBinaryRisk μ ν (boolMeasure (a * π {false}) (b * π {true})) := by
-  sorry
+      = bayesBinaryRisk μ ν (π.withDensity (fun x ↦ bif x then b else a)) := by
+  simp [bayesBinaryRisk_eq, Measure.comp_smul_left, lintegral_dirac, mul_assoc]
 
 /-- **Data processing inequality** for the Bayes binary risk. -/
 lemma bayesBinaryRisk_le_bayesBinaryRisk_comp (μ ν : Measure 𝒳) (π : Measure Bool)
