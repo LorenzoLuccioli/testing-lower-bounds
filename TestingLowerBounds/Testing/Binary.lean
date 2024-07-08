@@ -332,7 +332,7 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
   sorry
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (boolMeasure (π {true}) (π {false})) := by
+    bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
   sorry
 
 end ProbabilityTheory
