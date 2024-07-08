@@ -301,11 +301,6 @@ lemma bayesBinaryRisk_le_bayesBinaryRisk_comp (μ ν : Measure 𝒳) (π : Measu
     bayesBinaryRisk μ ν π ≤ bayesBinaryRisk (μ ∘ₘ η) (ν ∘ₘ η) π :=
   (bayesRiskPrior_le_bayesRiskPrior_comp _ _ η).trans_eq (by simp [bayesBinaryRisk])
 
-lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
-
-  sorry
-
 lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ μ π = min (π {true}) (π {false}) * μ Set.univ := by
   rw [bayesBinaryRisk_eq]
@@ -329,6 +324,11 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     simp_rw [this]
     simp only [Measure.smul_apply, smul_eq_mul, mul_assoc]
   simp_rw [this]
+  sorry
+
+lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
+  --this is a consequence of the DPI and `bayesBinaryRisk_dirac`, if we take η as the forget kernel that sends everything to the unit type
   sorry
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
