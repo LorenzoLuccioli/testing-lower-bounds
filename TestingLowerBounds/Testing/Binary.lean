@@ -343,22 +343,9 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
       _ = _ := by
         rw [iInf_subtype']
         convert iInf_const
-        simp
-        use
-        use fun _ ↦ (Measure.dirac true)
-        have : (fun x ↦ Measure.dirac true) ∈ kernel 𝒳 Bool := by
-
-
-          sorry
-
-
-
-        have (κ : kernel 𝒳 Bool) : ⨅ (hκ : IsMarkovKernel κ), min (π {false}) (π {true}) * μ Set.univ = min (π {false}) (π {true}) * μ Set.univ := by
-          rw [iInf_const]
-
-          sorry
-
-        -- simp_rw [iInf_const ]
+        simp only [nonempty_subtype, Subtype.exists]
+        refine ⟨kernel.const _ (Measure.dirac true),
+          kernel.measurable (kernel.const 𝒳 (Measure.dirac true)), ?_⟩
 
         sorry
 
