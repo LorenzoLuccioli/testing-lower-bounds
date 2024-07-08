@@ -250,11 +250,32 @@ lemma bayesBinaryRisk_eq (μ ν : Measure 𝒳) (π : Measure Bool) :
   rw [bayesianRisk, lintegral_fintype, mul_comm (π {false}), mul_comm (π {true})]
   simp
 
-variable (π : Measure Bool)
---we can avoid using this new object at least for the case where we have to swap the values by using something like π.map swap
-#check π.map (Equiv.swap true false)
---TODO: discuss if this is a good idea, if it is then put this in a separate file
--- how do we write the inverted measure of π on the booleans? should we just use `(π {true} • Measure.dirac false + π {false} • Measure.dirac true)` ?
+variable {π : Measure Bool}
+
+--rename this and put it in a better place
+lemma mem_set_bool (s : Set Bool) : s = ∅ ∨ s = {true} ∨ s = {false} ∨ s = {true, false} := by
+  by_cases h1 : true ∈ s <;> by_cases h2 : false ∈ s
+  · refine Or.inr (Or.inr (Or.inr ?_))
+    ext x
+    induction x <;> simp [h1, h2]
+  · refine Or.inr (Or.inl ?_)
+    ext x
+    induction x <;> simp [h1, h2]
+  · refine Or.inr (Or.inr (Or.inl ?_))
+    ext x
+    induction x <;> simp [h1, h2]
+  · left
+    ext x
+    induction x <;> simp [h1, h2]
+
+@[ext]
+lemma _root_.MeasureTheory.Measure.measure_bool_ext {π₁ π₂ : Measure Bool}
+    (h_false : π₁ {false} = π₂ {false}) (h_true : π₁ {true} = π₂ {true}) : π₁ = π₂ := by
+  ext s
+  obtain (rfl | rfl | rfl | rfl) := mem_set_bool s
+    <;> try simp only [measure_empty, h_true, h_false]
+  rw [Set.insert_eq, measure_union, measure_union, h_true, h_false] <;> simp
+
 --maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
 noncomputable
 def boolMeasure (a b : ℝ≥0∞) : Measure Bool := a • Measure.dirac false + b • Measure.dirac true
