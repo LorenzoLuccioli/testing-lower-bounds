@@ -353,8 +353,9 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
 
 lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
-  --this is a consequence of the DPI and `bayesBinaryRisk_dirac`, if we take η as the forget kernel that sends everything to the unit type
-  sorry
+  let η : kernel 𝒳 Unit := kernel.const 𝒳 (Measure.dirac ())
+  convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π η
+  simp_rw [η, Measure.comp_const, bayesBinaryRisk_dirac]
 
 lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ μ π = min (π {false}) (π {true}) * μ Set.univ := by
