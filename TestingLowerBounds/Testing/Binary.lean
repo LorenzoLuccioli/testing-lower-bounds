@@ -301,6 +301,15 @@ lemma bayesBinaryRisk_le_bayesBinaryRisk_comp (μ ν : Measure 𝒳) (π : Measu
     bayesBinaryRisk μ ν π ≤ bayesBinaryRisk (μ ∘ₘ η) (ν ∘ₘ η) π :=
   (bayesRiskPrior_le_bayesRiskPrior_comp _ _ η).trans_eq (by simp [bayesBinaryRisk])
 
+lemma nonempty_subtype_isMarkovKernel_of_nonempty {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳}
+    {𝒴 : Type*} {m𝒴 : MeasurableSpace 𝒴} [Nonempty 𝒴] :
+    Nonempty (Subtype (@IsMarkovKernel 𝒳 𝒴 m𝒳 m𝒴)) := by
+  simp only [nonempty_subtype, Subtype.exists]
+  let y : 𝒴 := Classical.ofNonempty
+  refine ⟨kernel.const _ (Measure.dirac y), kernel.measurable (kernel.const 𝒳 _), ?_⟩
+  change IsMarkovKernel (kernel.const 𝒳 (Measure.dirac y))
+  exact kernel.isMarkovKernel_const
+
 lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     bayesBinaryRisk (a • Measure.dirac x) (b • Measure.dirac x) π
       = min (π {true} * b) (π {false} * a) := by
