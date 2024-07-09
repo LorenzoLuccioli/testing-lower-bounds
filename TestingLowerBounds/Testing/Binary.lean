@@ -312,7 +312,7 @@ lemma nonempty_subtype_isMarkovKernel_of_nonempty {𝒳 : Type*} {m𝒳 : Measur
 
 lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     bayesBinaryRisk (a • Measure.dirac x) (b • Measure.dirac x) π
-      = min (π {true} * b) (π {false} * a) := by
+      = min (π {false} * a) (π {true} * b) := by
   rw [bayesBinaryRisk_eq]
   have (κ : kernel 𝒳 Bool) [IsMarkovKernel κ] :
       π {true} * ((b • Measure.dirac x) ∘ₘ κ) {false}
@@ -336,14 +336,14 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     · split_ifs with h <;> simp [le_of_not_ge, h]
     · split_ifs <;> exact kernel.isMarkovKernel_const
   · calc
-      _ ≥ ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {true} * b) (π {false} * a) * (κ x) {false}
-          + min (π {true} * b) (π {false} * a) * (κ x) {true} := by
+      _ ≥ ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false} * a) (π {true} * b) * (κ x) {false}
+          + min (π {false} * a) (π {true} * b) * (κ x) {true} := by
         gcongr <;> simp
-      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {true} * b) (π {false} * a) * (κ x) Set.univ := by
+      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false} * a) (π {true} * b) * (κ x) Set.univ := by
         simp_rw [← mul_add, ← measure_union (show Disjoint {false} {true} from by simp)
           (by trivial), (set_fintype_card_eq_univ_iff ({false} ∪ {true})).mp rfl]
         rfl
-      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {true} * b) (π {false} * a) := by
+      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false} * a) (π {true} * b) := by
         simp_rw [measure_univ, mul_one]
         rfl
       _ = _ := by
