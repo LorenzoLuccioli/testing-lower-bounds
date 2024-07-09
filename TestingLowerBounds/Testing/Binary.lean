@@ -369,7 +369,7 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
   have h2 : (Measure.map Bool.not π) {false} = π {true} := by
     rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
   simp_rw [bayesBinaryRisk_eq, h1, h2, add_comm, iInf_subtype']
-  -- from this point on the proor is basically a change of variable inside the iInf, to do this I define an equivalence between Subtype IsMarkovKernel and itself, maybe something can be separated as a different lemma, but I'm not sure how useful this would be
+  -- from this point on the proor is basically a change of variable inside the iInf, to do this I define an equivalence between Subtype IsMarkovKernel and itself, maybe it can be shortened of something can be separated as a different lemma, but I'm not sure how useful this would be
   let e : (kernel 𝒳 Bool) ≃ (kernel 𝒳 Bool) := by
     have h_id : kernel.comap (kernel.deterministic Bool.not (fun _ a ↦ a)) Bool.not (fun _ a ↦ a)
         = kernel.id := by
