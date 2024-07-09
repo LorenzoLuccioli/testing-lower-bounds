@@ -417,16 +417,6 @@ lemma integrable_f_rnDeriv_compProd_right_iff [IsFiniteMeasure μ]
 
 end Integrable
 
--- TODO: in this file there is also `Measure.compProd_const` that seems to be exactly the same as this lemma, I think one of the two should be removed
-/--The composition product of a measure and a constant kernel is the product between the two
-measures.-/
-@[simp]
-lemma compProd_const {ν : Measure β} [SFinite ν] [SFinite μ] :
-    μ ⊗ₘ (kernel.const α ν) = μ.prod ν := by
-  ext s hs
-  rw [Measure.compProd_apply hs, Measure.prod_apply hs]
-  simp_rw [kernel.const_apply]
-
 lemma compProd_apply_toReal [SFinite μ] [IsFiniteKernel κ]
     {s : Set (α × β)} (hs : MeasurableSet s) :
     ((μ ⊗ₘ κ) s).toReal = ∫ x, (κ x (Prod.mk x ⁻¹' s)).toReal ∂μ := by
