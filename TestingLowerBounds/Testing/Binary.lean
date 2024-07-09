@@ -323,8 +323,7 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
       · rw [Measure.bind_apply (by trivial) (kernel.measurable _), lintegral_smul_measure,
           Measure.smul_apply, smul_eq_mul, lintegral_dirac']
         exact kernel.measurable_coe _ trivial
-    simp_rw [this]
-    simp only [Measure.smul_apply, smul_eq_mul, mul_assoc]
+    simp_rw [this, Measure.smul_apply, smul_eq_mul, mul_assoc]
   simp_rw [this]
   refine le_antisymm ?_ ?_
   · let η : kernel 𝒳 Bool :=
@@ -379,6 +378,54 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
-  sorry
+  have h_true : (Bool.not ⁻¹' {true}) = {false} := by
+    ext x
+    simp
+  have h_false : (Bool.not ⁻¹' {false}) = {true} := by
+    ext x
+    simp
+  have h1 : (Measure.map Bool.not π) {true} = π {false} := by
+    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), h_true]
+  have h2 : (Measure.map Bool.not π) {false} = π {true} := by
+    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), h_false]
+  simp_rw [bayesBinaryRisk_eq, h1, h2, add_comm, iInf_subtype']
+  -- from this point on the proor is basically a change of variable inside the iInf
+  let e : (kernel 𝒳 Bool) ≃ (kernel 𝒳 Bool) := by
+    have h_id : kernel.comap (kernel.deterministic Bool.not (fun _ a ↦ a)) Bool.not (fun _ a ↦ a)
+        = kernel.id := by
+      ext x : 1
+      simp_rw [kernel.comap_apply, kernel.deterministic_apply, kernel.id_apply, Bool.not_not]
+    refine ⟨fun κ ↦ (kernel.deterministic Bool.not (fun _ a ↦ a)) ∘ₖ κ,
+      fun κ ↦ (kernel.deterministic Bool.not (fun _ a ↦ a)) ∘ₖ κ, fun κ ↦ ?_, fun κ ↦ ?_⟩ <;>
+    · dsimp
+      ext x : 1
+      rw [← kernel.comp_assoc, kernel.comp_deterministic_eq_comap, h_id, kernel.id_comp]
+  let e' : (Subtype (@IsMarkovKernel 𝒳 Bool _ _)) ≃ (Subtype (@IsMarkovKernel 𝒳 Bool _ _)) := by
+    refine ⟨?_, ?_, fun κ ↦ ?_, fun κ ↦ ?_⟩
+    · refine fun ⟨κ, hκ⟩ ↦ ⟨e κ, ?_⟩
+      simp only [Equiv.coe_fn_mk, e]
+      infer_instance
+    · refine fun ⟨κ, hκ⟩ ↦ ⟨e.symm κ, ?_⟩
+      simp only [Equiv.coe_fn_symm_mk, e]
+      infer_instance
+    · simp
+    · simp
+  rw [← Equiv.iInf_comp e']
+  congr with κ
+  simp only [Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk, MeasurableSpace.measurableSet_top, e', e]
+  have h3 b : Set.indicator {true} (1 : Bool → ℝ≥0∞) b.not = Set.indicator {false} 1 b := by
+    cases b <;> simp
+  have h4 b : Set.indicator {false} (1 : Bool → ℝ≥0∞) b.not = Set.indicator {true} 1 b := by
+    cases b <;> simp
+  congr 2 <;>
+  · rw [Measure.bind_apply (by trivial) (kernel.measurable _), Measure.bind_apply (by trivial) (kernel.measurable _)]
+    congr with x
+    rw [kernel.comp_apply']
+    simp only [Measure.dirac_apply' _ (show MeasurableSet {true} by trivial),
+      Measure.dirac_apply' _ (show MeasurableSet {false} by trivial), kernel.deterministic_apply]
+    swap; trivial
+    simp [h3, h4]
+
+
 
 end ProbabilityTheory
