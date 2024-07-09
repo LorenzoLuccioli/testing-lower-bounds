@@ -322,24 +322,12 @@ lemma nonempty_subtype_isMarkovKernel_of_nonempty {𝒳 : Type*} {m𝒳 : Measur
   change IsMarkovKernel (kernel.const 𝒳 (Measure.dirac y))
   exact kernel.isMarkovKernel_const
 
-lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk (a • Measure.dirac x) (b • Measure.dirac x) π
-      = min (π {false} * a) (π {true} * b) := by
+lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ μ π = min (π {false}) (π {true}) * μ Set.univ := by
   rw [bayesBinaryRisk_eq]
-  have (κ : kernel 𝒳 Bool) [IsMarkovKernel κ] :
-      π {true} * ((b • Measure.dirac x) ∘ₘ κ) {false}
-        + π {false} * ((a • Measure.dirac x) ∘ₘ κ) {true}
-      = (π {true} * b) * κ x {false} + (π {false} * a) * κ x {true} := by
-    have (b : ℝ≥0∞) : (b • Measure.dirac x) ∘ₘ κ = b • κ x := by
-      ext <;>
-      · rw [Measure.bind_apply (by trivial) (kernel.measurable _), lintegral_smul_measure,
-          Measure.smul_apply, smul_eq_mul, lintegral_dirac']
-        exact kernel.measurable_coe _ trivial
-    simp_rw [this, Measure.smul_apply, smul_eq_mul, mul_assoc]
-  simp_rw [this]
   refine le_antisymm ?_ ?_
   · let η : kernel 𝒳 Bool :=
-      if (π {true} * b) ≤ (π {false} * a) then (kernel.const 𝒳 (Measure.dirac false))
+      if π {true} ≤ π {false} then (kernel.const 𝒳 (Measure.dirac false))
         else (kernel.const 𝒳 (Measure.dirac true))
     convert iInf_le_of_le η ?_
     simp_rw [η]
@@ -347,34 +335,6 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     · split_ifs with h <;> simp [le_of_not_ge, h]
     · split_ifs <;> exact kernel.isMarkovKernel_const
   · calc
-      _ ≥ ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false} * a) (π {true} * b) * (κ x) {false}
-          + min (π {false} * a) (π {true} * b) * (κ x) {true} := by
-        gcongr <;> simp
-      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false} * a) (π {true} * b) * (κ x) Set.univ := by
-        simp_rw [← mul_add, ← measure_union (show Disjoint {false} {true} from by simp)
-          (by trivial), (set_fintype_card_eq_univ_iff ({false} ∪ {true})).mp rfl]
-        rfl
-      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false} * a) (π {true} * b) := by
-        simp_rw [measure_univ, mul_one]
-        rfl
-      _ = _ := by
-        rw [iInf_subtype']
-        convert iInf_const
-        exact nonempty_subtype_isMarkovKernel_of_nonempty
-
-lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
-  let η : kernel 𝒳 Unit := kernel.const 𝒳 (Measure.dirac ())
-  convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π η
-  simp_rw [η, Measure.comp_const, bayesBinaryRisk_dirac]
-
-lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ μ π = min (π {false}) (π {true}) * μ Set.univ := by
-  refine le_antisymm ?_ ?_
-  · convert bayesBinaryRisk_le_min μ μ π using 1
-    rw [min_mul_mul_right]
-  · rw [bayesBinaryRisk_eq]
-    calc
       _ ≥ ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false}) (π {true}) * (μ ∘ₘ κ) {false}
           + min (π {false}) (π {true}) * (μ ∘ₘ κ) {true} := by
         gcongr <;> simp
@@ -387,6 +347,18 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
         rw [iInf_subtype']
         convert iInf_const
         exact nonempty_subtype_isMarkovKernel_of_nonempty
+
+lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk (a • Measure.dirac x) (b • Measure.dirac x) π
+      = min (π {false} * a) (π {true} * b) := by
+  rw [bayesBinaryRisk_smul_smul, bayesBinaryRisk_self]
+  simp [lintegral_dirac]
+
+lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
+  let η : kernel 𝒳 Unit := kernel.const 𝒳 (Measure.dirac ())
+  convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π η
+  simp_rw [η, Measure.comp_const, bayesBinaryRisk_dirac]
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
