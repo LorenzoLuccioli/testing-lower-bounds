@@ -276,6 +276,7 @@ lemma _root_.MeasureTheory.Measure.measure_bool_ext {π₁ π₂ : Measure Bool}
     <;> try simp only [measure_empty, h_true, h_false]
   rw [Set.insert_eq, measure_union, measure_union, h_true, h_false] <;> simp
 
+section BoolMeasure
 --maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
 noncomputable
 def boolMeasure (a b : ℝ≥0∞) : Measure Bool := a • Measure.dirac false + b • Measure.dirac true
@@ -286,8 +287,14 @@ lemma boolMeasure_apply_false (a b : ℝ≥0∞) : boolMeasure a b {false} = a :
 @[simp]
 lemma boolMeasure_apply_true (a b : ℝ≥0∞) : boolMeasure a b {true} = b := by simp [boolMeasure]
 
-lemma measure_eq_boolMeasure : π = boolMeasure (π {false}) (π {true}) := by
+lemma measure_eq_boolMeasure (π : Measure Bool) : π = boolMeasure (π {false}) (π {true}) := by
   ext <;> simp
+
+lemma boolMeasure_withDensity (π : Measure Bool) (f : Bool → ℝ≥0∞) :
+    π.withDensity f = boolMeasure (f false * π {false}) (f true * π {true}) := by
+  ext <;> simp [lintegral_dirac, mul_comm]
+
+end BoolMeasure
 
 /-- `B (a•μ, b•ν; π) = B (μ, ν; (a*π₀, b*π₁)).` -/
 lemma bayesBinaryRisk_smul_smul (μ ν : Measure 𝒳) (π : Measure Bool) (a b : ℝ≥0∞) :
