@@ -321,12 +321,35 @@ lemma bayesBinaryRisk_dirac (a b : ℝ≥0∞) (x : 𝒳) (π : Measure Bool) :
     have (b : ℝ≥0∞) : (b • Measure.dirac x) ∘ₘ κ = b • κ x := by
       ext <;>
       · rw [Measure.bind_apply (by trivial) (kernel.measurable _), lintegral_smul_measure,
-        Measure.smul_apply, smul_eq_mul, lintegral_dirac']
+          Measure.smul_apply, smul_eq_mul, lintegral_dirac']
         exact kernel.measurable_coe _ trivial
     simp_rw [this]
     simp only [Measure.smul_apply, smul_eq_mul, mul_assoc]
   simp_rw [this]
-  sorry
+  refine le_antisymm ?_ ?_
+  · let η : kernel 𝒳 Bool :=
+      if (π {true} * b) ≤ (π {false} * a) then (kernel.const 𝒳 (Measure.dirac false))
+        else (kernel.const 𝒳 (Measure.dirac true))
+    convert iInf_le_of_le η ?_
+    simp_rw [η]
+    convert iInf_le ?_ ?_ using 1
+    · split_ifs with h <;> simp [le_of_not_ge, h]
+    · split_ifs <;> exact kernel.isMarkovKernel_const
+  · calc
+      _ ≥ ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {true} * b) (π {false} * a) * (κ x) {false}
+          + min (π {true} * b) (π {false} * a) * (κ x) {true} := by
+        gcongr <;> simp
+      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {true} * b) (π {false} * a) * (κ x) Set.univ := by
+        simp_rw [← mul_add, ← measure_union (show Disjoint {false} {true} from by simp)
+          (by trivial), (set_fintype_card_eq_univ_iff ({false} ∪ {true})).mp rfl]
+        rfl
+      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {true} * b) (π {false} * a) := by
+        simp_rw [measure_univ, mul_one]
+        rfl
+      _ = _ := by
+        rw [iInf_subtype']
+        convert iInf_const
+        exact nonempty_subtype_isMarkovKernel_of_nonempty
 
 lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) := by
