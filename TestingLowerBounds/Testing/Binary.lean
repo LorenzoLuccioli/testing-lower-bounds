@@ -363,22 +363,18 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
     rw [min_mul_mul_right]
   · rw [bayesBinaryRisk_eq]
     calc
-      _ ≥ ⨅ (κ : kernel 𝒳 Bool), ⨅ (_ : IsMarkovKernel κ),
-          min (π {false}) (π {true}) * (μ ∘ₘ κ) {false}
+      _ ≥ ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false}) (π {true}) * (μ ∘ₘ κ) {false}
           + min (π {false}) (π {true}) * (μ ∘ₘ κ) {true} := by
         gcongr <;> simp
-      _ = ⨅ (κ : kernel 𝒳 Bool), ⨅ (_ : IsMarkovKernel κ),
-          min (π {false}) (π {true}) * μ Set.univ := by
+      _ = ⨅ κ, ⨅ (_ : IsMarkovKernel κ), min (π {false}) (π {true}) * μ Set.univ := by
         simp_rw [← mul_add, ← measure_union (show Disjoint {false} {true} from by simp)
           (by trivial), (set_fintype_card_eq_univ_iff ({false} ∪ {true})).mp rfl,
           Measure.comp_apply_univ]
+        rfl
       _ = _ := by
         rw [iInf_subtype']
         convert iInf_const
-        simp only [nonempty_subtype, Subtype.exists]
-        refine ⟨kernel.const _ (Measure.dirac true), kernel.measurable (kernel.const 𝒳 _), ?_⟩
-        change IsMarkovKernel (kernel.const 𝒳 (Measure.dirac true))
-        exact kernel.isMarkovKernel_const
+        exact nonempty_subtype_isMarkovKernel_of_nonempty
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
