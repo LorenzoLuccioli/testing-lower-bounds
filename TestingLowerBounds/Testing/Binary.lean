@@ -344,10 +344,9 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
         rw [iInf_subtype']
         convert iInf_const
         simp only [nonempty_subtype, Subtype.exists]
-        refine ⟨kernel.const _ (Measure.dirac true),
-          kernel.measurable (kernel.const 𝒳 (Measure.dirac true)), ?_⟩
-
-        sorry
+        refine ⟨kernel.const _ (Measure.dirac true), kernel.measurable (kernel.const 𝒳 _), ?_⟩
+        change IsMarkovKernel (kernel.const 𝒳 (Measure.dirac true))
+        exact kernel.isMarkovKernel_const
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
