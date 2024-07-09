@@ -389,7 +389,7 @@ lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
   have h2 : (Measure.map Bool.not π) {false} = π {true} := by
     rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), h_false]
   simp_rw [bayesBinaryRisk_eq, h1, h2, add_comm, iInf_subtype']
-  -- from this point on the proor is basically a change of variable inside the iInf
+  -- from this point on the proor is basically a change of variable inside the iInf, to do this I define an equivalence between Subtype IsMarkovKernel and itself, maybe something can be separated as a different lemma, but I'm not sure how useful this would be
   let e : (kernel 𝒳 Bool) ≃ (kernel 𝒳 Bool) := by
     have h_id : kernel.comap (kernel.deterministic Bool.not (fun _ a ↦ a)) Bool.not (fun _ a ↦ a)
         = kernel.id := by
@@ -401,15 +401,8 @@ lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
       ext x : 1
       rw [← kernel.comp_assoc, kernel.comp_deterministic_eq_comap, h_id, kernel.id_comp]
   let e' : (Subtype (@IsMarkovKernel 𝒳 Bool _ _)) ≃ (Subtype (@IsMarkovKernel 𝒳 Bool _ _)) := by
-    refine ⟨?_, ?_, fun κ ↦ ?_, fun κ ↦ ?_⟩
-    · refine fun ⟨κ, hκ⟩ ↦ ⟨e κ, ?_⟩
-      simp only [Equiv.coe_fn_mk, e]
-      infer_instance
-    · refine fun ⟨κ, hκ⟩ ↦ ⟨e.symm κ, ?_⟩
-      simp only [Equiv.coe_fn_symm_mk, e]
-      infer_instance
-    · simp
-    · simp
+    refine ⟨fun ⟨κ, _⟩ ↦ ⟨e κ, ?_⟩, fun ⟨κ, _⟩ ↦ ⟨e.symm κ, ?_⟩, fun κ ↦ by simp, fun κ ↦ by simp⟩
+      <;> simp only [Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk, e] <;> infer_instance
   rw [← Equiv.iInf_comp e']
   congr with κ
   simp only [Equiv.coe_fn_mk, Equiv.coe_fn_symm_mk, MeasurableSpace.measurableSet_top, e', e]
@@ -418,7 +411,8 @@ lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
   have h4 b : Set.indicator {false} (1 : Bool → ℝ≥0∞) b.not = Set.indicator {true} 1 b := by
     cases b <;> simp
   congr 2 <;>
-  · rw [Measure.bind_apply (by trivial) (kernel.measurable _), Measure.bind_apply (by trivial) (kernel.measurable _)]
+  · rw [Measure.bind_apply (by trivial) (kernel.measurable _),
+      Measure.bind_apply (by trivial) (kernel.measurable _)]
     congr with x
     rw [kernel.comp_apply']
     simp only [Measure.dirac_apply' _ (show MeasurableSet {true} by trivial),
