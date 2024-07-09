@@ -360,7 +360,7 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
   convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π η
   simp_rw [η, Measure.comp_const, bayesBinaryRisk_dirac]
 
-lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
+lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
   have : (Bool.not ⁻¹' {true}) = {false} := by ext x; simp
   have h1 : (Measure.map Bool.not π) {true} = π {false} := by
