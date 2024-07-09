@@ -302,6 +302,11 @@ lemma bayesBinaryRisk_smul_smul (μ ν : Measure 𝒳) (π : Measure Bool) (a b 
       = bayesBinaryRisk μ ν (π.withDensity (fun x ↦ bif x then b else a)) := by
   simp [bayesBinaryRisk_eq, Measure.comp_smul_left, lintegral_dirac, mul_assoc]
 
+lemma bayesBinaryRisk_eq_bayesBinaryRisk_one_one (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π = bayesBinaryRisk (π {false} • μ) (π {true} • ν) (boolMeasure 1 1) := by
+  rw [bayesBinaryRisk_smul_smul, measure_eq_boolMeasure π, boolMeasure_withDensity]
+  simp
+
 /-- **Data processing inequality** for the Bayes binary risk. -/
 lemma bayesBinaryRisk_le_bayesBinaryRisk_comp (μ ν : Measure 𝒳) (π : Measure Bool)
     (η : kernel 𝒳 𝒳') [IsMarkovKernel η] :
