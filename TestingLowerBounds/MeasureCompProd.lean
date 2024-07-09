@@ -92,9 +92,11 @@ lemma Measure.compProd_const {ν : Measure β} [SFinite μ] [SFinite ν] :
   simp_rw [kernel.const_apply]
 
 @[simp]
-lemma Measure.comp_const {ν : Measure β} [SFinite μ] [SFinite ν] :
+lemma Measure.comp_const {ν : Measure β} :
     μ ∘ₘ (kernel.const α ν) = μ Set.univ • ν := by
-  rw [Measure.comp_eq_snd_compProd, Measure.compProd_const, Measure.snd, Measure.map_snd_prod]
+  ext s hs
+  simp_rw [Measure.bind_apply hs (kernel.measurable _), kernel.const_apply, lintegral_const]
+  simp [mul_comm]
 
 lemma Measure.compProd_apply_toReal [SFinite μ] [IsFiniteKernel κ]
     {s : Set (α × β)} (hs : MeasurableSet s) :
