@@ -417,6 +417,7 @@ lemma integrable_f_rnDeriv_compProd_right_iff [IsFiniteMeasure μ]
 
 end Integrable
 
+-- TODO: in this file there is also `Measure.compProd_const` that seems to be exactly the same as this lemma, I think one of the two should be removed
 /--The composition product of a measure and a constant kernel is the product between the two
 measures.-/
 @[simp]
