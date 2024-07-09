@@ -362,16 +362,12 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
 
 lemma bayesBinaryRisk_comm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
-  have h_true : (Bool.not ⁻¹' {true}) = {false} := by
-    ext x
-    simp
-  have h_false : (Bool.not ⁻¹' {false}) = {true} := by
-    ext x
-    simp
+  have : (Bool.not ⁻¹' {true}) = {false} := by ext x; simp
   have h1 : (Measure.map Bool.not π) {true} = π {false} := by
-    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), h_true]
+    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
+  have : (Bool.not ⁻¹' {false}) = {true} := by ext x; simp
   have h2 : (Measure.map Bool.not π) {false} = π {true} := by
-    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), h_false]
+    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
   simp_rw [bayesBinaryRisk_eq, h1, h2, add_comm, iInf_subtype']
   -- from this point on the proor is basically a change of variable inside the iInf, to do this I define an equivalence between Subtype IsMarkovKernel and itself, maybe something can be separated as a different lemma, but I'm not sure how useful this would be
   let e : (kernel 𝒳 Bool) ≃ (kernel 𝒳 Bool) := by
