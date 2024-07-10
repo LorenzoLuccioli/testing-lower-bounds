@@ -329,9 +329,9 @@ lemma bayesBinaryRisk_self (μ : Measure 𝒳) (π : Measure Bool) :
   · let η : kernel 𝒳 Bool :=
       if π {true} ≤ π {false} then (kernel.const 𝒳 (Measure.dirac false))
         else (kernel.const 𝒳 (Measure.dirac true))
-    convert iInf_le_of_le η ?_
+    refine iInf_le_of_le η ?_
     simp_rw [η]
-    convert iInf_le ?_ ?_ using 1
+    convert iInf_le _ ?_ using 1
     · split_ifs with h <;> simp [le_of_not_ge, h]
     · split_ifs <;> exact kernel.isMarkovKernel_const
   · calc
