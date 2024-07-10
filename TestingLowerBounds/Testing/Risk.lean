@@ -4,6 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
 import TestingLowerBounds.ForMathlib.RadonNikodym
+import TestingLowerBounds.ForMathlib.KernelConstComp
+import Mathlib.Probability.Kernel.Invariance
 
 /-!
 # Estimation and risk
@@ -152,6 +154,22 @@ lemma bayesRisk_le_minimaxRisk (E : estimationProblem Θ 𝒳 𝒴 𝒵) :
     bayesRisk E ≤ minimaxRisk E := by
   simp only [bayesRisk, iSup_le_iff]
   exact fun _ _ ↦ bayesRiskPrior_le_minimaxRisk _ _
+
+/-! ### Properties of the Bayes risk of a prior -/
+
+lemma bayesRiskPrior_le_inf (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Measure Θ) [IsMarkovKernel E.P] :
+    bayesRiskPrior E π ≤ ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂π := by
+  simp_rw [le_iInf_iff, bayesRiskPrior]
+  refine fun z ↦ iInf_le_of_le (kernel.const _ (Measure.dirac z)) ?_
+  convert iInf_le _ ?_ using 1
+  · simp_rw [bayesianRisk, risk, kernel.const_comp', kernel.const_apply]
+    congr with θ
+    rw [lintegral_dirac']
+    have := E.ℓ_meas
+    fun_prop [E.ℓ_meas]
+  · exact kernel.isMarkovKernel_const
+
+
 
 /-! ### Bayes risk increase -/
 
