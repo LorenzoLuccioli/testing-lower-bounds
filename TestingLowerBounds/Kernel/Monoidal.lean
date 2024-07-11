@@ -178,10 +178,8 @@ lemma parallelComp_comp_parallelComp {α' β' γ' : Type*} {mα' : MeasurableSpa
   rw [Measure.bind_apply hs (kernel.measurable _), Measure.prod_apply hs,
     lintegral_prod_of_measurable _ (kernel.measurable_coe _ hs)]
   simp_rw [parallelComp_apply, comp_apply]
-  rw [Measure.lintegral_bind (kernel.measurable η)]
-  swap
-  · have : SFinite ((κ' a.2).bind ⇑η') := by sorry --this instance is in MeasureCompProd, which imports this file, we may have to move some lemmas around or create a new file
-    exact measurable_measure_prod_mk_left hs
+  have : SFinite ((κ' a.2).bind ⇑η') := by sorry --this instance is in MeasureCompProd, which imports this file, we may have to move some lemmas around or create a new file
+  rw [Measure.lintegral_bind (kernel.measurable η) (measurable_measure_prod_mk_left hs)]
   congr with b
   simp_rw [Measure.prod_apply hs]
   rw [lintegral_lintegral_swap]
