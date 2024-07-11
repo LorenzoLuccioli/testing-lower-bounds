@@ -128,8 +128,8 @@ The infimum over all Markov kernels in the definition of the Bayes risk of $\pi$
 
 \begin{lemma}
   \label{lem:bayesianRisk_bayesInv}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesianRisk_eq_bayesInv_prod}
+  \leanok
   \uses{def:bayesianRisk, def:bayesInv}
   The Bayesian risk of a Markov kernel $\hat{y} : \mathcal X \rightsquigarrow \mathcal Z$ with respect to a prior $\pi \in \mathcal M(\Theta)$ on $(P, y, \ell')$ satisfies
   \begin{align*}
@@ -138,15 +138,36 @@ The infimum over all Markov kernels in the definition of the Bayes risk of $\pi$
   In that expression, $P_\pi^\dagger$ is the Bayesian inverse of $P$ with respect to $\pi$.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{}
 Use the main property of the Bayesian inverse.
+\begin{align*}
+  (P_\pi^\dagger \times \hat{y}) \circ P \circ \pi
+  &= swap \circ (\hat{y} \times P_\pi^\dagger) \circ (P \circ \pi)
+  \\
+  &= swap \circ (\hat{y} \parallel P_\pi^\dagger) \circ copy \circ (P \circ \pi)
+  \\
+  &= swap \circ (\hat{y} \parallel \mathrm{id}) \circ (\mathrm{id} \parallel P_\pi^\dagger) \circ copy \circ (P \circ \pi)
+  \\
+  &= swap \circ (\hat{y} \parallel \mathrm{id}) \circ (P \parallel \mathrm{id}) \circ copy \circ \pi
+  \\
+  &= (\mathrm{id} \parallel \hat{y}) \circ (P \parallel \mathrm{id}) \circ swap \circ copy \circ \pi
+  \\
+  &= (\mathrm{id} \parallel \hat{y}) \circ (P \parallel \mathrm{id}) \circ copy \circ \pi
+  \\
+  &= (P \parallel \hat{y}) \circ copy \circ \pi
+  \\
+  &= (P \times \hat{y}) \circ \pi
+  \\
+  &= \pi \otimes (\hat{y} \circ P)
+  \: .
+  \end{align*}
 \end{proof}
 
 \begin{lemma}
   \label{lem:bayesianRisk_ge_inf_bayesInv}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesianRisk_ge_lintegral_iInf_bayesInv}
+  \leanok
   \uses{def:bayesianRisk, def:bayesInv}
   The Bayesian risk of a Markov kernel $\hat{y} : \mathcal X \rightsquigarrow \mathcal Z$ with respect to a prior $\pi \in \mathcal M(\Theta)$ on $(P, y, \ell')$ satisfies
   \begin{align*}
@@ -154,7 +175,7 @@ Use the main property of the Bayesian inverse.
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesianRisk_bayesInv}
 Starting from the equality of Lemma~\ref{lem:bayesianRisk_bayesInv}, we get
 \begin{align*}
