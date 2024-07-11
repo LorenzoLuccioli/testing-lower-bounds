@@ -180,15 +180,13 @@ lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
   have := E.ℓ_meas
   have := E.y_meas
   simp only [bayesianRisk, risk]
-  rw [← MeasureTheory.Measure.lintegral_compProd (f := fun θz ↦ E.ℓ (E.y θz.1, θz.2)) (by fun_prop)]
-  congr
-  rw [← kernel.swap_prod, kernel.prod_eq_copy_comp_parallelComp]
-  rw [Measure.compProd_eq_comp, kernel.prod_eq_copy_comp_parallelComp]
+  rw [← MeasureTheory.Measure.lintegral_compProd (f := fun θz ↦ E.ℓ (E.y θz.1, θz.2)) (by fun_prop),
+    ← kernel.swap_prod, kernel.prod_eq_copy_comp_parallelComp, Measure.compProd_eq_comp,
+    kernel.prod_eq_copy_comp_parallelComp]
   nth_rw 2 [← kernel.parallelComp_comp_id_right_left]
-  simp_rw [← Measure.comp_assoc]
-  rw [compProd_bayesInv'']
-  simp_rw [Measure.comp_assoc, ← kernel.comp_assoc, kernel.swap_parallelComp, kernel.comp_assoc (_ ∥ₖ κ), kernel.swap_parallelComp, kernel.comp_assoc, kernel.swap_copy, ← kernel.comp_assoc]
-  rw [kernel.parallelComp_comp_id_left_left]
+  simp_rw [← Measure.comp_assoc, compProd_bayesInv'', Measure.comp_assoc, ← kernel.comp_assoc,
+  kernel.swap_parallelComp, kernel.comp_assoc (_ ∥ₖ κ), kernel.swap_parallelComp, kernel.comp_assoc,
+  kernel.swap_copy, ← kernel.comp_assoc, kernel.parallelComp_comp_id_left_left]
 
 lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsMarkovKernel E.P] (κ : kernel 𝒳 𝒵)
