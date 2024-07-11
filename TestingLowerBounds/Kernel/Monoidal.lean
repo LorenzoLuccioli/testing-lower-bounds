@@ -205,8 +205,12 @@ lemma parallelComp_comp_id_right_left {κ : kernel α β} [IsSFiniteKernel κ]
 lemma parallelComp_comp_id_left_left (κ : kernel α β) [IsSFiniteKernel κ]
     (η : kernel β γ) [IsSFiniteKernel η] :
     (kernel.id ∥ₖ η) ∘ₖ (kernel.id ∥ₖ κ) = (kernel.id (mα := mδ)) ∥ₖ (η ∘ₖ κ) := by
+  rw [parallelComp_comp_parallelComp, id_comp]
 
-  sorry
+lemma parallelComp_comp_id_right_right {κ : kernel α β} [IsSFiniteKernel κ]
+    (η : kernel β γ) [IsSFiniteKernel η] :
+    (η ∥ₖ kernel.id) ∘ₖ (κ ∥ₖ kernel.id) = (η ∘ₖ κ) ∥ₖ (kernel.id (mα := mγ)) := by
+  rw [parallelComp_comp_parallelComp, id_comp]
 
 end ParallelComp
 
