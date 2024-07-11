@@ -5,6 +5,8 @@ Authors: Rémy Degenne
 -/
 import TestingLowerBounds.ForMathlib.RadonNikodym
 import TestingLowerBounds.ForMathlib.KernelConstComp
+import TestingLowerBounds.MeasureCompProd
+import TestingLowerBounds.BayesInv
 import Mathlib.Probability.Kernel.Invariance
 
 /-!
@@ -157,6 +159,8 @@ lemma bayesRisk_le_minimaxRisk (E : estimationProblem Θ 𝒳 𝒴 𝒵) :
 
 /-! ### Properties of the Bayes risk of a prior -/
 
+-- Do we also need a version without the `IsMarkovKernel` assumption? it would be of the form:
+-- `bayesRiskPrior E π ≤ ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) * (E.P θ) Set.univ ∂π`
 lemma bayesRiskPrior_le_inf (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Measure Θ) [IsMarkovKernel E.P] :
     bayesRiskPrior E π ≤ ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂π := by
   simp_rw [le_iInf_iff, bayesRiskPrior]
