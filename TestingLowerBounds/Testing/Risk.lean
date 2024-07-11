@@ -188,6 +188,23 @@ lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
   rw [bayesInv_comp_self]
   simp_rw [Measure.bind_bind']
 
+lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty Θ]
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsMarkovKernel E.P] (κ : kernel 𝒳 𝒵)
+    (π : Measure Θ) [IsFiniteMeasure π] [IsMarkovKernel κ] :
+    bayesianRisk E κ π ≥ ∫⁻ x, ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂((E.P†π) x) ∂(π ∘ₘ E.P) := by
+  have := E.ℓ_meas
+  have := E.y_meas
+  rw [bayesianRisk_eq_bayesInv_prod, ← Measure.bind_bind',
+    Measure.lintegral_bind (kernel.measurable ((E.P†π) ×ₖ κ)) (by fun_prop)]
+  gcongr with x
+  rw [kernel.prod_apply, lintegral_prod_symm' _ (by fun_prop)]
+  calc
+    _ ≥ ∫⁻ _, ⨅ z, ∫⁻ (θ : Θ), E.ℓ (E.y θ, z) ∂(E.P†π) x ∂κ x :=
+      lintegral_mono fun z ↦ iInf_le' _ z
+    _ = ⨅ z, ∫⁻ (θ : Θ), E.ℓ (E.y θ, z) ∂(E.P†π) x := by
+      rw [lintegral_const, measure_univ, mul_one]
+
+
 /-! ### Bayes risk increase -/
 
 noncomputable
