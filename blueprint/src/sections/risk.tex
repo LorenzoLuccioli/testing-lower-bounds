@@ -109,8 +109,8 @@ TODO: ``often'', $\mathcal R^*_B = \mathcal R^*$.
 
 \begin{lemma}
   \label{lem:bayesRisk_le_const}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesRiskPrior_le_inf}
+  \leanok
   \uses{def:bayesRisk}
   The Bayes risk of a prior $\pi \in \mathcal M(\Theta)$ on $(P, y, \ell')$ with $P$ a Markov kernel satisfies
   \begin{align*}
@@ -119,7 +119,7 @@ TODO: ``often'', $\mathcal R^*_B = \mathcal R^*$.
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{}
 The infimum over all Markov kernels in the definition of the Bayes risk of $\pi$ is bounded from above by the infimum restricted to constant, deterministic Markov kernels.
 \end{proof}
