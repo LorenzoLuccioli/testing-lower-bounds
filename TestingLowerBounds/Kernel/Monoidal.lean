@@ -182,4 +182,12 @@ lemma parallelComp_eq_id_parallelComp_comp {κ : kernel α β} [IsSFiniteKernel 
   simp_rw [parallelComp_apply, id_apply, Measure.prod_apply hs,
     lintegral_dirac' _ (measurable_measure_prod_mk_left hs)]
 
+lemma parallelComp_eq_parallelComp_id_comp {κ : kernel α β} [IsSFiniteKernel κ]
+    (η : kernel γ δ) [IsSFiniteKernel η] :
+    κ ∥ₖ η = (κ ∥ₖ kernel.id) ∘ₖ (kernel.id ∥ₖ η) := by
+  rw [← id_comp (κ := κ ∥ₖ η), ← kernel.swap_swap, kernel.comp_assoc, swap_parallelComp,
+    parallelComp_eq_id_parallelComp_comp, ← kernel.comp_assoc, ← kernel.comp_assoc,
+    swap_parallelComp, kernel.comp_assoc _ (kernel.swap _ _), swap_parallelComp,
+    kernel.comp_assoc, kernel.comp_assoc, kernel.swap_swap, comp_id]
+
 end ProbabilityTheory.kernel
