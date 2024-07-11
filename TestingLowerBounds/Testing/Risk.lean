@@ -173,7 +173,20 @@ lemma bayesRiskPrior_le_inf (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Meas
     fun_prop [E.ℓ_meas]
   · exact kernel.isMarkovKernel_const
 
-
+lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsMarkovKernel E.P] (κ : kernel 𝒳 𝒵)
+    (π : Measure Θ) [IsFiniteMeasure π] [IsSFiniteKernel κ] :
+    bayesianRisk E κ π = ∫⁻ (θz : Θ × 𝒵), E.ℓ (E.y θz.1, θz.2) ∂(π ∘ₘ (((E.P†π) ×ₖ κ) ∘ₖ E.P)) := by
+  simp only [bayesianRisk, risk]
+  rw [← MeasureTheory.Measure.lintegral_compProd (f := fun θz ↦ E.ℓ (E.y θz.1, θz.2))]
+  swap
+  · have := E.ℓ_meas
+    have := E.y_meas
+    fun_prop
+  rw [kernel.comp_prod_left, Measure.compProd_eq_comp] --this is yet to be proven in MeasureCompProd
+  simp_rw [Measure.comp_prod_left, Measure.comp_id]
+  nth_rw 1 [← bayesInv_comp_self (μ := π) (κ := E.P)]
+  rw [Measure.bind_bind']
 
 /-! ### Bayes risk increase -/
 
