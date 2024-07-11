@@ -159,14 +159,14 @@ lemma swap_parallelComp {κ : kernel α β} [IsSFiniteKernel κ]
     (swap β δ) ∘ₖ (κ ∥ₖ η) = (η ∥ₖ κ) ∘ₖ (swap α γ) := by
   ext ac s hs
   rw [comp_apply, comp_apply, swap_apply, parallelComp_apply,
-    Measure.bind_apply hs (kernel.measurable _),
-    Measure.bind_apply hs (kernel.measurable _), lintegral_dirac', parallelComp_apply]
-  · simp_rw [swap_apply' _ hs]
-    change ∫⁻ (a : β × δ), s.indicator (fun _ ↦ 1) a.swap ∂(κ ac.1).prod (η ac.2) = _
-    rw [lintegral_indicator_const_comp measurable_swap hs, one_mul,
-      ← Measure.map_apply measurable_swap hs, Measure.prod_swap]
-    rfl
-  · exact kernel.measurable_coe _ hs
+    Measure.bind_apply hs (kernel.measurable _), Measure.bind_apply hs (kernel.measurable _),
+    lintegral_dirac' _ (kernel.measurable_coe _ hs), parallelComp_apply]
+  simp_rw [swap_apply' _ hs]
+  change ∫⁻ (a : β × δ), s.indicator (fun _ ↦ 1) a.swap ∂(κ ac.1).prod (η ac.2) = _
+  rw [lintegral_indicator_const_comp measurable_swap hs, one_mul,
+    ← Measure.map_apply measurable_swap hs, Measure.prod_swap]
+  rfl
+
 
 lemma parallelComp_comp_parallelComp {α' β' γ' : Type*} {mα' : MeasurableSpace α'}
     {mβ' : MeasurableSpace β'} {mγ' : MeasurableSpace γ'}
