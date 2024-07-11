@@ -481,31 +481,5 @@ lemma _root_.MeasureTheory.Measure.bind_bind' (μ : Measure α) (κ : kernel α 
   rw [Measure.bind_bind (kernel.measurable κ) (kernel.measurable η)]
   rfl
 
-variable {δ : Type*} {mδ : MeasurableSpace δ}
-
-lemma kernel.comp_prod_left (ξ : kernel α β) (κ : kernel β γ) (η : kernel β δ) [IsSFiniteKernel κ]
-    [IsSFiniteKernel η] [IsSFiniteKernel ξ] :
-    (κ ×ₖ η) ∘ₖ ξ = (κ ∘ₖ ξ) ×ₖ (η ∘ₖ ξ) := by
-  simp_rw [kernel.prod_eq_copy_comp_parallelComp]
-
-  -- ext a s hs
-  -- simp_rw [comp_apply, kernel.prod_apply, comp_apply, ]
-  -- rw?
-  sorry
-
-lemma Measure.comp_prod_left (μ : Measure α) (κ : kernel α β) (η : kernel α γ) [IsSFiniteKernel κ] [IsSFiniteKernel η] [SFinite μ] :
-    μ ∘ₘ (κ ×ₖ η) = ((μ ∘ₘ κ).prod (μ ∘ₘ η)) := by
-  rw [kernel.prod_eq_copy_comp_parallelComp]
-  rw [← Measure.bind_bind']
-
-  -- ext s hs
-  -- rw [Measure.prod_apply hs, Measure.bind_apply hs]
-  -- simp_rw [Measure.bind_apply (measurable_prod_mk_left hs) (kernel.measurable _)]
-  -- rw [Measure.lintegral_bind]
-  -- -- rw [MeasureTheory.lintegral_comp_prod]
-  -- sorry
-  -- sorry
-  -- sorry
-  sorry
 
 end ProbabilityTheory
