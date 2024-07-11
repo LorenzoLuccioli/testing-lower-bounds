@@ -183,10 +183,10 @@ lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
   · have := E.ℓ_meas
     have := E.y_meas
     fun_prop
-  rw [kernel.comp_prod_left, Measure.compProd_eq_comp] --this is yet to be proven in MeasureCompProd
-  simp_rw [Measure.comp_prod_left, Measure.comp_id]
+  -- Measure.comp_prod_left is yet to be proven, it may not be true
+  simp_rw [Measure.compProd_eq_comp, ← Measure.bind_bind', Measure.comp_prod_left, Measure.comp_id]
   nth_rw 1 [← bayesInv_comp_self (μ := π) (κ := E.P)]
-  rw [Measure.bind_bind']
+  simp_rw [Measure.bind_bind']
 
 /-! ### Bayes risk increase -/
 
