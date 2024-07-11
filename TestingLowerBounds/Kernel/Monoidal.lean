@@ -112,6 +112,12 @@ lemma swap_copy : (swap α α) ∘ₖ (copy α) = copy α := by
     Measure.dirac_apply' _ hs]
   congr
 
+@[simp]
+lemma swap_swap : (swap α β) ∘ₖ (swap β α) = kernel.id := by
+  ext ab s hs
+  rw [comp_apply, Measure.bind_apply hs (kernel.measurable _), id_apply, swap_apply,
+    lintegral_dirac' _ (kernel.measurable_coe _ hs), swap_apply, Prod.swap_swap]
+
 end Swap
 
 noncomputable
