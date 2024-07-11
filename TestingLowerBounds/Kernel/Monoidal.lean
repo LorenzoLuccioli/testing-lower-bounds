@@ -172,7 +172,7 @@ lemma swap_prod {κ : kernel α β} [IsSFiniteKernel κ]
     (swap β γ) ∘ₖ (κ ×ₖ η) = (η ×ₖ κ) := by
   simp_rw [prod_eq_copy_comp_parallelComp, ← comp_assoc, swap_parallelComp, comp_assoc, swap_copy]
 
-lemma parallelComp_eq_id_parallelComp_comp {κ : kernel α β} [IsSFiniteKernel κ]
+lemma parallelComp_comp_id_left_right {κ : kernel α β} [IsSFiniteKernel κ]
     (η : kernel γ δ) [IsSFiniteKernel η] :
     κ ∥ₖ η = (kernel.id ∥ₖ η) ∘ₖ (κ ∥ₖ kernel.id) := by
   ext a s hs
@@ -182,11 +182,11 @@ lemma parallelComp_eq_id_parallelComp_comp {κ : kernel α β} [IsSFiniteKernel 
   simp_rw [parallelComp_apply, id_apply, Measure.prod_apply hs,
     lintegral_dirac' _ (measurable_measure_prod_mk_left hs)]
 
-lemma parallelComp_eq_parallelComp_id_comp {κ : kernel α β} [IsSFiniteKernel κ]
+lemma parallelComp_comp_id_right_left {κ : kernel α β} [IsSFiniteKernel κ]
     (η : kernel γ δ) [IsSFiniteKernel η] :
     κ ∥ₖ η = (κ ∥ₖ kernel.id) ∘ₖ (kernel.id ∥ₖ η) := by
   rw [← id_comp (κ := κ ∥ₖ η), ← kernel.swap_swap, kernel.comp_assoc, swap_parallelComp,
-    parallelComp_eq_id_parallelComp_comp, ← kernel.comp_assoc, ← kernel.comp_assoc,
+    parallelComp_comp_id_left_right, ← kernel.comp_assoc, ← kernel.comp_assoc,
     swap_parallelComp, kernel.comp_assoc _ (kernel.swap _ _), swap_parallelComp,
     kernel.comp_assoc, kernel.comp_assoc, kernel.swap_swap, comp_id]
 
