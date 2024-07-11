@@ -474,4 +474,11 @@ lemma Measure.comp_smul_left (a : ℝ≥0∞) : (a • μ) ∘ₘ κ = a • (μ
   simp only [Measure.bind_apply hs (kernel.measurable _), lintegral_smul_measure,
     Measure.smul_apply, smul_eq_mul]
 
+--put this in the right place, maybe PR to mathlib, this could go just after `kernel.comp_deterministic_eq_comap`
+/-- Associativity between the composition of a measure and a kernel and the composition of two kernels. -/
+lemma _root_.MeasureTheory.Measure.bind_bind' (μ : Measure α) (κ : kernel α β) (η : kernel β γ) :
+    (μ.bind κ).bind η = μ.bind (η ∘ₖ κ) := by
+  rw [Measure.bind_bind (kernel.measurable κ) (kernel.measurable η)]
+  rfl
+
 end ProbabilityTheory
