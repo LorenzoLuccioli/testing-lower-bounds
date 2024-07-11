@@ -167,7 +167,6 @@ lemma swap_parallelComp {κ : kernel α β} [IsSFiniteKernel κ]
     ← Measure.map_apply measurable_swap hs, Measure.prod_swap]
   rfl
 
-
 lemma parallelComp_comp_parallelComp {α' β' γ' : Type*} {mα' : MeasurableSpace α'}
     {mβ' : MeasurableSpace β'} {mγ' : MeasurableSpace γ'}
     {κ : kernel α β} [IsSFiniteKernel κ] {η : kernel β γ} [IsSFiniteKernel η]
