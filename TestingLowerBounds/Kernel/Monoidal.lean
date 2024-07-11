@@ -160,4 +160,11 @@ lemma swap_parallelComp {κ : kernel α β} [IsSFiniteKernel κ]
     rfl
   · exact kernel.measurable_coe _ hs
 
+@[simp]
+lemma swap_prod {κ : kernel α β} [IsSFiniteKernel κ]
+    {η : kernel α γ} [IsSFiniteKernel η] :
+    (swap β γ) ∘ₖ (κ ×ₖ η) = (η ×ₖ κ) := by
+  simp_rw [prod_eq_copy_comp_parallelComp, ← kernel.comp_assoc, swap_parallelComp,
+    kernel.comp_assoc, swap_copy]
+
 end ProbabilityTheory.kernel
