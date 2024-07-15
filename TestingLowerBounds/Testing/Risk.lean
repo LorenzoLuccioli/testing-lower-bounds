@@ -245,4 +245,12 @@ lemma le_bayesRiskIncrease_comp (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : 
     bayesRiskIncrease (E.comp κ) π η ≤ bayesRiskIncrease E π (η ∘ₖ κ) := by
   simp [bayesRiskIncrease_comp]
 
+/-- **Data processing inequality** for the Bayes risk increase. -/
+lemma bayesRiskIncrease_discard_comp_le_bayesRiskIncrease (E : estimationProblem Θ 𝒳 𝒴 𝒵)
+    (π : Measure Θ) (κ : kernel 𝒳 𝒳') [IsMarkovKernel κ] :
+    bayesRiskIncrease (E.comp κ) π (kernel.discard 𝒳')
+      ≤ bayesRiskIncrease E π (kernel.discard 𝒳) := by
+  convert le_bayesRiskIncrease_comp E π κ (kernel.discard 𝒳')
+  simp
+
 end ProbabilityTheory
