@@ -77,6 +77,16 @@ lemma estimationProblem.comp_comp (E : estimationProblem Θ 𝒳 𝒴 𝒵) (κ 
     (E.comp κ).comp η = E.comp (η ∘ₖ κ) := by
   ext <;> simp [kernel.comp_assoc]
 
+@[simps]
+noncomputable
+def estimationProblem.compProd (E : estimationProblem Θ 𝒳 𝒴 𝒵) (κ : kernel (Θ × 𝒳) 𝒳') :
+    estimationProblem Θ (𝒳 × 𝒳') 𝒴 𝒵 where
+  P := E.P ⊗ₖ κ
+  y := E.y
+  y_meas := E.y_meas
+  ℓ := E.ℓ
+  ℓ_meas := E.ℓ_meas
+
 end EstimationProblem
 
 /-- The risk of an estimator `κ` on an estimation problem `E` at the parameter `θ`. -/
