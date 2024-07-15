@@ -426,6 +426,12 @@ lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) (π : Measure
   · --for this direction we need the generalized bayes estimator for the binary case
     sorry
 
+--maybe we need some hp to make this work, things need to be finite
+lemma bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π = ∫⁻ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x)
+      (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ∂(π ∘ₘ twoHypKernel μ ν) := by
+  --we need the generalized bayes estimator for the binary case
+  sorry
 
 
 
