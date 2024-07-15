@@ -361,6 +361,20 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
   convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π η
   simp_rw [η, Measure.comp_const, bayesBinaryRisk_dirac]
 
+lemma bayesBinaryRisk_of_measure_true_eq_zero (μ ν : Measure 𝒳)
+    {π : Measure Bool} (hπ : π {true} = 0) :
+    bayesBinaryRisk μ ν π = 0 := by
+  refine le_antisymm ?_ (zero_le _)
+  convert bayesBinaryRisk_le_min μ ν π
+  simp [hπ]
+
+lemma bayesBinaryRisk_of_measure_false_eq_zero (μ ν : Measure 𝒳)
+    {π : Measure Bool} (hπ : π {false} = 0) :
+    bayesBinaryRisk μ ν π = 0 := by
+  refine le_antisymm ?_ (zero_le _)
+  convert bayesBinaryRisk_le_min μ ν π
+  simp [hπ]
+
 lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
   have : (Bool.not ⁻¹' {true}) = {false} := by ext x; simp
