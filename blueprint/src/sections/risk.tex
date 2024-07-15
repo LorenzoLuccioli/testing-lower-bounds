@@ -265,13 +265,13 @@ The inequality is due to taking an infimum over a larger set: $\{\hat{y} \circ \
 
 \begin{lemma}
   \label{lem:bayesRisk_compProd_le_fst}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesRiskPrior_compProd_le_bayesRiskPrior}
+  \leanok
   \uses{def:bayesRisk}
   For $P : \Theta \rightsquigarrow \mathcal X$ and $\kappa : \Theta \times \mathcal X \rightsquigarrow \mathcal X'$ a Markov kernel, $\mathcal R^{P \otimes \kappa}_\pi \le \mathcal R^{P}_\pi$~.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{thm:data_proc_bayesRisk}
 Use Theorem~\ref{thm:data_proc_bayesRisk}: $P$ is the composition of $P \otimes \kappa$ and the deterministic kernel $\mathcal X \times \mathcal X' \rightsquigarrow \mathcal X$ that forgets the second value.
 \end{proof}
