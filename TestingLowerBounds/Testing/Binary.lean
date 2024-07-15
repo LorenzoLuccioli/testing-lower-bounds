@@ -7,6 +7,7 @@ import TestingLowerBounds.Testing.Risk
 import TestingLowerBounds.MeasureCompProd
 import Mathlib.Probability.ProbabilityMassFunction.Constructions
 import TestingLowerBounds.BayesInv
+import TestingLowerBounds.ForMathlib.MaxMinEqAbs
 
 /-!
 # Simple Bayesian binary hypothesis testing
