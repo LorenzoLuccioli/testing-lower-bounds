@@ -400,4 +400,30 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
     swap; trivial
     simp [h3, h4]
 
+--TODO: lemma about the generalized bayes estimator for the binary case, we need to define the generalized bayes estimator first in the general case, also do a lemma saying that this is equal to the indicator of some E, see η in the proof below
+
+lemma bayesBinaryRisk_eq_iInf_event (μ ν : Measure 𝒳) (π : Measure Bool) :
+    bayesBinaryRisk μ ν π = ⨅ E, ⨅ (_ : MeasurableSet E), π {false} * μ E + π {true} * ν Eᶜ := by
+  apply le_antisymm
+  · simp_rw [le_iInf_iff, bayesBinaryRisk_eq]
+    intro E hE
+    have h_meas : Measurable fun x ↦ Bool.ofNat (E.indicator 1 x) :=
+      (measurable_discrete _).comp' (measurable_one.indicator hE)
+    classical
+    let η : kernel 𝒳 Bool := kernel.deterministic (fun x ↦ Bool.ofNat (E.indicator 1 x)) h_meas
+    refine iInf_le_of_le η ?_
+    convert iInf_le _ (kernel.isMarkovKernel_deterministic _) using 1
+    have h1 : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {false} = Eᶜ := by
+      ext; simp [Bool.ofNat]
+    have h2 : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {true} = E := by
+      ext; simp [Bool.ofNat]
+    simp_rw [η, Measure.comp_deterministic_eq_map, Measure.map_apply h_meas trivial, h1, h2,
+      add_comm]
+  · --for this direction we need the generalized bayes estimator for the binary case
+    sorry
+
+
+
+
+
 end ProbabilityTheory
