@@ -458,6 +458,16 @@ lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [SigmaFinite
     simp only [h, h', min_eq_left, min_eq_right]
     exact (ENNReal.ofReal_toReal_eq_iff.mpr (by assumption)).symm
 
+--I probably need some hp to make this work, things need to be finite
+lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [SigmaFinite μ] [SigmaFinite ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    (bayesBinaryRisk μ ν π).toReal
+      = (2 : ℝ)⁻¹ * (((π ∘ₘ twoHypKernel μ ν) Set.univ).toReal
+        - ∫ x, |(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
+          - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal| ∂(π ∘ₘ twoHypKernel μ ν)) := by
+  rw [toReal_bayesBinaryRisk_eq_integral_min]
+
+  sorry
 
 
 
