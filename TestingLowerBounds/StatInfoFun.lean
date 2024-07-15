@@ -5,6 +5,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import TestingLowerBounds.ForMathlib.ByParts
 import TestingLowerBounds.ForMathlib.LeftRightDeriv
+import TestingLowerBounds.ForMathlib.MaxMinEqAbs
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.MeasureTheory.Constructions.Prod.Integral
 import LeanCopilot
@@ -386,17 +387,6 @@ lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
     fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν := by
   simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
     derivAtTop_statInfoFun_of_nonpos_of_gt hβ hγ, statInfoFun_of_gt hγ, zero_mul, add_zero]
-
---put these two lemmas in a separate file. Also the hp LinearOrderedField may not be optimal
-lemma max_eq_add_add_abs_sub {α : Type u_1} [LinearOrderedField α] (a b : α) :
-    max a b = 2⁻¹ * (a + b + |a - b|) := by
-  rw [← max_add_min a, ← max_sub_min_eq_abs', add_sub_left_comm, add_sub_cancel_right]
-  ring
-
-lemma min_eq_add_sub_abs_sub {α : Type u_1} [LinearOrderedField α] (a b : α) :
-    min a b = 2⁻¹ * (a + b - |a - b|) := by
-  rw [← min_add_max a, ← max_sub_min_eq_abs', add_sub_assoc, sub_sub_cancel]
-  ring
 
 /-- Auxiliary lemma for `fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le` and
 `fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_le`. -/
