@@ -483,16 +483,44 @@ lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [SigmaFinite
     exact (ENNReal.ofReal_toReal_eq_iff.mpr (by assumption)).symm
 
 --I probably need some hp to make this work, things need to be finite
-lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [SigmaFinite μ] [SigmaFinite ν]
+lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     (bayesBinaryRisk μ ν π).toReal
       = (2 : ℝ)⁻¹ * (((π ∘ₘ twoHypKernel μ ν) Set.univ).toReal
         - ∫ x, |(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
           - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal| ∂(π ∘ₘ twoHypKernel μ ν)) := by
   rw [toReal_bayesBinaryRisk_eq_integral_min]
-
-  sorry
-
-
+  simp_rw [min_eq_add_sub_abs_sub, integral_mul_left]
+  congr
+  have hμ_int : Integrable (fun x ↦ (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal) (π ∘ₘ twoHypKernel μ ν) := by
+    simp_rw [ENNReal.toReal_mul]
+    exact Integrable.const_mul Measure.integrable_toReal_rnDeriv _
+  have hν_int : Integrable (fun x ↦ (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal) (π ∘ₘ twoHypKernel μ ν) := by
+    simp_rw [ENNReal.toReal_mul]
+    exact Integrable.const_mul Measure.integrable_toReal_rnDeriv _
+  have h_int_abs : Integrable (fun x ↦ |(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
+      - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal|) (π ∘ₘ twoHypKernel μ ν) :=
+    hμ_int.sub hν_int |>.abs
+  rw [integral_sub _ h_int_abs, integral_add hμ_int hν_int]
+  swap; · exact hμ_int.add hν_int
+  simp only [ENNReal.toReal_mul, MeasurableSet.univ, sub_left_inj, integral_mul_left]
+  nth_rw 5 [measure_comp_twoHypKernel]
+  calc
+    _ = (π {false}).toReal * (μ Set.univ).toReal + (π {true}).toReal
+        * ∫ (a : 𝒳), ((∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) a).toReal ∂π ∘ₘ ⇑(twoHypKernel μ ν) := by
+      by_cases hπ_false : π {false} = 0
+      · simp [hπ_false, bayesBinaryRisk_of_measure_false_eq_zero]
+      rw [Measure.integral_toReal_rnDeriv
+        (absolutelyContinuous_measure_comp_twoHypKernel_left μ ν hπ_false)]
+    _ = (π {false}).toReal * (μ Set.univ).toReal + (π {true}).toReal * (ν Set.univ).toReal := by
+      by_cases hπ_true : π {true} = 0
+      · simp [hπ_true, bayesBinaryRisk_of_measure_true_eq_zero]
+      rw [Measure.integral_toReal_rnDeriv
+        (absolutelyContinuous_measure_comp_twoHypKernel_right μ ν hπ_true)]
+    _ = _ := by
+      simp_rw [add_comm, Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
+        smul_eq_mul, ENNReal.toReal_add (ENNReal.mul_ne_top (measure_ne_top _ _)
+        (measure_ne_top _ _)) (ENNReal.mul_ne_top (measure_ne_top _ _) (measure_ne_top _ _)),
+        ENNReal.toReal_mul]
 
 end ProbabilityTheory
