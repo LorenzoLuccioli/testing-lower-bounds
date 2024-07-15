@@ -599,8 +599,8 @@ The expression of the lemma statement is obtained by replacing $P_\xi^\dagger$ b
 
 \begin{lemma}
   \label{lem:bayesBinaryRisk_eq_event}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesBinaryRisk_eq_iInf_measurableSet}
+  \leanok
   \uses{def:bayesRisk}
   \begin{align*}
   \mathcal B_\xi(\mu, \nu) = \inf_{E \text{ event}} \left( \xi_0 \mu(E) + \xi_1 \nu(E^c) \right) \: .
