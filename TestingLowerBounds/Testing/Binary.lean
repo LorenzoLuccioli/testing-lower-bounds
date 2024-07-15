@@ -433,6 +433,31 @@ lemma bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) (π : Measure Bool)
   --we need the generalized bayes estimator for the binary case
   sorry
 
+--maybe we need some hp to make this work, things need to be finite
+lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [SigmaFinite μ] [SigmaFinite ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    (bayesBinaryRisk μ ν π).toReal
+      = ∫ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
+        (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal ∂(π ∘ₘ twoHypKernel μ ν) := by
+  rw [bayesBinaryRisk_eq_integral_min, integral_eq_lintegral_of_nonneg_ae]
+  rotate_left
+  · filter_upwards with x; positivity
+  · refine Measurable.aestronglyMeasurable <| Measurable.min ?_ ?_
+      <;> exact Measure.measurable_rnDeriv _ _ |>.const_mul _ |>.ennreal_toNNReal |>.coe_nnreal_real
+  congr 1
+  apply lintegral_congr_ae
+  filter_upwards [Measure.rnDeriv_ne_top μ _, Measure.rnDeriv_ne_top ν _] with x hxμ hxν
+  have : (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ≠ ⊤ :=
+    (ENNReal.mul_ne_top (measure_ne_top _ _) hxμ)
+  have : (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ≠ ⊤ :=
+    (ENNReal.mul_ne_top (measure_ne_top _ _) hxν)
+  rcases le_total (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x)
+    (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) with h | h
+  all_goals
+  · have h' := (ENNReal.toReal_le_toReal (by assumption) (by assumption)).mpr h
+    simp only [h, h', min_eq_left, min_eq_right]
+    exact (ENNReal.ofReal_toReal_eq_iff.mpr (by assumption)).symm
+
 
 
 
