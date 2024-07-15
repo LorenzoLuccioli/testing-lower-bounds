@@ -402,7 +402,7 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
 
 --TODO: lemma about the generalized bayes estimator for the binary case, we need to define the generalized bayes estimator first in the general case, also do a lemma saying that this is equal to the indicator of some E, see η in the proof below
 
-lemma bayesBinaryRisk_eq_iInf_event (μ ν : Measure 𝒳) (π : Measure Bool) :
+lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = ⨅ E, ⨅ (_ : MeasurableSet E), π {false} * μ E + π {true} * ν Eᶜ := by
   apply le_antisymm
   · simp_rw [le_iInf_iff, bayesBinaryRisk_eq]
