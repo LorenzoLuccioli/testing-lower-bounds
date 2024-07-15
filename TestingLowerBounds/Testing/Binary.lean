@@ -81,6 +81,17 @@ lemma measure_comp_twoHypKernel (μ ν : Measure 𝒳) (π : Measure Bool) :
     cond_false, Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
   congr 1 <;> rw [mul_comm]
 
+lemma absolutelyContinuous_measure_comp_twoHypKernel_left (μ ν : Measure 𝒳)
+    {π : Measure Bool} (hπ : π {false} ≠ 0) :
+    μ ≪ π ∘ₘ twoHypKernel μ ν :=
+  measure_comp_twoHypKernel _ _ _ ▸ add_comm _ (π {true} • ν) ▸
+    (Measure.absolutelyContinuous_smul hπ).add_right _
+
+lemma absolutelyContinuous_measure_comp_twoHypKernel_right (μ ν : Measure 𝒳)
+    {π : Measure Bool} (hπ : π {true} ≠ 0) :
+    ν ≪ π ∘ₘ twoHypKernel μ ν :=
+  measure_comp_twoHypKernel _ _ _ ▸ (Measure.absolutelyContinuous_smul hπ).add_right _
+
 lemma sum_smul_rnDeriv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     (π {true} • ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) + π {false} • (μ.rnDeriv (π ∘ₘ twoHypKernel μ ν)))
