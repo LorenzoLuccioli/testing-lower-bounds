@@ -380,8 +380,8 @@ I^P_\pi(\kappa) + I^{\kappa \circ P}_\pi(\eta)
 
 \begin{lemma}[Data-processing inequality]
   \label{lem:riskIncrease_comp_del}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesRiskIncrease_discard_comp_le_bayesRiskIncrease}
+  \leanok
   \uses{def:riskIncrease}
   For any measurable space $\mathcal X$, let $d_{\mathcal X} : \mathcal X \rightsquigarrow *$ be the Markov kernel to the point space.
   For all Markov kernels $\kappa : \mathcal X \rightsquigarrow \mathcal X'$,
@@ -390,7 +390,7 @@ I^P_\pi(\kappa) + I^{\kappa \circ P}_\pi(\eta)
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:riskIncrease_comp, lem:riskIncrease_nonneg}
 By Lemma~\ref{lem:riskIncrease_comp}, then Lemma~\ref{lem:riskIncrease_nonneg},
 \begin{align*}
