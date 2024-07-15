@@ -214,6 +214,17 @@ lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty 
     _ = ⨅ z, ∫⁻ (θ : Θ), E.ℓ (E.y θ, z) ∂(E.P†π) x := by
       rw [lintegral_const, measure_univ, mul_one]
 
+lemma bayesRiskPrior_compProd_le_bayesRiskPrior (E : estimationProblem Θ 𝒳 𝒴 𝒵)
+    [IsSFiniteKernel E.P] (π : Measure Θ)
+    (κ : kernel (Θ × 𝒳) 𝒳') [IsMarkovKernel κ] :
+    bayesRiskPrior (E.compProd κ) π ≤ bayesRiskPrior E π := by
+  have : E = (E.compProd κ).comp (kernel.deterministic (fun (x, _) ↦ x) (by fun_prop)) := by
+    ext
+    · rw [estimationProblem.comp, estimationProblem.compProd, kernel.comp_apply,
+        Measure.comp_deterministic_eq_map, ← kernel.fst_apply, kernel.fst_compProd]
+    rfl; rfl
+  nth_rw 2 [this]
+  exact bayesRiskPrior_le_bayesRiskPrior_comp _ _ _
 
 /-! ### Bayes risk increase -/
 
