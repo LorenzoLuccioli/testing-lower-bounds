@@ -22,7 +22,7 @@ require mathlib from git
 lean_lib TestingLowerBounds where
   -- add any library configuration options here
 
-require LeanCopilot from git "https://github.com/lean-dojo/LeanCopilot.git" @ "v1.2.2"
+require LeanCopilot from git "https://github.com/lean-dojo/LeanCopilot.git" @ "v1.4.1"
 
 require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
 
