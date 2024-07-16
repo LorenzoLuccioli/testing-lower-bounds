@@ -20,3 +20,5 @@ lemma const_comp (μ : Measure γ) (κ : kernel α β) :
 lemma const_comp' (μ : Measure γ) (κ : kernel α β) [IsMarkovKernel κ] :
     const β μ ∘ₖ κ = const α μ := by
   ext; simp_rw [const_comp, measure_univ, one_smul, const_apply]
+
+end ProbabilityTheory.kernel
