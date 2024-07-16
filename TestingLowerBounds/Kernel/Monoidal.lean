@@ -172,6 +172,22 @@ lemma swap_parallelComp {κ : kernel α β} [IsSFiniteKernel κ]
     ← Measure.map_apply measurable_swap hs, Measure.prod_swap]
   rfl
 
+--move this and PR it to mathlib, it should go right after `kernel.measurable_kernel_prod_mk_left'`, but in that file ∘ₖ is not defined, so maybe we should find a better place for it or modify the proof so it does not need it
+lemma measurable_kernel_prod_mk_left'' {κ : kernel α β}
+    [IsSFiniteKernel κ] {t : Set (γ × β)} (ht : MeasurableSet t) :
+    Measurable (Function.uncurry fun a y ↦ (κ a) (Prod.mk y ⁻¹' t)) := by
+  have h1 (p : α × γ) : (Prod.mk p.2 ⁻¹' t)
+      = (Prod.mk p ⁻¹' (MeasurableEquiv.prodAssoc ⁻¹' (Set.univ ×ˢ t))) := by
+    ext x; simp [MeasurableEquiv.prodAssoc]
+  have h2 (p : α × γ) : κ p.1
+      = (κ ∘ₖ (deterministic (fun (p : α × γ) ↦ p.1) measurable_fst (mα := inferInstance))) p := by
+    ext s hs
+    rw [comp_apply, deterministic_apply, Measure.bind_apply hs (kernel.measurable _),
+      lintegral_dirac' _ (kernel.measurable_coe κ hs)]
+  simp_rw [Function.uncurry_def, h1, h2]
+  exact kernel.measurable_kernel_prod_mk_left <| (MeasurableEquiv.measurableSet_preimage _).mpr
+    (MeasurableSet.univ.prod ht)
+
 lemma parallelComp_comp_parallelComp {α' β' γ' : Type*} {mα' : MeasurableSpace α'}
     {mβ' : MeasurableSpace β'} {mγ' : MeasurableSpace γ'}
     {κ : kernel α β} [IsSFiniteKernel κ] {η : kernel β γ} [IsSFiniteKernel η]
