@@ -200,15 +200,9 @@ lemma parallelComp_comp_parallelComp {α' β' γ' : Type*} {mα' : MeasurableSpa
   simp_rw [parallelComp_apply, comp_apply]
   have : SFinite ((κ' a.2).bind ⇑η') := by sorry --this instance is in MeasureCompProd, which imports this file, we may have to move some lemmas around or create a new file
   rw [Measure.lintegral_bind (kernel.measurable η) (measurable_measure_prod_mk_left hs)]
-  congr with b
-  simp_rw [Measure.prod_apply hs]
-  rw [lintegral_lintegral_swap]
-  swap
-  · refine Measurable.aemeasurable ?_
-    --should be doable, but it seems nasty unless I find a good lemma, in any case the last resort could be to make it into a lintegral of an indicator function and use something like lintegral_kernel_prod_right'
-    sorry
-  congr with y
-  rw [Measure.bind_apply (measurable_prod_mk_left hs) (kernel.measurable η')]
+  simp_rw [Measure.bind_apply (measurable_prod_mk_left hs) (kernel.measurable η'),
+    Measure.prod_apply hs,
+    lintegral_lintegral_swap (measurable_kernel_prod_mk_left'' hs).aemeasurable]
 
 lemma parallelComp_comp_id_left_right (κ : kernel α β) [IsSFiniteKernel κ]
     (η : kernel γ δ) [IsSFiniteKernel η] :
