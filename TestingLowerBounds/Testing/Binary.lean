@@ -457,7 +457,6 @@ lemma bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) (π : Measure Bool)
   --we need the generalized bayes estimator for the binary case
   sorry
 
---maybe we need some hp to make this work, things need to be finite
 lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [SigmaFinite μ] [SigmaFinite ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     (bayesBinaryRisk μ ν π).toReal
@@ -482,7 +481,6 @@ lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [SigmaFinite
     simp only [h, h', min_eq_left, min_eq_right]
     exact (ENNReal.ofReal_toReal_eq_iff.mpr (by assumption)).symm
 
---I probably need some hp to make this work, things need to be finite
 lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     (bayesBinaryRisk μ ν π).toReal
