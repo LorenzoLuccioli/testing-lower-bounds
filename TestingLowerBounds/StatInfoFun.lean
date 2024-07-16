@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2024 Rémy Degenne. All rights reserved.
+Copyright (c) 2024 Lorenzo Luccioli. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
@@ -10,34 +10,16 @@ import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.MeasureTheory.Constructions.Prod.Integral
 import LeanCopilot
 
-/-!
-# Hockey-stick divergence
-
-## Main definitions
-
-## Main statements
-
-## Notation
-
-## Implementation details
-
--/
-
-open MeasureTheory
-
-
-open Set Filter
-
-open Topology StieltjesFunction
+open MeasureTheory Set Filter Topology StieltjesFunction
 
 open scoped ENNReal NNReal
 
 namespace ProbabilityTheory
 
-variable {𝒳 𝒳' : Type*} {m𝒳 : MeasurableSpace 𝒳} {m𝒳' : MeasurableSpace 𝒳'}
-  {μ ν : Measure 𝒳} {p : ℝ≥0∞} {f : ℝ → ℝ} {β γ x t : ℝ}
+variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f : ℝ → ℝ} {β γ x t : ℝ}
 
 -- To play with this function go to https://www.geogebra.org/calculator/jaymzqtm, there the notation is: b for β, c for γ, X for x. h is statInfoFun seen as a function of x, f is statInfoFun seen as a function of γ.
+/-- The hockey-stick function, it is related to the statistical information divergence. -/
 noncomputable
 def statInfoFun (β γ x : ℝ) : ℝ := if γ ≤ β then max 0 (γ - β * x) else max 0 (β * x - γ)
 
@@ -52,7 +34,8 @@ lemma statInfoFun_of_one : statInfoFun 1 γ x = if γ ≤ 1 then max 0 (γ - x) 
 @[simp]
 lemma statInfoFun_of_zero : statInfoFun 0 γ x = 0 := by simp_all [statInfoFun, le_of_lt]
 
-lemma const_mul_statInfoFun {a : ℝ} (ha : 0 ≤ a) : a * statInfoFun β γ x = statInfoFun (a * β) (a * γ) x := by
+lemma const_mul_statInfoFun {a : ℝ} (ha : 0 ≤ a) :
+    a * statInfoFun β γ x = statInfoFun (a * β) (a * γ) x := by
   simp_rw [statInfoFun, mul_ite, mul_max_of_nonneg _ _ ha, mul_sub, mul_zero, mul_assoc]
   rcases lt_or_eq_of_le ha with (ha | rfl)
   · simp_rw [mul_le_mul_left ha]
@@ -75,7 +58,7 @@ lemma measurable_statInfoFun2 : Measurable fun γ ↦ statInfoFun β γ x := by
   change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (γ : ℝ) ↦ ((β, γ), x)))
   exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
 
-lemma stronglyMeasurable_statInfoFun3 : StronglyMeasurable fun x ↦ statInfoFun β γ x := by
+lemma stronglyMeasurable_statInfoFun3 : StronglyMeasurable (statInfoFun β γ) := by
   change StronglyMeasurable (statInfoFun.uncurry.uncurry ∘ (fun (x : ℝ) ↦ ((β, γ), x)))
   refine stronglymeasurable_statInfoFun.measurable.comp (by fun_prop) |>.stronglyMeasurable
 
@@ -215,6 +198,13 @@ lemma derivAtTop_statInfoFun_ne_top (β γ : ℝ) : derivAtTop (fun x ↦ statIn
 
 end derivAtTop
 
+lemma integrable_statInfoFun_rnDeriv (β γ : ℝ)
+    (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    Integrable (fun x ↦ statInfoFun β γ ((∂μ/∂ν) x).toReal) ν := by
+  refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _ stronglyMeasurable_statInfoFun3
+    ?_ (derivAtTop_statInfoFun_ne_top β γ)
+  exact (convexOn_statInfoFun β γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)
+
 end statInfoFun_x
 
 section statInfoFun_γ
@@ -349,12 +339,6 @@ end statInfoFun_γ
 
 section fDiv
 
-lemma integrable_statInfoFun_rnDeriv [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
-    Integrable (fun x ↦ statInfoFun β γ ((∂μ/∂ν) x).toReal) ν := by
-  refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _ stronglyMeasurable_statInfoFun3 ?_ ?_
-  · exact (convexOn_statInfoFun β γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)
-  · exact derivAtTop_statInfoFun_ne_top β γ
-
 lemma nnReal_mul_fDiv {a : NNReal} :
     a * fDiv (statInfoFun β γ) μ ν = fDiv (fun x ↦ statInfoFun (a * β) (a * γ) x) μ ν := by
   change (a.1 : EReal) * _ = _
@@ -365,27 +349,27 @@ lemma nnReal_mul_fDiv {a : NNReal} :
 lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
     fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν := by
-  simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
+  simp_rw [fDiv_of_integrable (integrable_statInfoFun_rnDeriv _ _ _ _),
     derivAtTop_statInfoFun_of_nonneg_of_le hβ hγ, zero_mul, add_zero, statInfoFun_of_le hγ]
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : β < γ) :
     fDiv (statInfoFun β γ) μ ν
       = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν + β * (μ.singularPart ν) univ := by
-  simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
+  simp_rw [fDiv_of_integrable (integrable_statInfoFun_rnDeriv _ _ _ _),
     derivAtTop_statInfoFun_of_nonneg_of_gt hβ hγ, statInfoFun_of_gt hγ]
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : γ ≤ β) :
     fDiv (statInfoFun β γ) μ ν
       = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν - β * (μ.singularPart ν) univ := by
-  simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
+  simp_rw [fDiv_of_integrable (integrable_statInfoFun_rnDeriv _ _ _ _),
     derivAtTop_statInfoFun_of_nonpos_of_le hβ hγ, statInfoFun_of_le hγ, neg_mul, ← sub_eq_add_neg]
 
 lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : β ≤ 0) (hγ : β < γ) :
     fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (β * ((∂μ/∂ν) x).toReal - γ) ∂ν := by
-  simp_rw [fDiv_of_integrable integrable_statInfoFun_rnDeriv,
+  simp_rw [fDiv_of_integrable (integrable_statInfoFun_rnDeriv _ _ _ _),
     derivAtTop_statInfoFun_of_nonpos_of_gt hβ hγ, statInfoFun_of_gt hγ, zero_mul, add_zero]
 
 /-- Auxiliary lemma for `fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le` and
@@ -493,15 +477,19 @@ section CurvatureMeasure
 
 --should we define this to be some junk value if f is not convex? this way we could avoid having to state the convexity every time
 -- this may be put in some other place, maybe directly in the stieltjes file
+/-- The curvature measure induced by a convex function. It is defined as the only measure that has
+the right derivative of the function as a CDF. -/
 noncomputable
 def curvatureMeasure {f : ℝ → ℝ} (hf : ConvexOn ℝ univ f) : Measure ℝ :=
   hf.rightDerivStieltjes.measure
 
-instance (f : ℝ → ℝ) (hf : ConvexOn ℝ univ f) : IsLocallyFiniteMeasure (curvatureMeasure hf) := by
+instance {f : ℝ → ℝ} (hf : ConvexOn ℝ univ f) : IsLocallyFiniteMeasure (curvatureMeasure hf) := by
   unfold curvatureMeasure
   infer_instance
 
-lemma generalized_taylor (hf : ConvexOn ℝ univ f) (hf_cont : Continuous f) {a b : ℝ} :
+/-- A Taylor formula for convex functions in terms of the right derivative
+and the curvature measure. -/
+theorem convex_taylor (hf : ConvexOn ℝ univ f) (hf_cont : Continuous f) {a b : ℝ} :
     f b - f a - (rightDeriv f a) * (b - a)  = ∫ x in a..b, b - x ∂(curvatureMeasure hf) := by
   have h_int : IntervalIntegrable (rightDeriv f) ℙ a b := hf.rightDeriv_mono.intervalIntegrable
   rw [← intervalIntegral.integral_eq_sub_of_hasDeriv_right hf_cont.continuousOn
@@ -520,7 +508,7 @@ lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f
     f t = ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) := by
   have h :
       f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure hf_cvx) :=
-    generalized_taylor hf_cvx hf_cont
+    convex_taylor hf_cvx hf_cont
   rw [hf_one, hfderiv_one, sub_zero, zero_mul, sub_zero] at h
   rw [h]
   rcases le_total t 1 with (ht | ht)
@@ -531,23 +519,16 @@ lemma fun_eq_integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f
 
 -- TODO: think about the case when the function is not integrable (`h_int`), can we prove that in this case the rhs is also not integrable?
 
-lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
+lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
     (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
     fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure hf_cvx) := by
-  have h_int' (γ : ℝ) : Integrable (fun x ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ν := by
-    refine integrable_f_rnDeriv_of_derivAtTop_ne_top _ _
-      stronglyMeasurable_statInfoFun3 ?_ ?_
-    · exact (convexOn_statInfoFun 1 γ).subset (fun _ _ ↦ trivial) (convex_Ici 0)
-    · by_cases h : γ ≤ 1
-      · exact derivAtTop_statInfoFun_of_nonneg_of_le (zero_le_one) h ▸ EReal.zero_ne_top
-      · exact derivAtTop_statInfoFun_of_nonneg_of_gt (zero_le_one) (lt_of_not_ge h) ▸
-          EReal.coe_ne_top 1
   classical
   rw [fDiv_of_absolutelyContinuous h_ac, if_pos h_int, EReal.coe_eq_coe_iff]
-  simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (h_int' _), EReal.toReal_coe,
+  simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (integrable_statInfoFun_rnDeriv 1 _ _ _),
+    EReal.toReal_coe,
     fun_eq_integral_statInfoFun_curvatureMeasure hf_cvx hf_cont hf_one hfderiv_one]
   have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry := by
     change Measurable
@@ -576,7 +557,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_curvatureMeasure_of_absolutelyContinuous
   congr with γ
   rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun _ ↦ statInfoFun_nonneg _ _ _)
     h_meas.of_uncurry_right.stronglyMeasurable.aestronglyMeasurable, ENNReal.ofReal_toReal]
-  have h_lt_top := (h_int' γ).hasFiniteIntegral
+  have h_lt_top := (integrable_statInfoFun_rnDeriv 1 γ μ ν).hasFiniteIntegral
   simp_rw [HasFiniteIntegral, lt_top_iff_ne_top] at h_lt_top
   convert h_lt_top
   rw [← ENNReal.toReal_eq_toReal ENNReal.ofReal_ne_top ENNReal.coe_ne_top, toReal_coe_nnnorm,

@@ -216,7 +216,7 @@ lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty 
     bayesianRisk E κ π ≥ ∫⁻ x, ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂((E.P†π) x) ∂(π ∘ₘ E.P) := by
   have := E.ℓ_meas
   have := E.y_meas
-  rw [bayesianRisk_eq_bayesInv_prod, ← Measure.bind_bind',
+  rw [bayesianRisk_eq_bayesInv_prod, ← Measure.comp_assoc,
     Measure.lintegral_bind (kernel.measurable ((E.P†π) ×ₖ κ)) (by fun_prop)]
   gcongr with x
   rw [kernel.prod_apply, lintegral_prod_symm' _ (by fun_prop)]
