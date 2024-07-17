@@ -258,7 +258,33 @@ variable (P₁ P₂ : kernel Θ 𝒳) (a : ℝ) (b : ℝ≥0) (c: ℝ≥0∞)
 
 --TODO: how do we define the generalized Bayes estimator?
 --maybe we could say that an estimator κ is a generalized Bayes estimator if for every x `P†π(x)[θ ↦ ℓ(y(θ), κ x)] = min_z P†π(x)[θ ↦ ℓ(y(θ), z)]` and then use the hp: `∃κ generalized Bayes estimator`.
+--now I write the property of being a generalized bayes estimator, it should be wrt a function, not a kernel, and an estimation problem
 
+--should we bundle together this property and the measurability, for now I will keep the measurabilty as as separate hp in the lemmas, but if there is no lemma that does not require it maybe we should bundle them together, in that case we could do a structure like the one below.
+--change of plans, I will try with the structure before, because it seems easier to use, if I see many lemmas that do not require the measurability I will change it back
+-- def IsGeneralizedBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
+--     [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] (f : 𝒳 → 𝒵) : Prop :=
+--   ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
+
+--maybe the name `property` can be changed
+structure IsGeneralizedBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
+    (f : 𝒳 → 𝒵) where
+  measurable : Measurable f
+  property : ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
+
+
+lemma bayesRisk_of_isGeneralizedBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
+    {f : 𝒳 → 𝒵} (hf : IsGeneralizedBayesEstimator E π f) :
+    bayesianRisk E (kernel.deterministic f hf.measurable) π
+      = ∫⁻ x, ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x ∂π ∘ₘ E.P := by
+  have := E.ℓ_meas
+  have := E.y_meas
+  rw [bayesianRisk_eq_integral_integral_integral]
+  congr with x
+  rw [kernel.deterministic_apply, lintegral_dirac' _ (Measurable.lintegral_prod_left (by fun_prop))]
+  exact hf.property x
 
 /-! ### Bayes risk increase -/
 
