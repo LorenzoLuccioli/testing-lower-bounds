@@ -71,5 +71,22 @@ lemma statInfo_symm : statInfo μ ν π = statInfo ν μ (π.map Bool.not) := by
   simp_rw [statInfo]
   rw [min_comm, bayesBinaryRisk_symm, h1, h2]
 
+lemma statInfo_bernoulli_le_statInfo {E : Set 𝒳} (hE : MeasurableSet E) :
+    statInfo (Bool.boolMeasure (1 - μ E) (μ E)) (Bool.boolMeasure (1 - ν E) (ν E)) π
+      ≤ statInfo μ ν π := by
+  have h_meas : Measurable fun x ↦ Bool.ofNat (E.indicator 1 x) :=
+    ((measurable_discrete _).comp' (measurable_one.indicator hE))
+  let η : kernel 𝒳 Bool := kernel.deterministic (fun x ↦ Bool.ofNat (E.indicator 1 x)) h_meas
+  convert statInfo_comp_le μ ν π η
+  · ext
+    · simp [η]
+      rw [Measure.comp_deterministic_eq_map, Measure.map_apply h_meas (by trivial)]
+      have : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {false} = Eᶜ := by
+        ext x; simp [Bool.ofNat]
+      rw [this]
+      sorry
+    · sorry
+  sorry
+
 
 end ProbabilityTheory
