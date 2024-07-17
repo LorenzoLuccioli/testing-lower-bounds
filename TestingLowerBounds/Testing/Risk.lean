@@ -286,11 +286,11 @@ def IsGenBayesEstimator.kernel [StandardBorelSpace Θ] [Nonempty Θ]
 lemma bayesRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
     {f : 𝒳 → 𝒵} (hf : IsGenBayesEstimator E π f) :
-    bayesianRisk E (kernel.deterministic f hf.measurable) π
+    bayesianRisk E hf.kernel π
       = ∫⁻ x, ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x ∂π ∘ₘ E.P := by
   have := E.ℓ_meas
   have := E.y_meas
-  rw [bayesianRisk_eq_integral_integral_integral]
+  rw [IsGenBayesEstimator.kernel, bayesianRisk_eq_integral_integral_integral]
   congr with x
   rw [kernel.deterministic_apply, lintegral_dirac' _ (Measurable.lintegral_prod_left (by fun_prop))]
   exact hf.property x
@@ -303,7 +303,8 @@ def bayesRiskIncrease (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Measure Θ
 
 lemma bayesRiskIncrease_comp (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Measure Θ) (κ : kernel 𝒳 𝒳')
     [IsMarkovKernel κ] (η : kernel 𝒳' 𝒳'') [IsMarkovKernel η] :
-    bayesRiskIncrease E π (η ∘ₖ κ) = bayesRiskIncrease E π κ + bayesRiskIncrease (E.comp κ) π η := by
+    bayesRiskIncrease E π (η ∘ₖ κ)
+      = bayesRiskIncrease E π κ + bayesRiskIncrease (E.comp κ) π η := by
   simp only [bayesRiskIncrease, ← estimationProblem.comp_comp]
   rw [add_comm, tsub_add_tsub_cancel]
   · exact bayesRiskPrior_le_bayesRiskPrior_comp _ _ _
