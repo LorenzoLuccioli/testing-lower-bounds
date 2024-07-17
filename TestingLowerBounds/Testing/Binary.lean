@@ -169,6 +169,32 @@ instance (π : Measure Bool) [IsFiniteMeasure π] : IsMarkovKernel (twoHypKernel
     simp [h]
   · infer_instance
 
+#check Measure.prod_eq
+
+--the finiteness hypothesis for μ should not be needed, but otherwise I dont know how to handle the 3rd case, where I have the complement
+--if we had a lemma similar to `induction_on_inter` but that only took t as a rectangle then I think we could handle it, because the complement of a rectangle is the union of rectangles (`Set.compl_prod_eq_union`). Maybe this is actually not true, to propagate the property from a pi system I need that the property propagates through the complement of arbitrary sets, not just sets in the pi system
+--see also the proof of `Measure.prod_eq`, it uses a different lemma, it seems that we need some hp of the type `μ.FiniteSpanningSetsIn C` where C is the pi system given by the rectangles, maybe the result is really not true in general, but only for some restricted class of measures.
+--I think this can be extended at least to sigma finite measures, I'm not sure about SFninte ones
+lemma measure_prod_ext {μ ν : Measure (𝒳 × 𝒴)} [IsFiniteMeasure μ] (h : ∀ (A : Set 𝒳),
+    ∀ (_ : MeasurableSet A), ∀ (B : Set 𝒴), ∀ (_ : MeasurableSet B), (μ (A ×ˢ B)) = (ν (A ×ˢ B))) :
+    μ = ν := by
+  ext s hs
+  apply MeasurableSpace.induction_on_inter generateFrom_prod.symm isPiSystem_prod _ _ _ _ hs
+  · simp_rw [measure_empty]
+  · exact fun t ⟨A, hA, B, hB, ht⟩ ↦ ht ▸ h A hA B hB
+  · intro t ht h_eq
+    rw [measure_compl ht (measure_ne_top μ t), measure_compl ht (h_eq ▸ measure_ne_top μ t), h_eq,
+      ← Set.univ_prod_univ, ← h Set.univ MeasurableSet.univ Set.univ MeasurableSet.univ]
+  · intro A h_disj h_meas h_eq
+    simp_rw [measure_iUnion h_disj h_meas, h_eq]
+
+--put these 2 lemmas in a separate file, maybe PR them to mathlib
+lemma _root_.Prod.swap_image {α β : Type*} (A : Set α) (B : Set β) :
+    Prod.swap '' (A ×ˢ B) = B ×ˢ A := by ext; simp
+
+lemma _root_.Prod.swap_preimage {α β : Type*} (A : Set α) (B : Set β) :
+    Prod.swap ⁻¹' (A ×ˢ B) = B ×ˢ A := by ext; simp
+
 lemma bayesInv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     ((twoHypKernel μ ν)†π) =ᵐ[π ∘ₘ twoHypKernel μ ν] twoHypKernelInv μ ν π := by
