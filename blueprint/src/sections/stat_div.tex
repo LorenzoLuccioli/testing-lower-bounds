@@ -49,13 +49,13 @@ Use Lemma~\ref{lem:bayesBinaryRisk_le}.
 
 \begin{lemma}
   \label{lem:statInfo_le}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.statInfo_le_min}
+  \leanok
   \uses{def:statInfo}
   For $\mu, \nu \in \mathcal M(\mathcal X)$, $\mathcal I_\xi(\mu, \nu) \le \min\{\xi_0 \mu(\mathcal X), \xi_1 \nu(\mathcal X)\}$~.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesBinaryRisk_nonneg}
 Use Lemma~\ref{lem:bayesBinaryRisk_nonneg}.
 \end{proof}
@@ -63,13 +63,13 @@ Use Lemma~\ref{lem:bayesBinaryRisk_nonneg}.
 
 \begin{lemma}
   \label{lem:statInfo_symm}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.statInfo_symm}
+  \leanok
   \uses{def:statInfo}
   For $\mu, \nu \in \mathcal M(\mathcal X)$ and $\xi \in \mathcal M(\{0,1\})$, $\mathcal I_\xi(\mu, \nu) = \mathcal I_{\xi_\leftrightarrow}(\nu, \mu)$~.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesBinaryRisk_symm}
 Use Lemma~\ref{lem:bayesBinaryRisk_symm}.
 \end{proof}
