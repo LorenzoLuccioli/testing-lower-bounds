@@ -170,12 +170,9 @@ instance (π : Measure Bool) [IsFiniteMeasure π] : IsMarkovKernel (twoHypKernel
     simp [h]
   · infer_instance
 
-#check Measure.prod_eq
-
 --the finiteness hypothesis for μ should not be needed, but otherwise I dont know how to handle the 3rd case, where I have the complement
---if we had a lemma similar to `induction_on_inter` but that only took t as a rectangle then I think we could handle it, because the complement of a rectangle is the union of rectangles (`Set.compl_prod_eq_union`). Maybe this is actually not true, to propagate the property from a pi system I need that the property propagates through the complement of arbitrary sets, not just sets in the pi system
---see also the proof of `Measure.prod_eq`, it uses a different lemma, it seems that we need some hp of the type `μ.FiniteSpanningSetsIn C` where C is the pi system given by the rectangles, maybe the result is really not true in general, but only for some restricted class of measures.
---I think this can be extended at least to sigma finite measures, I'm not sure about SFninte ones
+-- we still need some hp, the right one is probably SigmaFinite. For SFinite ones there is a counterexample, see the comment above `Measure.prod_eq`.
+--TODO: generalize this lemma to SigmaFinite measures, there are 2 ways to do it, one is to try and generalize this proof (for this it may be useful to try and apply the lemma used in the proof of `Measure.prod_eq`), the other is to use this as an auxiliary lemma and prove the result for SigmaFinite measures using this one (we can restrict the mesaure to the set where it is finite and then use this lemma). I'm not sure which way is better.
 lemma measure_prod_ext {μ ν : Measure (𝒳 × 𝒴)} [IsFiniteMeasure μ] (h : ∀ (A : Set 𝒳),
     ∀ (_ : MeasurableSet A), ∀ (B : Set 𝒴), ∀ (_ : MeasurableSet B), (μ (A ×ˢ B)) = (ν (A ×ˢ B))) :
     μ = ν := by
