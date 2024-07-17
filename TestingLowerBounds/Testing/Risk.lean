@@ -196,7 +196,7 @@ lemma bayesRiskPrior_le_inf (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Meas
   · exact kernel.isMarkovKernel_const
 
 lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
-    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsMarkovKernel E.P] (κ : kernel 𝒳 𝒵)
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (κ : kernel 𝒳 𝒵)
     (π : Measure Θ) [IsFiniteMeasure π] [IsSFiniteKernel κ] :
     bayesianRisk E κ π = ∫⁻ (θz : Θ × 𝒵), E.ℓ (E.y θz.1, θz.2) ∂(π ∘ₘ (((E.P†π) ×ₖ κ) ∘ₖ E.P)) := by
   have := E.ℓ_meas
@@ -211,7 +211,7 @@ lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
   kernel.swap_copy, ← kernel.comp_assoc, kernel.parallelComp_comp_id_left_left]
 
 lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty Θ]
-    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsMarkovKernel E.P] (κ : kernel 𝒳 𝒵)
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (κ : kernel 𝒳 𝒵)
     (π : Measure Θ) [IsFiniteMeasure π] [IsMarkovKernel κ] :
     bayesianRisk E κ π ≥ ∫⁻ x, ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂((E.P†π) x) ∂(π ∘ₘ E.P) := by
   have := E.ℓ_meas
