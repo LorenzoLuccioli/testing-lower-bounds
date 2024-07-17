@@ -194,8 +194,8 @@ R^P_\pi(\hat{y})
 
 \begin{definition}[Generalized Bayes estimator]
   \label{def:genBayesEstimator}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.IsGenBayesEstimator}
+  \leanok
   \uses{def:risk,def:bayesInv}
   The generalized Bayes estimator for prior $\pi \in \mathcal P(\Theta)$ on $(P, y, \ell')$ is the deterministic estimator $\mathcal X \to \mathcal Z$ given by
   \begin{align*}
@@ -206,8 +206,8 @@ R^P_\pi(\hat{y})
 
 \begin{lemma}
   \label{lem:bayesianRisk_genBayesEstimator}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesRisk_of_isGenBayesEstimator}
+  \leanok
   \uses{def:bayesianRisk, def:genBayesEstimator}
   The Bayesian risk of the generalized Bayes estimator $\hat{y}_B$ is
   \begin{align*}
@@ -216,7 +216,7 @@ R^P_\pi(\hat{y})
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesianRisk_bayesInv}
 Start from the equality of Lemma~\ref{lem:bayesianRisk_bayesInv} and use the definition of the generalized Bayes estimator.
 \end{proof}
