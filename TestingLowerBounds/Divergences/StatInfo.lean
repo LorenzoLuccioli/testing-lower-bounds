@@ -60,13 +60,16 @@ lemma toReal_statInfo_eq_toReal_sub [IsFiniteMeasure ν] [IsFiniteMeasure π] :
 lemma statInfo_le_min : statInfo μ ν π ≤ min (π {false} * μ Set.univ) (π {true} * ν Set.univ) :=
   tsub_le_self
 
---with the boolMeasure definition we could have:
-lemma statInfo_comm : statInfo μ ν π = statInfo ν μ (boolMeasure (π {true}) (π {false})) := by
-  simp [statInfo, min_comm]
-  --we need to prove the same for the bayesBinaryRisk before
-  sorry
-
-
+lemma statInfo_symm : statInfo μ ν π = statInfo ν μ (π.map Bool.not) := by
+  -- I just copied these haves from the proof of `bayesBinaryRisk_symm`, should we separate them?
+  have : (Bool.not ⁻¹' {true}) = {false} := by ext x; simp
+  have h1 : (Measure.map Bool.not π) {true} = π {false} := by
+    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
+  have : (Bool.not ⁻¹' {false}) = {true} := by ext x; simp
+  have h2 : (Measure.map Bool.not π) {false} = π {true} := by
+    rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
+  simp_rw [statInfo]
+  rw [min_comm, bayesBinaryRisk_symm, h1, h2]
 
 
 end ProbabilityTheory
