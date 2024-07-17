@@ -267,16 +267,18 @@ variable (P₁ P₂ : kernel Θ 𝒳) (a : ℝ) (b : ℝ≥0) (c: ℝ≥0∞)
 --   ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
 
 --maybe the name `property` can be changed
-structure IsGeneralizedBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
+/-- A function `𝒳 → 𝒵` is a Generalized Bayes Estimator for the estimation problem `E` and the
+prior `π` if it is of the form `x ↦ argmin_z P†π(x)[θ ↦ ℓ(y(θ), z)]`. -/
+structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
     (f : 𝒳 → 𝒵) where
   measurable : Measurable f
   property : ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
 
 
-lemma bayesRisk_of_isGeneralizedBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
+lemma bayesRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
-    {f : 𝒳 → 𝒵} (hf : IsGeneralizedBayesEstimator E π f) :
+    {f : 𝒳 → 𝒵} (hf : IsGenBayesEstimator E π f) :
     bayesianRisk E (kernel.deterministic f hf.measurable) π
       = ∫⁻ x, ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x ∂π ∘ₘ E.P := by
   have := E.ℓ_meas
