@@ -298,8 +298,9 @@ lemma bayesBinaryRisk_smul_smul (μ ν : Measure 𝒳) (π : Measure Bool) (a b 
   simp [bayesBinaryRisk_eq, Measure.comp_smul_left, lintegral_dirac, mul_assoc]
 
 lemma bayesBinaryRisk_eq_bayesBinaryRisk_one_one (μ ν : Measure 𝒳) (π : Measure Bool) :
-    bayesBinaryRisk μ ν π = bayesBinaryRisk (π {false} • μ) (π {true} • ν) (boolMeasure 1 1) := by
-  rw [bayesBinaryRisk_smul_smul, measure_eq_boolMeasure π, boolMeasure_withDensity]
+    bayesBinaryRisk μ ν π
+      = bayesBinaryRisk (π {false} • μ) (π {true} • ν) (Bool.boolMeasure 1 1) := by
+  rw [bayesBinaryRisk_smul_smul, Bool.measure_eq_boolMeasure π, Bool.boolMeasure_withDensity]
   simp
 
 /-- **Data processing inequality** for the Bayes binary risk. -/
@@ -412,6 +413,7 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
 --the estimator will be something like: (NB the cose does not compile, it is just a sketch)
 -- def E : Set 𝒳 := {x | π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x ≤ π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x}
 -- def η : kernel 𝒳 Bool := kernel.deterministic (fun x ↦ Bool.ofNat (E.indicator 1 x)) sorry
+--see proof of `statInfo_bernoulli_le_statInfo` for a similar construction
 
 lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = ⨅ E, ⨅ (_ : MeasurableSet E), π {false} * μ E + π {true} * ν Eᶜ := by
