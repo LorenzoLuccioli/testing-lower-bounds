@@ -209,16 +209,23 @@ lemma bayesianRisk_eq_bayesInv_prod [StandardBorelSpace Θ] [Nonempty Θ]
   kernel.swap_parallelComp, kernel.comp_assoc (_ ∥ₖ κ), kernel.swap_parallelComp, kernel.comp_assoc,
   kernel.swap_copy, ← kernel.comp_assoc, kernel.parallelComp_comp_id_left_left]
 
-lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty Θ]
+lemma bayesianRisk_eq_integral_integral_integral [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (κ : kernel 𝒳 𝒵)
-    (π : Measure Θ) [IsFiniteMeasure π] [IsMarkovKernel κ] :
-    bayesianRisk E κ π ≥ ∫⁻ x, ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂((E.P†π) x) ∂(π ∘ₘ E.P) := by
+    (π : Measure Θ) [IsFiniteMeasure π] [IsSFiniteKernel κ] :
+    bayesianRisk E κ π = ∫⁻ x, ∫⁻ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x ∂κ x ∂π ∘ₘ ⇑E.P := by
   have := E.ℓ_meas
   have := E.y_meas
   rw [bayesianRisk_eq_bayesInv_prod, ← Measure.comp_assoc,
     Measure.lintegral_bind (kernel.measurable ((E.P†π) ×ₖ κ)) (by fun_prop)]
-  gcongr with x
+  congr with x
   rw [kernel.prod_apply, lintegral_prod_symm' _ (by fun_prop)]
+
+lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty Θ]
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (κ : kernel 𝒳 𝒵)
+    (π : Measure Θ) [IsFiniteMeasure π] [IsMarkovKernel κ] :
+    bayesianRisk E κ π ≥ ∫⁻ x, ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂((E.P†π) x) ∂(π ∘ₘ E.P) := by
+  rw [bayesianRisk_eq_integral_integral_integral]
+  gcongr with x
   calc
     _ ≥ ∫⁻ _, ⨅ z, ∫⁻ (θ : Θ), E.ℓ (E.y θ, z) ∂(E.P†π) x ∂κ x :=
       lintegral_mono fun z ↦ iInf_le' _ z
