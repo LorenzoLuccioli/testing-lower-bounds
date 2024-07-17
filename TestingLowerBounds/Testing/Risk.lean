@@ -170,8 +170,7 @@ lemma bayesRisk_le_minimaxRisk (E : estimationProblem Θ 𝒳 𝒴 𝒵) :
 /-! ### Properties of the Bayes risk of a prior -/
 
 lemma bayesRiskPrior_compProd_le_bayesRiskPrior (E : estimationProblem Θ 𝒳 𝒴 𝒵)
-    [IsSFiniteKernel E.P] (π : Measure Θ)
-    (κ : kernel (Θ × 𝒳) 𝒳') [IsMarkovKernel κ] :
+    [IsSFiniteKernel E.P] (π : Measure Θ) (κ : kernel (Θ × 𝒳) 𝒳') [IsMarkovKernel κ] :
     bayesRiskPrior (E.compProd κ) π ≤ bayesRiskPrior E π := by
   have : E = (E.compProd κ).comp (kernel.deterministic (fun (x, _) ↦ x) (by fun_prop)) := by
     ext
