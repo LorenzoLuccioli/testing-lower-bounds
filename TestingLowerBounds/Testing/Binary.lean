@@ -200,21 +200,43 @@ lemma bayesInv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFinit
     (π : Measure Bool) [IsFiniteMeasure π] :
     ((twoHypKernel μ ν)†π) =ᵐ[π ∘ₘ twoHypKernel μ ν] twoHypKernelInv μ ν π := by
   symm
-  refine eq_bayesInv_of_compProd_eq _ ?_
-  ext s hs
-  rw [Measure.map_apply measurable_swap hs, Measure.compProd_apply, Measure.compProd_apply,
-    Measure.lintegral_bind (kernel.measurable _)]
-  rotate_left
-  · exact kernel.measurable_kernel_prod_mk_left hs
-  · exact measurable_swap hs
-  · exact hs
-  simp only [twoHypKernel_apply]
-  congr with b
-  cases b
-  · simp only [cond_false]
-    sorry
-  · simp only [cond_true]
-    sorry
+  refine eq_bayesInv_of_compProd_eq _ (measure_prod_ext fun A hA B hB ↦ ?_)
+  obtain (rfl | rfl | rfl | rfl) := Bool.cases_set_bool B
+  · simp
+  · rw [Measure.compProd_apply_prod hA hB, Measure.map_apply measurable_swap (hA.prod hB),
+      Prod.swap_preimage, Measure.compProd_apply_prod hB hA, lintegral_singleton,
+      twoHypKernel_apply, cond_true, setLIntegral_congr_fun hA _]
+    rotate_left
+    · exact fun x ↦ π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
+    · filter_upwards [twoHypKernelInv_apply' μ ν π {true}] with x hx
+      simp [hx]
+    simp_rw [mul_comm (π {true})]
+    by_cases h_zero : π {true} = 0
+    · simp [h_zero]
+    rw [setLIntegral_rnDeriv_mul (absolutelyContinuous_measure_comp_twoHypKernel_right μ ν h_zero)
+      aemeasurable_const hA]
+    simp [mul_comm]
+  · rw [Measure.compProd_apply_prod hA hB, Measure.map_apply measurable_swap (hA.prod hB),
+      Prod.swap_preimage, Measure.compProd_apply_prod hB hA, lintegral_singleton,
+      twoHypKernel_apply, cond_false, setLIntegral_congr_fun hA _]
+    rotate_left
+    · exact fun x ↦ π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
+    · filter_upwards [twoHypKernelInv_apply' μ ν π {false}] with x hx
+      simp [hx]
+    simp_rw [mul_comm (π {false})]
+    by_cases h_zero : π {false} = 0
+    · simp [h_zero]
+    rw [setLIntegral_rnDeriv_mul (absolutelyContinuous_measure_comp_twoHypKernel_left μ ν h_zero)
+      aemeasurable_const hA]
+    simp [mul_comm]
+  · rw [Measure.compProd_apply_prod hA hB, Measure.map_apply measurable_swap (hA.prod hB),
+      Prod.swap_preimage, Measure.compProd_apply_prod hB hA,
+      Bool.lintegral_bool, twoHypKernel_apply, twoHypKernel_apply, cond_false, cond_true,
+      Set.pair_comm, ← Bool.univ_eq]
+    simp only [measure_univ, lintegral_const, MeasurableSet.univ, Measure.restrict_apply,
+      Set.univ_inter, one_mul, Measure.restrict_univ]
+    rw [Measure.bind_apply hA (by exact fun _ _ ↦ hB), Bool.lintegral_bool]
+    simp
 
 end TwoHypKernel
 
