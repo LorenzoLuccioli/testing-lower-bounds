@@ -267,6 +267,7 @@ variable (P₁ P₂ : kernel Θ 𝒳) (a : ℝ) (b : ℝ≥0) (c: ℝ≥0∞)
 --   ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
 
 --maybe the name `property` can be changed
+--I would like to put the kernel as a field of the structure itself (commented line below), so that it ca be accessed through dot notation, but it complains that it is non computable and I apparently cannot add the noncomputable keyword to a structure, how can I solve this? For now I put this as a separate definition, is it ok?
 /-- A function `𝒳 → 𝒵` is a Generalized Bayes Estimator for the estimation problem `E` and the
 prior `π` if it is of the form `x ↦ argmin_z P†π(x)[θ ↦ ℓ(y(θ), z)]`. -/
 structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
@@ -274,7 +275,13 @@ structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (f : 𝒳 → 𝒵) where
   measurable : Measurable f
   property : ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
+  -- kernel : kernel 𝒳 𝒵 := kernel.deterministic f measurable
 
+noncomputable
+def IsGenBayesEstimator.kernel [StandardBorelSpace Θ] [Nonempty Θ]
+    {E : estimationProblem Θ 𝒳 𝒴 𝒵} [IsFiniteKernel E.P] {π : Measure Θ} [IsFiniteMeasure π]
+    {f : 𝒳 → 𝒵} (h : IsGenBayesEstimator E π f) : kernel 𝒳 𝒵 :=
+  kernel.deterministic f h.measurable
 
 lemma bayesRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
