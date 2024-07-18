@@ -419,15 +419,15 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
   The Bayesian inverse of a kernel $P : \{0,1\} \rightsquigarrow \mathcal X$ with respect to a prior $\xi \in \mathcal M(\{0,1\})$ is $P_\xi^\dagger(x) = \left(\xi_0\frac{d P(0)}{d(P \circ \xi)}(x), \xi_1\frac{d P(1)}{d(P \circ \xi)}(x)\right)$ (almost surely w.r.t. $P \circ \xi = \xi_0 P(0) + \xi_1 P(1)$).
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:eq_bayesInv_of_compProd_eq}
 
 \end{proof}
 
 \begin{lemma}
   \label{lem:bayesRisk_binary}
-  \lean{ProbabilityTheory.bayesInv_twoHypKernel}
-  \leanok
+  % \lean{}
+  % \leanok
   \uses{def:bayesRisk}
   For $\Theta = \{0,1\}$, the Bayes risk of a prior $\xi \in \mathcal M(\{0,1\})$ is
   \begin{align*}
@@ -436,7 +436,7 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
   \end{align*}
 \end{lemma}
 
-\begin{proof}\leanok
+\begin{proof}%\leanok
 \uses{lem:bayesInv_binary, thm:isBayesEstimator_genBayesEstimator}
 Use Theorem~\ref{thm:isBayesEstimator_genBayesEstimator}, with the value of $P_\xi^\dagger$ given by Lemma~\ref{lem:bayesInv_binary}.
 \end{proof}
