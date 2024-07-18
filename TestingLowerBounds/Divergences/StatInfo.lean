@@ -71,7 +71,7 @@ lemma statInfo_symm : statInfo μ ν π = statInfo ν μ (π.map Bool.not) := by
   simp_rw [statInfo]
   rw [min_comm, bayesBinaryRisk_symm, h1, h2]
 
-lemma statInfo_bernoulli_le_statInfo {E : Set 𝒳} (hE : MeasurableSet E) :
+lemma statInfo_boolMeasure_le_statInfo {E : Set 𝒳} (hE : MeasurableSet E) :
     statInfo (Bool.boolMeasure (1 - μ E) (μ E)) (Bool.boolMeasure (1 - ν E) (ν E)) π
       ≤ statInfo μ ν π := by
   have h_meas : Measurable fun x ↦ Bool.ofNat (E.indicator 1 x) :=
