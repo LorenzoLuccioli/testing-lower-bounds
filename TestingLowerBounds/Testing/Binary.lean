@@ -495,6 +495,23 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
     swap; trivial
     simp [h3, h4]
 
+lemma bayesianRisk_binary_of_deterministic_indicator (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] {E : Set 𝒳} (hE : MeasurableSet E) :
+    bayesianRisk (simpleBinaryHypTest μ ν)
+      (kernel.deterministic (fun x ↦ Bool.ofNat (E.indicator 1 x))
+        ((measurable_discrete _).comp' (measurable_one.indicator hE))) π
+      = π {false} * μ E + π {true} * ν Eᶜ := by
+  have h_meas : Measurable fun x ↦ Bool.ofNat (E.indicator 1 x) :=
+    (measurable_discrete _).comp' (measurable_one.indicator hE)
+  have h1 : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {false} = Eᶜ := by
+    ext; simp [Bool.ofNat]
+  have h2 : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {true} = E := by
+    ext; simp [Bool.ofNat]
+  rw [bayesianRisk, Bool.lintegral_bool, mul_comm (π {false}), mul_comm (π {true})]
+  simp only [risk_simpleBinaryHypTest_false, MeasurableSpace.measurableSet_top,
+    risk_simpleBinaryHypTest_true]
+  simp_rw [Measure.comp_deterministic_eq_map, Measure.map_apply h_meas trivial, h1, h2]
+  
 lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = ⨅ E, ⨅ (_ : MeasurableSet E), π {false} * μ E + π {true} * ν Eᶜ := by
   apply le_antisymm
