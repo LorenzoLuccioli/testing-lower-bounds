@@ -253,6 +253,25 @@ lemma bayesInv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFinit
     rw [Measure.bind_apply hA (by exact fun _ _ ↦ hB), Bool.lintegral_bool]
     simp
 
+lemma bayesRiskPrior_eq_of_hasGenBayesEstimator_binary (E : estimationProblem Bool 𝒳 Bool Bool)
+    [IsFiniteKernel E.P] (π : Measure Bool) [IsFiniteMeasure π] [h : HasGenBayesEstimator E π] :
+    bayesRiskPrior E π
+      = ∫⁻ x, ⨅ z, π {true} * (E.P true).rnDeriv (π ∘ₘ E.P) x * E.ℓ (E.y true, z)
+        + π {false} * (E.P false).rnDeriv (π ∘ₘ E.P) x * E.ℓ (E.y false, z) ∂π ∘ₘ E.P := by
+  simp_rw [bayesRiskPrior_eq_of_hasGenBayesEstimator]
+  have h1 := bayesInv_twoHypKernel (E.P false) (E.P true) π
+  have h2 : E.P = twoHypKernel (E.P false) (E.P true) := kernel_bool_eq_twoHypKernel E.P
+  have h3 : (E.P†π) = twoHypKernel (E.P false) (E.P true)†π := by congr
+  nth_rw 1 [h2]
+  nth_rw 4 [h2]
+  simp_rw [h3]
+  apply lintegral_congr_ae
+  filter_upwards [h1, twoHypKernelInv_apply_false (E.P false) (E.P true) π,
+    twoHypKernelInv_apply_true (E.P false) (E.P true) π] with x hx h_false h_true
+  congr with z
+  rw [Bool.lintegral_bool, hx, h_false, h_true, ← h2]
+  ring_nf
+
 end TwoHypKernel
 
 section SimpleBinaryHypTest
