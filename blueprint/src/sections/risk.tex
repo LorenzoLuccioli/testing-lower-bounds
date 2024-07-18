@@ -426,8 +426,8 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
 
 \begin{lemma}
   \label{lem:bayesRisk_binary}
-  % \lean{}
-  % \leanok
+  \lean{ProbabilityTheory.bayesRiskPrior_eq_of_hasGenBayesEstimator_binary}
+  \leanok
   \uses{def:bayesRisk}
   For $\Theta = \{0,1\}$, the Bayes risk of a prior $\xi \in \mathcal M(\{0,1\})$ is
   \begin{align*}
@@ -436,7 +436,7 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesInv_binary, thm:isBayesEstimator_genBayesEstimator}
 Use Theorem~\ref{thm:isBayesEstimator_genBayesEstimator}, with the value of $P_\xi^\dagger$ given by Lemma~\ref{lem:bayesInv_binary}.
 \end{proof}
@@ -572,13 +572,13 @@ Then applying the DPI (Theorem~\ref{thm:data_proc_bayesBinaryRisk}), followed by
 
 \begin{lemma}
   \label{lem:genBayesEstimator_bayesBinaryRisk}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.binaryGenBayesEstimator_isGenBayesEstimator}
+  \leanok
   \uses{def:genBayesEstimator, def:bayesBinaryRisk}
   The generalized Bayes estimator for the Bayes binary risk with prior $\xi \in \mathcal M(\{0,1\})$ is $x \mapsto \text{if } \xi_1\frac{d \nu}{d(P \circ \xi)}(x) \le \xi_0\frac{d \mu}{d(P \circ \xi)}(x) \text{ then } 0 \text{ else } 1$, i.e. it is equal to $\mathbb{I}_E$ for $E = \{x \mid \xi_1\frac{d \nu}{d(P \circ \xi)}(x) > \xi_0\frac{d \mu}{d(P \circ \xi)}(x)\}$~.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesInv_binary}
 The generalized Bayes estimator is defined by
 \begin{align*}
@@ -607,7 +607,7 @@ The expression of the lemma statement is obtained by replacing $P_\xi^\dagger$ b
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:genBayesEstimator_bayesBinaryRisk}
 By definition,
 \begin{align*}
@@ -623,8 +623,8 @@ Since the Bayes estimator has that shape (Lemma~\ref{lem:genBayesEstimator_bayes
 
 \begin{theorem}
   \label{thm:bayesBinaryRisk_eq}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesBinaryRisk_eq_integral_min, ProbabilityTheory.toReal_bayesBinaryRisk_eq_integral_min}
+  \leanok
   \uses{def:bayesBinaryRisk}
   The Bayes risk of simple binary hypothesis testing for prior $\xi \in \mathcal M(\{0,1\})$ is
   \begin{align*}
@@ -633,7 +633,7 @@ Since the Bayes estimator has that shape (Lemma~\ref{lem:genBayesEstimator_bayes
   \end{align*}
 \end{theorem}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesianRisk_genBayesEstimator, thm:isBayesEstimator_genBayesEstimator, lem:bayesInv_binary}
 By Theorem~\ref{thm:isBayesEstimator_genBayesEstimator}, the generalized Bayes estimator is a Bayes estimator, hence it suffices to compute its Bayesian risk.
 By Lemma~\ref{lem:bayesianRisk_genBayesEstimator},
@@ -651,8 +651,8 @@ The last line is obtained by replacing $P_\xi^\dagger$ by its value (Lemma~\ref{
 
 \begin{corollary}
   \label{cor:bayesBinaryRisk_eq_abs}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.toReal_bayesBinaryRisk_eq_integral_abs}
+  \leanok
   \uses{def:bayesBinaryRisk}
   \begin{align*}
   \mathcal B_\xi(\mu, \nu) = \frac{1}{2}\left((P \circ \xi)(\mathcal X) -  (P \circ \xi)\left[x \mapsto \left\vert \xi_0\frac{d \mu}{d(P \circ \xi)}(x) - \xi_1\frac{d \nu}{d(P \circ \xi)}(x)\right\vert\right] \right)
@@ -660,7 +660,7 @@ The last line is obtained by replacing $P_\xi^\dagger$ by its value (Lemma~\ref{
   \end{align*}
 \end{corollary}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{thm:bayesBinaryRisk_eq}
 Use Theorem~\ref{thm:bayesBinaryRisk_eq} and the equality $\min\{a,b\} = \frac{1}{2}(a + b - \vert a - b \vert)$.
 \end{proof}
