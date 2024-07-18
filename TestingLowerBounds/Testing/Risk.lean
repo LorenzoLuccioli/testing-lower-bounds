@@ -257,28 +257,12 @@ variable (P₁ P₂ : kernel Θ 𝒳) (a : ℝ) (b : ℝ≥0) (c: ℝ≥0∞)
 
 /-! ### Generalized Bayes estimator -/
 
---TODO: how do we define the generalized Bayes estimator?
---maybe we could say that an estimator κ is a generalized Bayes estimator if for every x `P†π(x)[θ ↦ ℓ(y(θ), κ x)] = min_z P†π(x)[θ ↦ ℓ(y(θ), z)]` and then use the hp: `∃κ generalized Bayes estimator`.
---now I write the property of being a generalized bayes estimator, it should be wrt a function, not a kernel, and an estimation problem
-
---should we bundle together this property and the measurability, for now I will keep the measurabilty as as separate hp in the lemmas, but if there is no lemma that does not require it maybe we should bundle them together, in that case we could do a structure like the one below.
---change of plans, I will try with the structure before, because it seems easier to use, if I see many lemmas that do not require the measurability I will change it back
--- def IsGeneralizedBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
---     [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] (f : 𝒳 → 𝒵) : Prop :=
---   ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
-
---maybe the name `property` can be changed
---I would like to put the kernel as a field of the structure itself (commented line below), so that it ca be accessed through dot notation, but it complains that it is non computable and I apparently cannot add the noncomputable keyword to a structure, how can I solve this? For now I put this as a separate definition, is it ok?
-/-- A function `𝒳 → 𝒵` is a Generalized Bayes Estimator for the estimation problem `E` and the
-prior `π` if it is of the form `x ↦ argmin_z P†π(x)[θ ↦ ℓ(y(θ), z)]`. -/
--- noncomputable
 --NB: I had to chenge the definition, now the property only has to hold a.e., is it ok? I need that so that I can prove that the estimator for the binary case is a generalized bayes estimator and we only have properties for E.P†π a.e.
 structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (f : 𝒳 → 𝒵)
     (π : Measure Θ) [IsFiniteMeasure π] : Prop where
   measurable : Measurable f
   property : ∀ᵐ x ∂π ∘ₘ E.P, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
-  -- kernel : kernel 𝒳 𝒵 := kernel.deterministic f measurable
 
 noncomputable
 abbrev IsGenBayesEstimator.kernel [StandardBorelSpace Θ] [Nonempty Θ]
@@ -310,16 +294,10 @@ lemma isBayesEstimator_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty 
   · refine iInf_le_of_le hf.kernel ?_
     exact iInf_le _ (kernel.isMarkovKernel_deterministic hf.measurable)
 
---create a property also for the estimation problem that says that there exist a generalized Bayes estimator? How do we do this? maybe with a class so it can be inferred by the typeclass system? or with a simple def? If we do it with a class should the class extend estimationProblem? maybe it does not make sense to do it like this and it is better do do a class that takes the actual problem as an argument
 class HasGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
     [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]  where
   estimator : 𝒳 → 𝒵
   property : IsGenBayesEstimator E estimator π
-
---is this a better definition?
--- class HasGenBayesEstimator' [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
---     [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] : Prop where
---   hasGenBayesEstimator : ∃ f, IsGenBayesEstimator E f π
 
 lemma bayesRiskPrior_eq_of_hasGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
