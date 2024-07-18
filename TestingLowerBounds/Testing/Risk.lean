@@ -317,7 +317,12 @@ class HasGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ] (E : estimation
 --     [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] : Prop where
 --   hasGenBayesEstimator : ∃ f, IsGenBayesEstimator E f π
 
-
+lemma bayesRiskPrior_eq_of_hasGenBayesEstimator
+    [StandardBorelSpace Θ] [Nonempty Θ]
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
+    [h : HasGenBayesEstimator E π] :
+    bayesRiskPrior E π = ∫⁻ x, ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂((E.P†π) x) ∂(π ∘ₘ E.P) := by
+  rw [← isBayesEstimator_of_isGenBayesEstimator E π h.property, bayesRisk_of_isGenBayesEstimator]
 
 /-! ### Bayes risk increase -/
 
