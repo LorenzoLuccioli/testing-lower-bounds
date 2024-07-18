@@ -291,6 +291,12 @@ lemma risk_simpleBinaryHypTest_false (μ ν : Measure 𝒳) (κ : kernel 𝒳 Bo
       exact absurd (h2.symm.trans h1) Bool.false_ne_true
   _ = (μ ∘ₘ ⇑κ) {true} := lintegral_indicator_one (measurableSet_singleton _)
 
+instance [IsFiniteMeasure μ] [IsFiniteMeasure ν] : IsFiniteKernel (simpleBinaryHypTest μ ν).P :=
+  simpleBinaryHypTest_P μ ν ▸ inferInstance
+
+instance [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
+    IsMarkovKernel (simpleBinaryHypTest μ ν).P := simpleBinaryHypTest_P μ ν ▸ inferInstance
+
 end SimpleBinaryHypTest
 
 /-- The Bayes risk of simple binary hypothesis testing with respect to a prior. -/
