@@ -41,6 +41,16 @@ lemma lintegral_bool {f : Bool → ℝ≥0∞} (π : Measure Bool) :
   rw [← setLIntegral_univ, Bool.univ_eq, lintegral_insert (of_decide_eq_false (by exact rfl)),
     lintegral_singleton]
 
+lemma iInf_bool {α : Type*} [CompleteLinearOrder α] (s : Bool → α) :
+    ⨅ b, s b = min (s false) (s true) := by
+  refine le_antisymm (le_min_iff.mpr ⟨iInf_le _ _, iInf_le _ _⟩) ?_
+  simp
+
+lemma iSup_bool {α : Type*} [CompleteLinearOrder α] (s : Bool → α) :
+    ⨆ b, s b = max (s false) (s true) := by
+  refine le_antisymm ?_ (max_le_iff.mpr ⟨le_iSup _ _, le_iSup _ _⟩)
+  simp [le_total]
+
 section BoolMeasure
 --maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
 noncomputable
