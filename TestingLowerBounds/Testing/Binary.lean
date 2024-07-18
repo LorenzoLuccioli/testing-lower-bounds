@@ -116,7 +116,7 @@ lemma sum_smul_rnDeriv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] 
 lemma sum_smul_rnDeriv_twoHypKernel' (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)), π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
-      + π {false} * (μ.rnDeriv (π ∘ₘ twoHypKernel μ ν)) x = 1 := by
+      + π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x = 1 := by
   filter_upwards [sum_smul_rnDeriv_twoHypKernel μ ν π] with x hx
   simpa using hx
 
@@ -125,7 +125,7 @@ def twoHypKernelInv (μ ν : Measure 𝒳) (π : Measure Bool) :
     kernel 𝒳 Bool where
   val x :=
     if π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
-      + π {false} * (μ.rnDeriv (π ∘ₘ twoHypKernel μ ν)) x = 1
+      + π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x = 1
     then (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) • Measure.dirac true
       + (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) • Measure.dirac false
     else Measure.dirac true
@@ -143,7 +143,7 @@ def twoHypKernelInv (μ ν : Measure 𝒳) (π : Measure Bool) :
 lemma twoHypKernelInv_apply (μ ν : Measure 𝒳) (π : Measure Bool) (x : 𝒳) :
     twoHypKernelInv μ ν π x
       = if π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
-          + π {false} * (μ.rnDeriv (π ∘ₘ twoHypKernel μ ν)) x = 1
+          + π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x = 1
         then (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) • Measure.dirac true
           + (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) • Measure.dirac false
         else Measure.dirac true := rfl
