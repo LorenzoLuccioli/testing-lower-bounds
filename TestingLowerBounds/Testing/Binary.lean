@@ -428,6 +428,38 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
     simp [h3, h4]
 
 --TODO: lemma about the generalized bayes estimator for the binary case, we need to define the generalized bayes estimator first in the general case, also do a lemma saying that this is equal to the indicator of some E, see η in the proof below. or maybe directly state it with the indicator function
+#check simpleBinaryHypTest
+
+noncomputable
+def binaryGenBayesEstimator (μ ν : Measure 𝒳) (π : Measure Bool) : 𝒳 → Bool :=
+  let E : Set 𝒳 := {x | π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
+    ≤ π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x}
+  fun x ↦ Bool.ofNat (E.indicator 1 x)
+
+-- noncomputable
+-- def binaryGenBayesEstimator : kernel 𝒳 Bool :=
+--   let E : Set 𝒳 := {x | π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
+--     ≤ π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x}
+--   have hE : MeasurableSet E := measurableSet_le (by fun_prop) (by fun_prop)
+--   have h_meas : Measurable fun x ↦ Bool.ofNat (E.indicator 1 x) :=
+--     ((measurable_discrete _).comp' (measurable_one.indicator hE))
+--   kernel.deterministic (fun x ↦ Bool.ofNat (E.indicator 1 x)) h_meas
+
+lemma binaryGenBayesEstimator_isGenBayesEstimator (μ ν : Measure 𝒳)
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [IsFiniteKernel (simpleBinaryHypTest μ ν).P] --this should be inferred from the finiteness of μ and ν, how to do this?
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    IsGenBayesEstimator (simpleBinaryHypTest μ ν) (binaryGenBayesEstimator μ ν π) π := by
+  refine ⟨?_, ?_⟩
+  · simp_rw [binaryGenBayesEstimator]
+    refine ((measurable_discrete _).comp' (measurable_one.indicator (measurableSet_le ?_ ?_)))
+      <;> fun_prop
+  ·
+    simp only [simpleBinaryHypTest_P, simpleBinaryHypTest_y, id_eq, simpleBinaryHypTest_ℓ]
+    intro x
+
+    sorry
+
 
 --the estimator will be something like: (NB the cose does not compile, it is just a sketch)
 -- def E : Set 𝒳 := {x | π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x ≤ π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x}
