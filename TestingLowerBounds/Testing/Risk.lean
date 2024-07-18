@@ -271,8 +271,8 @@ variable (P₁ P₂ : kernel Θ 𝒳) (a : ℝ) (b : ℝ≥0) (c: ℝ≥0∞)
 /-- A function `𝒳 → 𝒵` is a Generalized Bayes Estimator for the estimation problem `E` and the
 prior `π` if it is of the form `x ↦ argmin_z P†π(x)[θ ↦ ℓ(y(θ), z)]`. -/
 structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
-    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
-    (f : 𝒳 → 𝒵) where
+    (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (f : 𝒳 → 𝒵)
+    (π : Measure Θ) [IsFiniteMeasure π] : Prop where
   measurable : Measurable f
   property : ∀ x, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
   -- kernel : kernel 𝒳 𝒵 := kernel.deterministic f measurable
@@ -280,12 +280,12 @@ structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
 noncomputable
 def IsGenBayesEstimator.kernel [StandardBorelSpace Θ] [Nonempty Θ]
     {E : estimationProblem Θ 𝒳 𝒴 𝒵} [IsFiniteKernel E.P] {π : Measure Θ} [IsFiniteMeasure π]
-    {f : 𝒳 → 𝒵} (h : IsGenBayesEstimator E π f) : kernel 𝒳 𝒵 :=
+    {f : 𝒳 → 𝒵} (h : IsGenBayesEstimator E f π) : kernel 𝒳 𝒵 :=
   kernel.deterministic f h.measurable
 
 lemma bayesRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
-    {f : 𝒳 → 𝒵} (hf : IsGenBayesEstimator E π f) :
+    {f : 𝒳 → 𝒵} (hf : IsGenBayesEstimator E f π) :
     bayesianRisk E hf.kernel π
       = ∫⁻ x, ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x ∂π ∘ₘ E.P := by
   have := E.ℓ_meas
@@ -295,21 +295,22 @@ lemma bayesRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
   rw [kernel.deterministic_apply, lintegral_dirac' _ (Measurable.lintegral_prod_left (by fun_prop))]
   exact hf.property x
 
-lemma bayesRiskPrior_eq_bayesianRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
+lemma isBayesEstimator_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
-    {f : 𝒳 → 𝒵} (hf : IsGenBayesEstimator E π f) :
-    bayesRiskPrior E π = bayesianRisk E hf.kernel π := by
-  simp_rw [bayesRiskPrior]
+    {f : 𝒳 → 𝒵} (hf : IsGenBayesEstimator E f π) :
+    IsBayesEstimator E hf.kernel π := by
+  simp_rw [IsBayesEstimator, bayesRiskPrior]
   apply le_antisymm
-  · refine iInf_le_of_le hf.kernel ?_
-    exact iInf_le _ (kernel.isMarkovKernel_deterministic hf.measurable)
   · rw [bayesRisk_of_isGenBayesEstimator E π hf]
     simp_all [bayesianRisk_ge_lintegral_iInf_bayesInv]
-
+  · refine iInf_le_of_le hf.kernel ?_
+    exact iInf_le _ (kernel.isMarkovKernel_deterministic hf.measurable)
 
 --create a property also for the estimation problem that says that there exist a generalized Bayes estimator? How do we do this? maybe with a class so it can be inferred by the typeclass system? or with a simple def? If we do it with a class should the class extend estimationProblem? maybe it does not make sense to do it like this and it is better do do a class that takes the actual problem as an argument
-class HasGenBayesEstimator (E : estimationProblem Θ 𝒳 𝒴 𝒵) (π : Measure Θ) where
-  hasGenBayesEstimator : ∃ f, IsBayesEstimator E f π
+class HasGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
+    [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] : Prop where
+  hasGenBayesEstimator : ∃ f, IsGenBayesEstimator E f π
+
 
 
 /-! ### Bayes risk increase -/
