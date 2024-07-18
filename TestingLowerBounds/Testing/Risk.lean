@@ -308,8 +308,14 @@ lemma isBayesEstimator_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty 
 
 --create a property also for the estimation problem that says that there exist a generalized Bayes estimator? How do we do this? maybe with a class so it can be inferred by the typeclass system? or with a simple def? If we do it with a class should the class extend estimationProblem? maybe it does not make sense to do it like this and it is better do do a class that takes the actual problem as an argument
 class HasGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
-    [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] : Prop where
-  hasGenBayesEstimator : ∃ f, IsGenBayesEstimator E f π
+    [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]  where
+  estimator : 𝒳 → 𝒵
+  property : IsGenBayesEstimator E estimator π
+
+--is this a better definition?
+-- class HasGenBayesEstimator' [StandardBorelSpace Θ] [Nonempty Θ] (E : estimationProblem Θ 𝒳 𝒴 𝒵)
+--     [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π] : Prop where
+--   hasGenBayesEstimator : ∃ f, IsGenBayesEstimator E f π
 
 
 
