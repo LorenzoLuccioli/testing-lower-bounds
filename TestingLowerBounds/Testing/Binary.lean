@@ -441,7 +441,6 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
   convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π (kernel.discard 𝒳)
   simp_rw [Measure.comp_discard, bayesBinaryRisk_dirac]
 
-
 lemma bayesBinaryRisk_of_measure_true_eq_zero (μ ν : Measure 𝒳) (hπ : π {true} = 0) :
     bayesBinaryRisk μ ν π = 0 := by
   refine le_antisymm ?_ (zero_le _)
