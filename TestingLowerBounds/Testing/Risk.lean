@@ -271,11 +271,12 @@ variable (P₁ P₂ : kernel Θ 𝒳) (a : ℝ) (b : ℝ≥0) (c: ℝ≥0∞)
 /-- A function `𝒳 → 𝒵` is a Generalized Bayes Estimator for the estimation problem `E` and the
 prior `π` if it is of the form `x ↦ argmin_z P†π(x)[θ ↦ ℓ(y(θ), z)]`. -/
 -- noncomputable
+--NB: I had to chenge the definition, now the property only has to hold a.e., is it ok? I need that so that I can prove that the estimator for the binary case is a generalized bayes estimator and we only have properties for E.P†π a.e.
 structure IsGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (f : 𝒳 → 𝒵)
     (π : Measure Θ) [IsFiniteMeasure π] : Prop where
   measurable : Measurable f
-  property x : ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
+  property : ∀ᵐ x ∂π ∘ₘ E.P, ∫⁻ θ, E.ℓ (E.y θ, f x) ∂(E.P†π) x = ⨅ z, ∫⁻ θ, E.ℓ (E.y θ, z) ∂(E.P†π) x
   -- kernel : kernel 𝒳 𝒵 := kernel.deterministic f measurable
 
 noncomputable
@@ -292,9 +293,10 @@ lemma bayesianRisk_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
   have := E.ℓ_meas
   have := E.y_meas
   rw [bayesianRisk_eq_integral_integral_integral]
-  congr with x
-  rw [kernel.deterministic_apply, lintegral_dirac' _ (Measurable.lintegral_prod_left (by fun_prop))]
-  exact hf.property x
+  refine lintegral_congr_ae ?_
+  filter_upwards [hf.property] with x hx
+  rwa [kernel.deterministic_apply,
+    lintegral_dirac' _ (Measurable.lintegral_prod_left (by fun_prop))]
 
 lemma isBayesEstimator_of_isGenBayesEstimator [StandardBorelSpace Θ] [Nonempty Θ]
     (E : estimationProblem Θ 𝒳 𝒴 𝒵) [IsFiniteKernel E.P] (π : Measure Θ) [IsFiniteMeasure π]
