@@ -223,8 +223,8 @@ Start from the equality of Lemma~\ref{lem:bayesianRisk_bayesInv} and use the def
 
 \begin{theorem}
   \label{thm:isBayesEstimator_genBayesEstimator}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.isBayesEstimator_of_isGenBayesEstimator, ProbabilityTheory.bayesRiskPrior_eq_of_hasGenBayesEstimator}
+  \leanok
   \uses{def:bayesEstimator, def:genBayesEstimator, def:bayesRisk}
   When the generalized Bayes estimator is well defined, it is a Bayes estimator. The value of the Bayes risk with respect to the prior $\pi \in \mathcal M(\Theta)$ is then
   \begin{align*}
@@ -233,7 +233,7 @@ Start from the equality of Lemma~\ref{lem:bayesianRisk_bayesInv} and use the def
   \end{align*}
 \end{theorem}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesianRisk_ge_inf_bayesInv, lem:bayesianRisk_genBayesEstimator}
 By Lemma~\ref{lem:bayesianRisk_ge_inf_bayesInv}, the Bayesian risk of the generalized Bayes estimator obtained in Lemma~\ref{lem:bayesianRisk_genBayesEstimator} is a lower bound for the Bayesian risk.
 \end{proof}
@@ -426,8 +426,8 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
 
 \begin{lemma}
   \label{lem:bayesRisk_binary}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.bayesInv_twoHypKernel}
+  \leanok
   \uses{def:bayesRisk}
   For $\Theta = \{0,1\}$, the Bayes risk of a prior $\xi \in \mathcal M(\{0,1\})$ is
   \begin{align*}
@@ -436,7 +436,7 @@ In this section, for a measure $\xi$ on $\{0,1\}$, we write $\xi_0$ for $\xi(\{0
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesInv_binary, thm:isBayesEstimator_genBayesEstimator}
 Use Theorem~\ref{thm:isBayesEstimator_genBayesEstimator}, with the value of $P_\xi^\dagger$ given by Lemma~\ref{lem:bayesInv_binary}.
 \end{proof}
