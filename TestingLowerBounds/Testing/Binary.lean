@@ -317,6 +317,10 @@ lemma binaryGenBayesEstimator_isGenBayesEstimator (μ ν : Measure 𝒳) [IsFini
       π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x ≤ π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
       <;> simp_all [Bool.lintegral_bool, binaryGenBayesEstimator, Bool.ofNat, -not_le, le_of_not_ge]
 
+noncomputable instance (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] : HasGenBayesEstimator (simpleBinaryHypTest μ ν) π :=
+  ⟨binaryGenBayesEstimator μ ν π, binaryGenBayesEstimator_isGenBayesEstimator μ ν π⟩
+
 
 end SimpleBinaryHypTest
 
