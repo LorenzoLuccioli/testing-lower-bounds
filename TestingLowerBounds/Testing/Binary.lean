@@ -64,6 +64,10 @@ instance [IsProbabilityMeasure μ] [IsProbabilityMeasure ν] :
   · simp only [twoHypKernel_apply, cond_true]
     infer_instance
 
+lemma kernel_bool_eq_twoHypKernel (κ : kernel Bool 𝒳) :
+    κ = twoHypKernel (κ false) (κ true) := by
+  ext (_ | _) <;> simp
+
 @[simp]
 lemma comp_twoHypKernel (κ : kernel 𝒳 𝒴) :
     κ ∘ₖ (twoHypKernel μ ν) = twoHypKernel (μ ∘ₘ κ) (ν ∘ₘ κ) := by
