@@ -165,6 +165,20 @@ lemma twoHypKernelInv_apply' (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFini
   rw [hx]
   simp
 
+lemma twoHypKernelInv_apply_false (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)),
+      twoHypKernelInv μ ν π x {false} =  π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x := by
+  filter_upwards [twoHypKernelInv_apply_ae μ ν π] with x hx
+  simp [hx]
+
+lemma twoHypKernelInv_apply_true (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)),
+      twoHypKernelInv μ ν π x {true} = π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x := by
+  filter_upwards [twoHypKernelInv_apply_ae μ ν π] with x hx
+  simp [hx]
+
 instance (π : Measure Bool) [IsFiniteMeasure π] : IsMarkovKernel (twoHypKernelInv μ ν π) := by
   constructor
   intro x
