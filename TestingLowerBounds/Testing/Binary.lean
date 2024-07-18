@@ -358,7 +358,6 @@ noncomputable instance (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeas
     (π : Measure Bool) [IsFiniteMeasure π] : HasGenBayesEstimator (simpleBinaryHypTest μ ν) π :=
   ⟨binaryGenBayesEstimator μ ν π, binaryGenBayesEstimator_isGenBayesEstimator μ ν π⟩
 
-
 end SimpleBinaryHypTest
 
 /-- The Bayes risk of simple binary hypothesis testing with respect to a prior. -/
@@ -511,36 +510,32 @@ lemma bayesianRisk_binary_of_deterministic_indicator (μ ν : Measure 𝒳) [IsF
   simp only [risk_simpleBinaryHypTest_false, MeasurableSpace.measurableSet_top,
     risk_simpleBinaryHypTest_true]
   simp_rw [Measure.comp_deterministic_eq_map, Measure.map_apply h_meas trivial, h1, h2]
-  
-lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) (π : Measure Bool) :
+
+lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
     bayesBinaryRisk μ ν π = ⨅ E, ⨅ (_ : MeasurableSet E), π {false} * μ E + π {true} * ν Eᶜ := by
   apply le_antisymm
-  · simp_rw [le_iInf_iff, bayesBinaryRisk_eq]
+  · simp_rw [le_iInf_iff, bayesBinaryRisk, bayesRiskPrior]
     intro E hE
-    have h_meas : Measurable fun x ↦ Bool.ofNat (E.indicator 1 x) :=
-      (measurable_discrete _).comp' (measurable_one.indicator hE)
-    classical
-    let η : kernel 𝒳 Bool := kernel.deterministic (fun x ↦ Bool.ofNat (E.indicator 1 x)) h_meas
-    refine iInf_le_of_le η ?_
-    convert iInf_le _ (kernel.isMarkovKernel_deterministic _) using 1
-    have h1 : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {false} = Eᶜ := by
-      ext; simp [Bool.ofNat]
-    have h2 : (fun x ↦ Bool.ofNat (E.indicator 1 x)) ⁻¹' {true} = E := by
-      ext; simp [Bool.ofNat]
-    simp_rw [η, Measure.comp_deterministic_eq_map, Measure.map_apply h_meas trivial, h1, h2,
-      add_comm]
-  · --for this direction we need the generalized bayes estimator for the binary case
-    sorry
+    rw [← bayesianRisk_binary_of_deterministic_indicator _ _ _ hE]
+    exact iInf_le_of_le _ (iInf_le _ (kernel.isMarkovKernel_deterministic _))
+  · let E := {x | π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
+      ≤ π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x}
+    have hE : MeasurableSet E := measurableSet_le (by fun_prop) (by fun_prop)
+    rw [bayesBinaryRisk, ← isBayesEstimator_of_isGenBayesEstimator _ π
+      (binaryGenBayesEstimator_isGenBayesEstimator μ ν π), IsGenBayesEstimator.kernel]
+    simp_rw [binaryGenBayesEstimator, bayesianRisk_binary_of_deterministic_indicator _ _ _ hE]
+    exact iInf_le_of_le E (iInf_le _ hE)
 
---maybe we need some hp to make this work, things need to be finite
-lemma bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) (π : Measure Bool) :
+lemma bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
     bayesBinaryRisk μ ν π = ∫⁻ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x)
       (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ∂(π ∘ₘ twoHypKernel μ ν) := by
-  --we need the generalized bayes estimator for the binary case
-  sorry
+  simp_rw [bayesBinaryRisk, bayesRiskPrior_eq_of_hasGenBayesEstimator_binary, Bool.iInf_bool]
+  simp [min_comm]
 
-lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [SigmaFinite μ] [SigmaFinite ν]
-    (π : Measure Bool) [IsFiniteMeasure π] :
+lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
     (bayesBinaryRisk μ ν π).toReal
       = ∫ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
         (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal ∂(π ∘ₘ twoHypKernel μ ν) := by
