@@ -10,7 +10,7 @@ Mathematical analysis, Tom M. Apostol, 5th edition theorem 7.6, page 144 (seems 
 The integrals of Lebesgue, Denjoy, Perron, and Henstock, theorem 12.14
 
 See also https://math.ryerson.ca/~niushan/Stieltjes-integrals.pdf for some facts about Riemann-Stieltjes and Lebesgue integrals.
-Here I am stating the results in terms of Lebesgue integrals, since it is what I need and the RS integral is equal to the Lebesgue one if one of the functions is increasing and right continuous and the other is bounded and measurable (see 4.1 in the previous link).
+Here I am stating the results in terms of interval integrals, since it is what I need and the RS integral is equal to the Lebesgue one if one of the functions is increasing and right continuous and the other is bounded and measurable (see 4.1 in the previous link).
 To prove the general result it may be better to develop a theory of the Riemann-Stieltjes integral in mathlib and then prove the results for that integral and translate them for the lebesgue integral when possible.
 -/
 -- #check intervalIntegral.integral_deriv_mul_eq_sub_of_hasDeriv_right --one of the versions of the integration by parts that is currently in mathlib.
