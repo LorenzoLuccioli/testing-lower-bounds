@@ -97,7 +97,7 @@ lemma absolutelyContinuous_measure_comp_twoHypKernel_right (μ ν : Measure 𝒳
 lemma sum_smul_rnDeriv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     (π {true} • ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) + π {false} • (μ.rnDeriv (π ∘ₘ twoHypKernel μ ν)))
-      =ᵐ[π ∘ₘ ⇑(twoHypKernel μ ν)] 1 := by
+      =ᵐ[π ∘ₘ twoHypKernel μ ν] 1 := by
   have h1 := Measure.rnDeriv_smul_left_of_ne_top ν (π ∘ₘ twoHypKernel μ ν)
     (measure_ne_top π {true})
   have h2 := Measure.rnDeriv_smul_left_of_ne_top μ (π ∘ₘ twoHypKernel μ ν)
@@ -112,7 +112,7 @@ lemma sum_smul_rnDeriv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] 
 
 lemma sum_smul_rnDeriv_twoHypKernel' (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
-    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)), π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
+    ∀ᵐ x ∂(π ∘ₘ twoHypKernel μ ν), π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x
       + π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x = 1 := by
   filter_upwards [sum_smul_rnDeriv_twoHypKernel μ ν π] with x hx
   simpa using hx
@@ -150,7 +150,7 @@ lemma twoHypKernelInv_apply (μ ν : Measure 𝒳) (π : Measure Bool) (x : 𝒳
 
 lemma twoHypKernelInv_apply_ae (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
-    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)), twoHypKernelInv μ ν π x
+    ∀ᵐ x ∂(π ∘ₘ twoHypKernel μ ν), twoHypKernelInv μ ν π x
       = (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) • Measure.dirac true
         + (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) • Measure.dirac false := by
   filter_upwards [sum_smul_rnDeriv_twoHypKernel' μ ν π] with x hx
@@ -158,7 +158,7 @@ lemma twoHypKernelInv_apply_ae (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFi
 
 lemma twoHypKernelInv_apply' (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (s : Set Bool) :
-    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)), twoHypKernelInv μ ν π x s
+    ∀ᵐ x ∂(π ∘ₘ twoHypKernel μ ν), twoHypKernelInv μ ν π x s
       = π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x * s.indicator 1 true
         + π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x * s.indicator 1 false := by
   filter_upwards [twoHypKernelInv_apply_ae μ ν π] with x hx
@@ -167,14 +167,14 @@ lemma twoHypKernelInv_apply' (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFini
 
 lemma twoHypKernelInv_apply_false (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
-    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)),
+    ∀ᵐ x ∂(π ∘ₘ twoHypKernel μ ν),
       twoHypKernelInv μ ν π x {false} =  π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x := by
   filter_upwards [twoHypKernelInv_apply_ae μ ν π] with x hx
   simp [hx]
 
 lemma twoHypKernelInv_apply_true (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
-    ∀ᵐ x ∂(π ∘ₘ ⇑(twoHypKernel μ ν)),
+    ∀ᵐ x ∂(π ∘ₘ twoHypKernel μ ν),
       twoHypKernelInv μ ν π x {true} = π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x := by
   filter_upwards [twoHypKernelInv_apply_ae μ ν π] with x hx
   simp [hx]
@@ -215,7 +215,7 @@ lemma bayesInv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFinit
       Set.preimage_swap_prod, Measure.compProd_apply_prod hB hA, lintegral_singleton,
       twoHypKernel_apply, cond_true, setLIntegral_congr_fun hA _]
     rotate_left
-    · exact fun x ↦ π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
+    · exact fun x ↦ π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x
     · filter_upwards [twoHypKernelInv_apply' μ ν π {true}] with x hx
       simp [hx]
     simp_rw [mul_comm (π {true})]
@@ -228,7 +228,7 @@ lemma bayesInv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFinit
       Set.preimage_swap_prod, Measure.compProd_apply_prod hB hA, lintegral_singleton,
       twoHypKernel_apply, cond_false, setLIntegral_congr_fun hA _]
     rotate_left
-    · exact fun x ↦ π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
+    · exact fun x ↦ π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x
     · filter_upwards [twoHypKernelInv_apply' μ ν π {false}] with x hx
       simp [hx]
     simp_rw [mul_comm (π {false})]
@@ -348,7 +348,7 @@ lemma binaryGenBayesEstimator_isGenBayesEstimator (μ ν : Measure 𝒳) [IsFini
       twoHypKernelInv_apply' μ ν π {false}] with x hx h_true h_false
     refine le_antisymm (le_iInf fun b ↦ ?_) (iInf_le _ _)
     cases b <;> by_cases
-      π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x ≤ π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
+      π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x ≤ π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x
       <;> simp_all [Bool.lintegral_bool, binaryGenBayesEstimator, Bool.ofNat, -not_le, le_of_not_ge]
 
 noncomputable instance (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -515,8 +515,8 @@ lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) [IsFiniteMeas
     intro E hE
     rw [← bayesianRisk_binary_of_deterministic_indicator _ _ _ hE]
     exact iInf_le_of_le _ (iInf_le _ (kernel.isMarkovKernel_deterministic _))
-  · let E := {x | π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x
-      ≤ π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x}
+  · let E := {x | π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x
+      ≤ π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x}
     have hE : MeasurableSet E := measurableSet_le (by fun_prop) (by fun_prop)
     rw [bayesBinaryRisk, ← isBayesEstimator_of_isGenBayesEstimator
       (binaryGenBayesEstimator_isGenBayesEstimator μ ν π), IsGenBayesEstimator.kernel]
@@ -578,7 +578,7 @@ lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMea
   nth_rw 5 [measure_comp_twoHypKernel]
   calc
     _ = (π {false}).toReal * (μ Set.univ).toReal + (π {true}).toReal
-        * ∫ (a : 𝒳), ((∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) a).toReal ∂π ∘ₘ ⇑(twoHypKernel μ ν) := by
+        * ∫ (a : 𝒳), ((∂ν/∂π ∘ₘ twoHypKernel μ ν) a).toReal ∂π ∘ₘ twoHypKernel μ ν := by
       by_cases hπ_false : π {false} = 0
       · simp [hπ_false, bayesBinaryRisk_of_measure_false_eq_zero]
       rw [Measure.integral_toReal_rnDeriv
