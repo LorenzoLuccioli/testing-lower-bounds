@@ -315,6 +315,7 @@ lemma toEReal_sub (hy_top : y ≠ ⊤) (h_le : y ≤ x) :
   exact EReal.coe_sub _ _
 
 --PR these 2 lemmas to mathlib, just after ENNReal.mul_max
+-- #check ENNReal.mul_max
 theorem min_mul : min a b * c = min (a * c) (b * c) := mul_right_mono.map_min
 
 theorem mul_min : a * min b c = min (a * b) (a * c) := mul_left_mono.map_min
