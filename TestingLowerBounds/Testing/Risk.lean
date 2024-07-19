@@ -230,7 +230,6 @@ lemma bayesianRisk_ge_lintegral_iInf_bayesInv [StandardBorelSpace Θ] [Nonempty 
     _ = ⨅ z, ∫⁻ (θ : Θ), E.ℓ (E.y θ, z) ∂(E.P†π) x := by
       rw [lintegral_const, measure_univ, mul_one]
 
-
 -- what is the best way to state this lemma about convexity? How should I deal with explicitly suming and multipliying the P of an estimation problem?
 --Ideas: define separately P₁, P₂, y, ℓ and then state the lemma usng the constructor for the estimation problem
 --Or define the sum and scalar multiplication for estimation problems, then state the lemma using these operations, but we have to choose how to handle the fact that here we only want to sum the P, not the y and ℓ, should we require in the hypothesis of the sum operator that the y and ℓ are the same? But maybe this way it gets hard to use, maybe just use junk values when the y and ℓ are not the same, or just take the y and ℓ from the first estimation problem
