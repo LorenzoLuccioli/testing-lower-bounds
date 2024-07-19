@@ -523,7 +523,7 @@ lemma bayesBinaryRisk_eq_iInf_measurableSet (μ ν : Measure 𝒳) [IsFiniteMeas
     simp_rw [binaryGenBayesEstimator, bayesianRisk_binary_of_deterministic_indicator _ _ _ hE]
     exact iInf_le_of_le E (iInf_le _ hE)
 
-lemma bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+lemma bayesBinaryRisk_eq_lintegral_min (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
     bayesBinaryRisk μ ν π = ∫⁻ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x)
       (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ∂(π ∘ₘ twoHypKernel μ ν) := by
@@ -535,7 +535,7 @@ lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [IsFiniteMea
     (bayesBinaryRisk μ ν π).toReal
       = ∫ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
         (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal ∂(π ∘ₘ twoHypKernel μ ν) := by
-  rw [bayesBinaryRisk_eq_integral_min, integral_eq_lintegral_of_nonneg_ae]
+  rw [bayesBinaryRisk_eq_lintegral_min, integral_eq_lintegral_of_nonneg_ae]
   rotate_left
   · filter_upwards with x; positivity
   · refine Measurable.aestronglyMeasurable <| Measurable.min ?_ ?_
