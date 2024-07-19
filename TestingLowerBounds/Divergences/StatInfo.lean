@@ -6,7 +6,10 @@ Authors: Rémy Degenne
 import TestingLowerBounds.Testing.Binary
 import TestingLowerBounds.CurvatureMeasure
 import TestingLowerBounds.StatInfoFun
+import Mathlib.Order.CompletePartialOrder
 import TestingLowerBounds.FDiv.Basic
+import TestingLowerBounds.Testing.Binary
+import Mathlib.MeasureTheory.Constructions.Prod.Integral
 
 /-!
 # Statistical information
