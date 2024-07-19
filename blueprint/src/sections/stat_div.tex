@@ -100,14 +100,14 @@ Alternatively, we can use Lemma~\ref{lem:riskIncrease_comp_del}.
 
 \begin{corollary}
   \label{cor:statInfo_data_proc_event}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.statInfo_boolMeasure_le_statInfo}
+  \leanok
   \uses{def:statInfo}
   Let $\mu, \nu$ be two measures on $\mathcal X$, $\xi \in \mathcal M(\{0,1\})$ and let $E$ be an event on $\mathcal X$. Let $\mu_E$ and $\nu_E$ be the two Bernoulli distributions with respective means $\mu(E)$ and $\nu(E)$.
   Then $\mathcal I_\xi(\mu, \nu) \ge \mathcal I_\xi(\mu_E, \nu_E)$.
 \end{corollary}
 
-\begin{proof}
+\begin{proof}\leanok
 \uses{thm:data_proc_statInfo}
 Apply Theorem~\ref{thm:data_proc_statInfo} to the deterministic kernel $\mathcal X \rightsquigarrow \{0,1\}$ given by the function $x \mapsto \mathbb{I}\{x \in E\}$.
 \end{proof}
