@@ -3,11 +3,8 @@ Copyright (c) 2024 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
--- theorem foo (n : Nat) : 0 ≤ n := by exact? -- trick to make exact? work TODO : erase this when we are done
-
-import TestingLowerBounds.KullbackLeibler
+import TestingLowerBounds.Divergences.KullbackLeibler
 import Mathlib.Analysis.Convex.SpecificFunctions.Pow
-import LeanCopilot
 
 /-!
 # Helliger divergence
@@ -1272,6 +1269,3 @@ lemma hellingerDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] (ha_pos :
 end DataProcessingInequality
 
 end ProbabilityTheory
-
---there are some results that we will have to show for `a < 1` and `a > 1` separately and then propagate to the general case by continuity
--- TODO: change the definition of the Renyi divergence and use the new ereal log instead of the real one and try to prove the DPI for renyi, the part about the measure univ (the first thing inside the log) should not matter in the case of Markov kernels, because we have the measure of univ in one part, and th measure of the composition with the kernel of univ, which is the same as the measure of univ.

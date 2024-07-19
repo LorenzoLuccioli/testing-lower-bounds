@@ -3,12 +3,10 @@ Copyright (c) 2024 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
-import TestingLowerBounds.KullbackLeibler
-import TestingLowerBounds.Hellinger
-import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLogExp
+import TestingLowerBounds.Divergences.Hellinger
 import Mathlib.Probability.Moments
 import Mathlib.Data.Real.Sign
-import LeanCopilot
+import Mathlib.Analysis.SpecialFunctions.Log.ENNRealLog
 
 /-!
 # Rényi divergence
@@ -578,5 +576,3 @@ lemma renyiDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] (ha_pos : 0 <
 end DataProcessingInequality
 
 end ProbabilityTheory
---try the new category theory approach, we want at first to define the category of measurable spaces with kernels as morphisms and then we would like to have the string diagram widget.
---Some useful files for that: `Mathlib/MeasureTheory/Category/MeasCat.lean`, `Mathlib/Tactic/CategoryTheory/Coherence.lean`, `Mathlib/Tactic/CategoryTheory/MonoidalComp.lean`
