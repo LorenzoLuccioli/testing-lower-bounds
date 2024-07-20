@@ -93,6 +93,36 @@ lemma statInfo_boolMeasure_le_statInfo {E : Set 𝒳} (hE : MeasurableSet E) :
     · rw [Measure.comp_deterministic_eq_map, Measure.map_apply h_meas (by trivial), h_true,
         Bool.boolMeasure_apply_true]
 
+lemma statInfo_eq_min_sub_lintegral (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    statInfo μ ν π = min (π {false} * μ univ) (π {true} * ν univ)
+      - ∫⁻ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x)
+      (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ∂(π ∘ₘ twoHypKernel μ ν) := by
+  rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_lintegral_min]
+
+lemma statInfo_eq_min_sub_lintegral' (μ ν ζ : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [SigmaFinite ζ] (π : Measure Bool) [IsFiniteMeasure π]  (hμζ : μ ≪ ζ) (hνζ : ν ≪ ζ) :
+    statInfo μ ν π = min (π {false} * μ univ) (π {true} * ν univ)
+      - ∫⁻ x, min (π {false} * (∂μ/∂ζ) x) (π {true} * (∂ν/∂ζ) x) ∂ζ := by
+  by_cases h_false : π {false} = 0
+  · simp [statInfo, h_false, bayesBinaryRisk_of_measure_false_eq_zero]
+  by_cases h_true : π {true} = 0
+  · simp [statInfo, h_true, bayesBinaryRisk_of_measure_true_eq_zero]
+  have hμac : μ ≪ (π ∘ₘ twoHypKernel μ ν) :=
+    absolutelyContinuous_measure_comp_twoHypKernel_left μ ν h_false
+  have hνac : ν ≪ (π ∘ₘ twoHypKernel μ ν) :=
+    absolutelyContinuous_measure_comp_twoHypKernel_right μ ν h_true
+  have hacζ : (π ∘ₘ twoHypKernel μ ν) ≪ ζ :=
+    measure_comp_twoHypKernel _ _ _ ▸ (hνζ.smul _).add_left (hμζ.smul _)
+  have hμ := Measure.rnDeriv_mul_rnDeriv hμac (κ := ζ)
+  have hν := Measure.rnDeriv_mul_rnDeriv hνac (κ := ζ)
+  rw [statInfo_eq_min_sub_lintegral, ← lintegral_rnDeriv_mul hacζ (by fun_prop)]
+  congr 1
+  apply lintegral_congr_ae
+  filter_upwards [hμ, hν] with x hxμ hxν
+  rw [ENNReal.mul_min, mul_comm, mul_comm _ (π _ * _), mul_assoc, mul_assoc]
+  congr
+
 section StatInfoFun
 
 open Set Filter ConvexOn
