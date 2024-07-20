@@ -3,7 +3,6 @@ Copyright (c) 2024 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne
 -/
-import TestingLowerBounds.Testing.Binary
 import TestingLowerBounds.CurvatureMeasure
 import TestingLowerBounds.StatInfoFun
 import Mathlib.Order.CompletePartialOrder
@@ -35,7 +34,7 @@ open scoped ENNReal NNReal
 namespace ProbabilityTheory
 
 variable {𝒳 𝒳' : Type*} {m𝒳 : MeasurableSpace 𝒳} {m𝒳' : MeasurableSpace 𝒳'}
-  {μ ν : Measure 𝒳} {p : ℝ≥0∞} (π : Measure Bool)
+  {μ ν : Measure 𝒳} {p : ℝ≥0∞} {π : Measure Bool}
 
 /-- The statistical information of the measures `μ` and `ν` with respect to
 the prior `π ∈ ℳ({0,1})`. -/
