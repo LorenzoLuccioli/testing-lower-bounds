@@ -286,4 +286,15 @@ lemma rnDeriv_eq_one_iff_eq [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν
   refine ⟨fun h ↦ ?_, fun h ↦ h ▸ Measure.rnDeriv_self ν⟩
   rw [← withDensity_rnDeriv_eq _ _ hμν, MeasureTheory.withDensity_congr_ae h, withDensity_one]
 
+-- in mathlib this lemma could be put just after `Measure.rnDeriv_mul_rnDeriv`
+lemma _root_.MeasureTheory.Measure.rnDeriv_mul_rnDeriv' {κ : Measure α} [SigmaFinite μ]
+    [SigmaFinite ν] [SigmaFinite κ] (hνκ : ν ≪ κ) :
+    μ.rnDeriv ν * ν.rnDeriv κ =ᵐ[ν] μ.rnDeriv κ := by
+  obtain ⟨h_meas, h_sing, hμν⟩ := Measure.haveLebesgueDecomposition_spec μ ν
+  filter_upwards [hνκ <| Measure.rnDeriv_add' (μ.singularPart ν) (ν.withDensity (μ.rnDeriv ν)) κ,
+    hνκ <| Measure.rnDeriv_withDensity_left_of_absolutelyContinuous hνκ h_meas.aemeasurable,
+    Measure.rnDeriv_eq_zero_of_mutuallySingular h_sing hνκ] with x hx1 hx2 hx3
+  nth_rw 2 [hμν]
+  rw [hx1, Pi.add_apply, hx2, Pi.mul_apply, hx3, Pi.zero_apply, zero_add]
+
 end MeasureTheory.Measure
