@@ -560,8 +560,7 @@ lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMea
       = (2 : ℝ)⁻¹ * (((π ∘ₘ twoHypKernel μ ν) Set.univ).toReal
         - ∫ x, |(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
           - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal| ∂(π ∘ₘ twoHypKernel μ ν)) := by
-  rw [toReal_bayesBinaryRisk_eq_integral_min]
-  simp_rw [min_eq_add_sub_abs_sub, integral_mul_left]
+  simp_rw [toReal_bayesBinaryRisk_eq_integral_min, min_eq_add_sub_abs_sub, integral_mul_left]
   congr
   have hμ_int : Integrable (fun x ↦ (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal) (π ∘ₘ twoHypKernel μ ν) := by
     simp_rw [ENNReal.toReal_mul]
@@ -572,8 +571,7 @@ lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMea
   have h_int_abs : Integrable (fun x ↦ |(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
       - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal|) (π ∘ₘ twoHypKernel μ ν) :=
     hμ_int.sub hν_int |>.abs
-  rw [integral_sub _ h_int_abs, integral_add hμ_int hν_int]
-  swap; · exact hμ_int.add hν_int
+  rw [integral_sub (by exact hμ_int.add hν_int) h_int_abs, integral_add hμ_int hν_int]
   simp only [ENNReal.toReal_mul, MeasurableSet.univ, sub_left_inj, integral_mul_left]
   nth_rw 5 [measure_comp_twoHypKernel]
   calc
