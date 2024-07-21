@@ -603,8 +603,8 @@ lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMea
 lemma bayesBinaryRisk_eq_lintegral_ennnorm (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
     bayesBinaryRisk μ ν π = 2⁻¹ * (((π ∘ₘ twoHypKernel μ ν) Set.univ)
-        - ∫⁻ x, ‖(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
-          - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal‖₊ ∂(π ∘ₘ twoHypKernel μ ν)) := by
+        - ∫⁻ x, ‖(π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+          - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal‖₊ ∂(π ∘ₘ twoHypKernel μ ν)) := by
   rw [← ENNReal.ofReal_toReal (bayesBinaryRisk_ne_top μ ν π),
     toReal_bayesBinaryRisk_eq_integral_abs, ENNReal.ofReal_mul (inv_nonneg.mpr zero_le_two),
     ENNReal.ofReal_inv_of_pos zero_lt_two, ENNReal.ofReal_ofNat,
