@@ -6,6 +6,8 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 import TestingLowerBounds.ForMathlib.MaxMinEqAbs
 import TestingLowerBounds.Testing.Risk
 import TestingLowerBounds.Testing.BoolMeasure
+import Mathlib.MeasureTheory.Order.Group.Lattice
+import LeanCopilot
 
 /-!
 # Simple Bayesian binary hypothesis testing
@@ -438,6 +440,12 @@ lemma bayesBinaryRisk_le_min (μ ν : Measure 𝒳) (π : Measure Bool) :
   convert bayesBinaryRisk_le_bayesBinaryRisk_comp μ ν π (kernel.discard 𝒳)
   simp_rw [Measure.comp_discard, bayesBinaryRisk_dirac]
 
+lemma bayesBinaryRisk_ne_top (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    bayesBinaryRisk μ ν π ≠ ∞ := by
+  refine lt_top_iff_ne_top.mp ((bayesBinaryRisk_le_min μ ν π).trans_lt ?_)
+  exact min_lt_iff.mpr <| Or.inl <| ENNReal.mul_lt_top (measure_ne_top π _) (measure_ne_top μ _)
+
 lemma bayesBinaryRisk_of_measure_true_eq_zero (μ ν : Measure 𝒳) (hπ : π {true} = 0) :
     bayesBinaryRisk μ ν π = 0 := by
   refine le_antisymm ?_ (zero_le _)
@@ -591,5 +599,54 @@ lemma toReal_bayesBinaryRisk_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMea
         smul_eq_mul, ENNReal.toReal_add (ENNReal.mul_ne_top (measure_ne_top _ _)
         (measure_ne_top _ _)) (ENNReal.mul_ne_top (measure_ne_top _ _) (measure_ne_top _ _)),
         ENNReal.toReal_mul]
+
+lemma bayesBinaryRisk_eq_lintegral_ennnorm (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
+    bayesBinaryRisk μ ν π = 2⁻¹ * (((π ∘ₘ twoHypKernel μ ν) Set.univ)
+        - ∫⁻ x, ‖(π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
+          - (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal‖₊ ∂(π ∘ₘ twoHypKernel μ ν)) := by
+  rw [← ENNReal.ofReal_toReal (bayesBinaryRisk_ne_top μ ν π),
+    toReal_bayesBinaryRisk_eq_integral_abs, ENNReal.ofReal_mul (inv_nonneg.mpr zero_le_two),
+    ENNReal.ofReal_inv_of_pos zero_lt_two, ENNReal.ofReal_ofNat,
+    ENNReal.ofReal_sub _ (by positivity), ENNReal.ofReal_toReal (measure_ne_top _ _),
+    MeasureTheory.ofReal_integral_eq_lintegral_ofReal _
+    (Filter.eventually_of_forall fun _ ↦ by positivity)]
+  swap
+  · refine ⟨Measurable.aestronglyMeasurable (by fun_prop), ?_⟩
+    simp_rw [HasFiniteIntegral, Real.nnnorm_abs]
+    calc
+      _ ≤ ∫⁻ a, ‖(π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) a).toReal‖₊ +
+          ‖(π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) a).toReal‖₊ ∂π ∘ₘ twoHypKernel μ ν := by
+        gcongr
+        exact_mod_cast nnnorm_sub_le _ _
+      _ = ∫⁻ a, ‖(π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) a).toReal‖₊ ∂π ∘ₘ twoHypKernel μ ν +
+          ∫⁻ a, ‖(π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) a).toReal‖₊ ∂π ∘ₘ twoHypKernel μ ν :=
+        lintegral_add_left (by fun_prop) _
+      _ ≤ π {false} * ∫⁻ a, ‖((∂μ/∂π ∘ₘ twoHypKernel μ ν) a).toReal‖₊ ∂π ∘ₘ twoHypKernel μ ν +
+          π {true} * ∫⁻ a, ‖((∂ν/∂π ∘ₘ twoHypKernel μ ν) a).toReal‖₊ ∂π ∘ₘ twoHypKernel μ ν := by
+        simp_rw [ENNReal.toReal_mul, nnnorm_mul, ENNReal.coe_mul]
+        rw [lintegral_const_mul _ (by fun_prop), lintegral_const_mul _ (by fun_prop)]
+        gcongr <;>
+        · rw [Real.ennnorm_eq_ofReal_abs, ENNReal.abs_toReal]
+          exact ENNReal.ofReal_toReal_le
+      _ ≤ π {false} * ∫⁻ a, (∂μ/∂π ∘ₘ twoHypKernel μ ν) a ∂π ∘ₘ twoHypKernel μ ν +
+          π {true} * ∫⁻ a, (∂ν/∂π ∘ₘ twoHypKernel μ ν) a ∂π ∘ₘ twoHypKernel μ ν := by
+        gcongr <;>
+        · rw [Real.ennnorm_eq_ofReal_abs, ENNReal.abs_toReal]
+          exact ENNReal.ofReal_toReal_le
+      _ = π {false} * μ Set.univ + π {true} * ν Set.univ := by
+        congr 1
+        · by_cases h_false : π {false} = 0
+          · rw [h_false, zero_mul, zero_mul]
+          rw [Measure.lintegral_rnDeriv
+            (absolutelyContinuous_measure_comp_twoHypKernel_left μ ν h_false)]
+        · by_cases h_true : π {true} = 0
+          · rw [h_true, zero_mul, zero_mul]
+          rw [Measure.lintegral_rnDeriv
+            (absolutelyContinuous_measure_comp_twoHypKernel_right μ ν h_true)]
+      _ < ⊤ :=
+        ENNReal.add_lt_top.mpr ⟨ENNReal.mul_lt_top (measure_ne_top _ _) (measure_ne_top _ _),
+          ENNReal.mul_lt_top (measure_ne_top _ _) (measure_ne_top _ _)⟩
+  simp_rw [Real.ennnorm_eq_ofReal_abs]
 
 end ProbabilityTheory
