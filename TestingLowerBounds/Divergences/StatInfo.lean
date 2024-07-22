@@ -122,6 +122,18 @@ lemma statInfo_eq_min_sub_lintegral' (μ ν ζ : Measure 𝒳) [IsFiniteMeasure 
   rw [ENNReal.mul_min, mul_comm, mul_comm _ (π _ * _), mul_assoc, mul_assoc]
   congr
 
+#check min_eq_add_sub_abs_sub
+
+lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    statInfo μ ν π = 2⁻¹ * (∫⁻ x, ‖(π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+      - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal‖₊ ∂(π ∘ₘ twoHypKernel μ ν)
+      - (↑|(π {false} * μ Set.univ).toReal - (π {true} * ν Set.univ).toReal| : EReal)) := by
+  rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_lintegral_ennnorm]
+  -- rw [mul_sub]
+
+  sorry
+
 section StatInfoFun
 
 open Set Filter ConvexOn
