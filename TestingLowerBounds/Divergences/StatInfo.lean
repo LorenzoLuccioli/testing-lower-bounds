@@ -123,15 +123,31 @@ lemma statInfo_eq_min_sub_lintegral' (μ ν ζ : Measure 𝒳) [IsFiniteMeasure 
   congr
 
 #check min_eq_add_sub_abs_sub
+#check Monotone.map_min
+#check ENNReal.add_sub_cancel_left
+
 
 lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
     statInfo μ ν π = 2⁻¹ * (∫⁻ x, ‖(π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
       - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal‖₊ ∂(π ∘ₘ twoHypKernel μ ν)
       - (↑|(π {false} * μ Set.univ).toReal - (π {true} * ν Set.univ).toReal| : EReal)) := by
+  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
+  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
   rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_lintegral_ennnorm]
-  -- rw [mul_sub]
-
+  rw [← ENNReal.ofReal_toReal (a := min _ _)]
+  swap
+  · simp only [ne_eq, min_eq_top, hμ, hν, and_self, not_false_eq_true]
+  rw [MonotoneOn.map_min (fun _ _ _ hb hab ↦ ENNReal.toReal_mono hb hab) hμ hν]
+  rw [min_eq_add_sub_abs_sub]
+  rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_sub _ (abs_nonneg _)]
+  rw [ENNReal.ofReal_inv_of_pos zero_lt_two, ENNReal.ofReal_ofNat]
+  rw [ENNReal.ofReal_add ENNReal.toReal_nonneg ENNReal.toReal_nonneg]
+  rw [ENNReal.ofReal_toReal hμ, ENNReal.ofReal_toReal hν]
+  simp_rw [ENNReal.mul_sub (fun _ _ ↦ ENNReal.inv_ne_top.mpr (NeZero.ne 2))]
+  nth_rw 1 [measure_comp_twoHypKernel]
+  simp_rw [Measure.coe_add, Pi.add_apply, Measure.coe_smul, Pi.smul_apply, smul_eq_mul, add_comm]
+  --this is hard to prove, because we have to deal with a lot of ENNReals and subtractions and they do not work well together, for now I am leaving this. Maybe it could be a good idea to do the toReal version first, proving it starting from the previous lemma (making a toReal version of that as well) essentially mimiking the results for the binary, but here we would have to do double the work, because we have both the version with π ∘ₘ twoHypKernel μ ν and the one with ζ
   sorry
 
 section StatInfoFun
