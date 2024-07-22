@@ -99,7 +99,7 @@ lemma statInfo_eq_min_sub_lintegral (μ ν : Measure 𝒳) [IsFiniteMeasure μ] 
       (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x) ∂(π ∘ₘ twoHypKernel μ ν) := by
   rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_lintegral_min]
 
-lemma statInfo_eq_min_sub_lintegral' (μ ν ζ : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma statInfo_eq_min_sub_lintegral' {μ ν ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     [SigmaFinite ζ] (π : Measure Bool) [IsFiniteMeasure π]  (hμζ : μ ≪ ζ) (hνζ : ν ≪ ζ) :
     statInfo μ ν π = min (π {false} * μ univ) (π {true} * ν univ)
       - ∫⁻ x, min (π {false} * (∂μ/∂ζ) x) (π {true} * (∂ν/∂ζ) x) ∂ζ := by
@@ -122,6 +122,35 @@ lemma statInfo_eq_min_sub_lintegral' (μ ν ζ : Measure 𝒳) [IsFiniteMeasure 
   rw [ENNReal.mul_min, mul_comm, mul_comm _ (π _ * _), mul_assoc, mul_assoc]
   congr
 
+lemma toReal_statInfo_eq_min_sub_integral (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] :
+    (statInfo μ ν π).toReal = min (π {false} * μ univ).toReal (π {true} * ν univ).toReal
+      - ∫ x, min (π {false} * μ.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal
+      (π {true} * ν.rnDeriv (π ∘ₘ twoHypKernel μ ν) x).toReal ∂(π ∘ₘ twoHypKernel μ ν) := by
+  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
+  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
+  rw [statInfo_eq_min_sub, ENNReal.toReal_sub_of_le (bayesBinaryRisk_le_min μ ν π)]
+  swap; · simp only [ne_eq, min_eq_top, hμ, hν, and_self, not_false_eq_true]
+  rw [toReal_bayesBinaryRisk_eq_integral_min,
+    MonotoneOn.map_min (fun _ _ _ hb hab ↦ ENNReal.toReal_mono hb hab) hμ hν]
+
+lemma toReal_statInfo_eq_min_sub_integral' {μ ν ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [SigmaFinite ζ] (π : Measure Bool) [IsFiniteMeasure π]  (hμζ : μ ≪ ζ) (hνζ : ν ≪ ζ) :
+    (statInfo μ ν π).toReal = min (π {false} * μ univ).toReal (π {true} * ν univ).toReal
+      - ∫ x, min (π {false} * (∂μ/∂ζ) x).toReal (π {true} * (∂ν/∂ζ) x).toReal ∂ζ := by
+  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
+  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
+  rw [statInfo_eq_min_sub_lintegral' π hμζ hνζ]
+
+  rw [ENNReal.toReal_sub_of_le]
+  rotate_left
+  · --maybe I should do the versions with ζ directly in the binary file and then use them here. anyway, maybe we don't really need them, for now I will just prove the other versions
+    sorry
+  · simp only [ne_eq, min_eq_top, hμ, hν, and_self, not_false_eq_true]
+  rw [MonotoneOn.map_min (fun _ _ _ hb hab ↦ ENNReal.toReal_mono hb hab) hμ hν]
+
+  sorry
+
 #check min_eq_add_sub_abs_sub
 #check Monotone.map_min
 #check ENNReal.add_sub_cancel_left
@@ -131,7 +160,7 @@ lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure 
     (π : Measure Bool) [IsFiniteMeasure π] :
     statInfo μ ν π = 2⁻¹ * (∫⁻ x, ‖(π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
       - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal‖₊ ∂(π ∘ₘ twoHypKernel μ ν)
-      - (↑|(π {false} * μ Set.univ).toReal - (π {true} * ν Set.univ).toReal| : EReal)) := by
+      - (↑|(π {false} * μ univ).toReal - (π {true} * ν univ).toReal| : EReal)) := by
   have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
   have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
   rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_lintegral_ennnorm]
@@ -149,6 +178,79 @@ lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure 
   simp_rw [Measure.coe_add, Pi.add_apply, Measure.coe_smul, Pi.smul_apply, smul_eq_mul, add_comm]
   --this is hard to prove, because we have to deal with a lot of ENNReals and subtractions and they do not work well together, for now I am leaving this. Maybe it could be a good idea to do the toReal version first, proving it starting from the previous lemma (making a toReal version of that as well) essentially mimiking the results for the binary, but here we would have to do double the work, because we have both the version with π ∘ₘ twoHypKernel μ ν and the one with ζ
   sorry
+
+
+#check min_add_add_left
+#check Integrable.inf
+
+lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
+    (statInfo μ ν π).toReal
+      = ∫ x, max 0 (π {false} * (∂μ/∂ν) x - π {true}).toReal ∂ν
+        + (π {false} * μ.singularPart ν univ).toReal := by
+  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
+  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
+  rw [toReal_statInfo_eq_min_sub_integral]
+  rw [min_eq_left ((ENNReal.toReal_le_toReal hμ hν).mpr h)]
+
+  calc
+    _ = (π {false} * μ univ).toReal -
+        ∫ x, (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+          + min 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+            - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      congr with x
+      nth_rw 1 [← add_zero (π _ * _).toReal, ← add_sub_cancel_left
+        (π {false} * (∂μ/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x).toReal (π {true} * _).toReal]
+      rw [add_sub_assoc, min_add_add_left]
+    _ = (π {false} * μ univ).toReal
+        - (∫ x, (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal ∂π ∘ₘ twoHypKernel μ ν
+        + ∫ x, min 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+            - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν) := by
+      simp_rw [ENNReal.toReal_mul, ← inf_eq_min]
+      congr
+      refine integral_add (Integrable.const_mul Measure.integrable_toReal_rnDeriv _) ?_
+      refine (integrable_zero _ _ _).inf (Integrable.sub ?_ ?_) <;>
+      · exact Measure.integrable_toReal_rnDeriv.const_mul _
+    _ = - ∫ x, min 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+            - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      rw [← sub_sub, sub_eq_neg_self, sub_eq_zero]
+
+      simp_rw [ENNReal.toReal_mul]
+
+      rw [integral_mul_left]
+      congr
+      rw [Measure.integral_toReal_rnDeriv]
+
+
+      sorry
+    _ = - ∫ x, min 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+            - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      sorry
+    _ = _ := by sorry
+
+  sorry
+
+lemma toReal_statInfo_eq_integral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
+    (statInfo μ ν π).toReal = ∫ x, max 0 (π {true} - π {false} * (∂μ/∂ν) x).toReal ∂ν := by
+
+  sorry
+
+lemma statInfo_eq_lintegral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
+    statInfo μ ν π
+      = ∫⁻ x, max 0 (π {false} * (∂μ/∂ν) x - π {true}) ∂ν + π {false} * μ.singularPart ν univ := by
+  rw [statInfo_eq_min_sub_lintegral]
+  rw [min_eq_left h]
+  --maybe first we do the version with toReal
+  sorry
+
+lemma statInfo_eq_lintegral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
+    statInfo μ ν π = ∫⁻ x, max 0 (π {true} - π {false} * (∂μ/∂ν) x) ∂ν := by
+
+  sorry
+
 
 section StatInfoFun
 
