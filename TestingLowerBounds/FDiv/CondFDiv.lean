@@ -533,4 +533,3 @@ lemma fDiv_comp_left_le [Nonempty α] [StandardBorelSpace α] [CountableOrCounta
   _ = condFDiv f κ η μ := fDiv_compProd_left μ κ η hf hf_cvx
 
 end ProbabilityTheory
--- TODO: try to implement the alternative proof of the DPI, using tests, before we will have to implement the Bπ, Iπ, and the relations between those, and to prove that every fDiv is an integral of Iπ
