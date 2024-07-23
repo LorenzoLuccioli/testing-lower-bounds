@@ -211,7 +211,6 @@ theorem _root_.MeasureTheory.setIntegral_zero_measure {G : Type*} [NormedAddComm
 
  end setLIntegral
 
--- Measure.rnDeriv_eq_zero_ae_of_zero_measure _ hs (Measure.measure_singularPartSet μ ν)
 #check Measure.measure_singularPartSet
 --put this in the file RnDeriv, where the singularPartSet is defined, after having moved the previous lemma somewhere
 lemma _root_.MeasureTheory.Measure.rnDeriv_eq_zero_ae_of_singularPartSet
@@ -219,8 +218,6 @@ lemma _root_.MeasureTheory.Measure.rnDeriv_eq_zero_ae_of_singularPartSet
     ∀ᵐ x ∂ξ, x ∈ Measure.singularPartSet μ ν → (∂ν/∂ξ) x = 0 :=
   Measure.rnDeriv_eq_zero_ae_of_zero_measure _ Measure.measurableSet_singularPartSet
     (Measure.measure_singularPartSet μ ν)
-
-#check integral_zero_measure
 
 lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
@@ -242,15 +239,13 @@ lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeas
     absolutelyContinuous_measure_comp_twoHypKernel_left μ ν h_false
   have hνac : ν ≪ (π ∘ₘ twoHypKernel μ ν) :=
     absolutelyContinuous_measure_comp_twoHypKernel_right μ ν h_true
-  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
-  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
-  rw [toReal_statInfo_eq_min_sub_integral]
-  rw [min_eq_left ((ENNReal.toReal_le_toReal hμ hν).mpr h)]
+  rw [toReal_statInfo_eq_min_sub_integral, min_eq_left ((ENNReal.toReal_le_toReal _ _).mpr h)]
+    <;> try simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
   let s := Measure.singularPartSet μ ν
   have hs : MeasurableSet s := Measure.measurableSet_singularPartSet
   calc
-    _ = (π {false} * μ univ).toReal -
-        ∫ x, (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+    _ = (π {false} * μ univ).toReal
+        - ∫ x, (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
           + min 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
             - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
       congr with x
@@ -267,7 +262,7 @@ lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeas
       refine (integrable_zero _ _ _).inf (Integrable.sub ?_ ?_) <;>
       · exact Measure.integrable_toReal_rnDeriv.const_mul _
     _ = - ∫ x, min 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
-        - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+          - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
       simp_rw [ENNReal.toReal_mul, ← sub_sub, sub_eq_neg_self, sub_eq_zero, integral_mul_left,
         Measure.integral_toReal_rnDeriv hμac]
     _ = ∫ x, max 0 ((π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
@@ -286,32 +281,21 @@ lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeas
             ((π {false} * (∂μ.restrict (μ.singularPartSet ν)ᶜ/∂ν) x).toReal - (π {true}).toReal))
           * ((∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal ∂π ∘ₘ twoHypKernel μ ν := by
       congr 1
-      ·
-        apply setIntegral_congr_ae hs
+      · apply setIntegral_congr_ae hs
         filter_upwards [Measure.rnDeriv_eq_zero_ae_of_singularPartSet  μ ν _, Measure.rnDeriv_add'
           (μ.singularPart ν) (ν.withDensity (μ.rnDeriv ν)) (π ∘ₘ twoHypKernel μ ν),
           Measure.rnDeriv_withDensity_left_of_absolutelyContinuous hνac
           (Measure.measurable_rnDeriv μ ν).aemeasurable] with x hx1 hx2 hx3
         intro hxs
         nth_rw 1 [← Measure.singularPart_add_rnDeriv μ ν]
-        rw [hx2]
-        rw [Pi.add_apply, hx3]
-        simp_rw [hx1 hxs, mul_zero, ENNReal.zero_toReal, sub_zero, add_zero]
-      ·
-        apply setIntegral_congr_ae hs.compl
-        filter_upwards [
-          Measure.rnDeriv_restrict μ (π ∘ₘ twoHypKernel μ ν) hs.compl,
-          Measure.rnDeriv_mul_rnDeriv (Measure.absolutelyContinuous_restrict_compl_singularPartSet μ ν)
-          ] with x hx1 hx2
-        intro hxs
-        rw [max_mul_of_nonneg _ _ ENNReal.toReal_nonneg, zero_mul]
-        congr
-        simp_rw [sub_mul, ENNReal.toReal_mul, mul_assoc]
-        congr 2
+        simp_rw [hx2, Pi.add_apply, hx3, hx1 hxs, mul_zero, ENNReal.zero_toReal, sub_zero, add_zero]
+      · apply setIntegral_congr_ae hs.compl
+        filter_upwards [Measure.rnDeriv_restrict μ (π ∘ₘ twoHypKernel μ ν) hs.compl,
+          Measure.rnDeriv_mul_rnDeriv
+          (Measure.absolutelyContinuous_restrict_compl_singularPartSet μ ν)] with x hx1 hx2 hxs
+        rw [max_mul_of_nonneg _ _ ENNReal.toReal_nonneg, zero_mul, sub_mul]
         rw [Set.indicator_of_mem hxs] at hx1
-        rw [← hx1]
-        rw [← hx2]
-        rw [Pi.mul_apply, ENNReal.toReal_mul]
+        simp_rw [ENNReal.toReal_mul, mul_assoc, ← hx1, ← hx2, Pi.mul_apply, ENNReal.toReal_mul]
     _ = ∫ x, max 0 (π {false} * (∂(μ.singularPart ν)/∂π ∘ₘ twoHypKernel μ ν) x).toReal
           ∂π ∘ₘ twoHypKernel μ ν
         + ∫ x in sᶜ, (max 0 ((π {false}
@@ -331,22 +315,22 @@ lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeas
     _ = ∫ x, (π {false} * (∂(μ.singularPart ν)/∂π ∘ₘ twoHypKernel μ ν) x).toReal
           ∂π ∘ₘ twoHypKernel μ ν
         + ∫ x in sᶜ, (max 0 ((π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal)) ∂ν := by
+      simp_rw [max_eq_right ENNReal.toReal_nonneg]
       congr 1
-      · simp_rw [max_eq_right ENNReal.toReal_nonneg]
-      · apply setIntegral_congr_ae hs.compl
-        filter_upwards [Measure.rnDeriv_restrict μ ν hs.compl] with x hx1 hxs
-        rw [hx1, indicator_of_mem hxs]
+      apply setIntegral_congr_ae hs.compl
+      filter_upwards [Measure.rnDeriv_restrict μ ν hs.compl] with x hx1 hxs
+      rw [hx1, indicator_of_mem hxs]
     _ = ∫ x, (max 0 ((π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal)) ∂ν
         + (π {false} * (μ.singularPart ν) univ).toReal := by
       simp_rw [ENNReal.toReal_mul, add_comm (∫ _, _ ∂π ∘ₘ _)]
-      congr 1
-      · nth_rw 2 [← integral_add_compl hs]
-        swap
-        · exact (integrable_zero _ _ _).sup
-            ((Measure.integrable_toReal_rnDeriv.const_mul _).sub (integrable_const _))
-        rw [setIntegral_zero_measure _ (Measure.measure_singularPartSet μ ν), zero_add]
-      · rw [integral_mul_left, Measure.integral_toReal_rnDeriv _]
-        exact (Measure.singularPart_le μ ν).absolutelyContinuous.trans hμac
+      rw [integral_mul_left, Measure.integral_toReal_rnDeriv
+        ((Measure.singularPart_le μ ν).absolutelyContinuous.trans hμac)]
+      nth_rw 2 [← integral_add_compl hs]
+      swap
+      · exact (integrable_zero _ _ _).sup
+          ((Measure.integrable_toReal_rnDeriv.const_mul _).sub (integrable_const _))
+      rw [setIntegral_zero_measure _ (Measure.measure_singularPartSet μ ν), zero_add]
+
 
 lemma toReal_statInfo_eq_integral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
@@ -359,10 +343,8 @@ lemma toReal_statInfo_eq_integral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeas
     simp [statInfo, h_true, bayesBinaryRisk_of_measure_true_eq_zero, max_eq_left (this _)]
   have hνac : ν ≪ (π ∘ₘ twoHypKernel μ ν) :=
     absolutelyContinuous_measure_comp_twoHypKernel_right μ ν h_true
-  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
-  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
-  rw [toReal_statInfo_eq_min_sub_integral]
-  rw [min_eq_right ((ENNReal.toReal_le_toReal hν hμ).mpr h.le)]
+  rw [toReal_statInfo_eq_min_sub_integral, min_eq_right ((ENNReal.toReal_le_toReal _ _).mpr h.le)]
+    <;> try simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
   let s := Measure.singularPartSet μ ν
   have hs : MeasurableSet s := Measure.measurableSet_singularPartSet
   calc
@@ -403,32 +385,20 @@ lemma toReal_statInfo_eq_integral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeas
             ((π {true}).toReal - (π {false} * (∂μ.restrict (μ.singularPartSet ν)ᶜ/∂ν) x).toReal))
           * ((∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal ∂π ∘ₘ twoHypKernel μ ν := by
       congr 1
-      ·
-        apply setIntegral_congr_ae hs
+      · apply setIntegral_congr_ae hs
         filter_upwards [Measure.rnDeriv_eq_zero_ae_of_singularPartSet  μ ν _, Measure.rnDeriv_add'
           (μ.singularPart ν) (ν.withDensity (μ.rnDeriv ν)) (π ∘ₘ twoHypKernel μ ν),
           Measure.rnDeriv_withDensity_left_of_absolutelyContinuous hνac
-          (Measure.measurable_rnDeriv μ ν).aemeasurable] with x hx1 hx2 hx3
-        intro hxs
+          (Measure.measurable_rnDeriv μ ν).aemeasurable] with x hx1 hx2 hx3 hxs
         nth_rw 2 [← Measure.singularPart_add_rnDeriv μ ν]
-        rw [hx2]
-        rw [Pi.add_apply, hx3]
-        simp_rw [hx1 hxs, mul_zero, ENNReal.zero_toReal, zero_sub, add_zero]
-      ·
-        apply setIntegral_congr_ae hs.compl
-        filter_upwards [
-          Measure.rnDeriv_restrict μ (π ∘ₘ twoHypKernel μ ν) hs.compl,
-          Measure.rnDeriv_mul_rnDeriv (Measure.absolutelyContinuous_restrict_compl_singularPartSet μ ν)
-          ] with x hx1 hx2
-        intro hxs
-        rw [max_mul_of_nonneg _ _ ENNReal.toReal_nonneg, zero_mul]
-        congr
-        simp_rw [sub_mul, ENNReal.toReal_mul, mul_assoc]
-        congr 2
+        simp_rw [hx2, Pi.add_apply, hx3, hx1 hxs, mul_zero, ENNReal.zero_toReal, zero_sub, add_zero]
+      · apply setIntegral_congr_ae hs.compl
+        filter_upwards [Measure.rnDeriv_restrict μ (π ∘ₘ twoHypKernel μ ν) hs.compl,
+          Measure.rnDeriv_mul_rnDeriv
+          (Measure.absolutelyContinuous_restrict_compl_singularPartSet μ ν)] with x hx1 hx2 hxs
+        rw [max_mul_of_nonneg _ _ ENNReal.toReal_nonneg, zero_mul, sub_mul]
         rw [Set.indicator_of_mem hxs] at hx1
-        rw [← hx1]
-        rw [← hx2]
-        rw [Pi.mul_apply, ENNReal.toReal_mul]
+        simp_rw [ENNReal.toReal_mul, mul_assoc, ← hx1, ← hx2, Pi.mul_apply, ENNReal.toReal_mul]
     _ = ∫ x in sᶜ, max 0 ((π {true}).toReal
           - (π {false} * (∂μ.restrict (μ.singularPartSet ν)ᶜ/∂ν) x).toReal) ∂ν := by
       simp_rw [max_eq_left (neg_nonpos.mpr ENNReal.toReal_nonneg),
