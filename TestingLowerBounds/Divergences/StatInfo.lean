@@ -178,10 +178,49 @@ lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure 
   simp_rw [Measure.coe_add, Pi.add_apply, Measure.coe_smul, Pi.smul_apply, smul_eq_mul, add_comm]
   --this is hard to prove, because we have to deal with a lot of ENNReals and subtractions and they do not work well together, for now I am leaving this. Maybe it could be a good idea to do the toReal version first, proving it starting from the previous lemma (making a toReal version of that as well) essentially mimiking the results for the binary, but here we would have to do double the work, because we have both the version with π ∘ₘ twoHypKernel μ ν and the one with ζ
   sorry
+  
+section setLIntegral
+variable {α E : Type*} [MeasurableSpace α] {μ ν : Measure α} [NormedAddCommGroup E] [NormedSpace ℝ E]
+--PR these two to mathlib, just under `lintegral_eq_zero_iff`
+theorem _root_.MeasureTheory.setLIntegral_eq_zero_iff' {s : Set α} (hs : MeasurableSet s)
+    {f : α → ℝ≥0∞} (hf : AEMeasurable f (μ.restrict s)) :
+    ∫⁻ a in s, f a ∂μ = 0 ↔ ∀ᵐ x ∂μ, x ∈ s → f x = 0 :=
+  (lintegral_eq_zero_iff' hf).trans (ae_restrict_iff' hs)
 
+theorem _root_.MeasureTheory.setLIntegral_eq_zero_iff {s : Set α} (hs : MeasurableSet s) {f : α → ℝ≥0∞}
+    (hf : Measurable f) : ∫⁻ a in s, f a ∂μ = 0 ↔ ∀ᵐ x ∂μ, x ∈ s → f x = 0 :=
+  setLIntegral_eq_zero_iff' hs hf.aemeasurable
 
-#check min_add_add_left
-#check Integrable.inf
+lemma _root_.MeasureTheory.Measure.rnDeriv_eq_zero_ae_of_zero_measure
+    {μ : Measure 𝒳} (ν : Measure 𝒳)
+    {s : Set 𝒳} (hs : MeasurableSet s) (hμ : μ s = 0) : ∀ᵐ x ∂ν, x ∈ s → (∂μ/∂ν) x = 0 := by
+  rw [← MeasureTheory.setLIntegral_eq_zero_iff hs (Measure.measurable_rnDeriv μ ν)]
+  exact le_antisymm (hμ ▸ Measure.setLIntegral_rnDeriv_le s) (zero_le _)
+
+-- PR this, just after `integral_rnDeriv_smul`
+lemma _root_.MeasureTheory.setIntegral_rnDeriv_smul [Measure.HaveLebesgueDecomposition μ ν] (hμν : μ ≪ ν)
+    [SigmaFinite μ] {f : α → E} {s : Set α} (hs : MeasurableSet s) :
+    ∫ x in s, (μ.rnDeriv ν x).toReal • f x ∂ν = ∫ x in s, f x ∂μ := by
+  simp_rw [← integral_indicator hs, indicator_smul, integral_rnDeriv_smul hμν]
+
+-- PR this, just after `integral_zero_measure`
+@[simp]
+theorem _root_.MeasureTheory.setIntegral_zero_measure {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
+    (f : α → G) {μ : Measure α} {s : Set α} (hs : μ s = 0) :
+    ∫ x in s, f x ∂μ = 0 := Measure.restrict_eq_zero.mpr hs ▸ integral_zero_measure f
+
+ end setLIntegral
+
+-- Measure.rnDeriv_eq_zero_ae_of_zero_measure _ hs (Measure.measure_singularPartSet μ ν)
+#check Measure.measure_singularPartSet
+--put this in the file RnDeriv, where the singularPartSet is defined, after having moved the previous lemma somewhere
+lemma _root_.MeasureTheory.Measure.rnDeriv_eq_zero_ae_of_singularPartSet
+    (μ ν ξ : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
+    ∀ᵐ x ∂ξ, x ∈ Measure.singularPartSet μ ν → (∂ν/∂ξ) x = 0 :=
+  Measure.rnDeriv_eq_zero_ae_of_zero_measure _ Measure.measurableSet_singularPartSet
+    (Measure.measure_singularPartSet μ ν)
+
+#check integral_zero_measure
 
 lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
