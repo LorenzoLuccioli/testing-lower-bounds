@@ -152,21 +152,12 @@ lemma toReal_statInfo_eq_min_sub_integral' {μ ν ζ : Measure 𝒳} [IsFiniteMe
       - ∫ x, min (π {false} * (∂μ/∂ζ) x).toReal (π {true} * (∂ν/∂ζ) x).toReal ∂ζ := by
   have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
   have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
-  rw [statInfo_eq_min_sub_lintegral' π hμζ hνζ]
-
-  rw [ENNReal.toReal_sub_of_le]
+  rw [statInfo_eq_min_sub_lintegral' π hμζ hνζ, ENNReal.toReal_sub_of_le]
   rotate_left
-  · --maybe I should do the versions with ζ directly in the binary file and then use them here. anyway, maybe we don't really need them, for now I will just prove the other versions
-    sorry
+  · sorry
   · simp only [ne_eq, min_eq_top, hμ, hν, and_self, not_false_eq_true]
   rw [MonotoneOn.map_min (fun _ _ _ hb hab ↦ ENNReal.toReal_mono hb hab) hμ hν]
-
   sorry
-
-#check min_eq_add_sub_abs_sub
-#check Monotone.map_min
-#check ENNReal.add_sub_cancel_left
-
 
 lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] :
@@ -223,7 +214,7 @@ theorem _root_.MeasureTheory.setIntegral_zero_measure {G : Type*} [NormedAddComm
 
  end setLIntegral
 
-#check Measure.measure_singularPartSet
+-- #check Measure.measure_singularPartSet
 --put this in the file RnDeriv, where the singularPartSet is defined, after having moved the previous lemma somewhere
 lemma _root_.MeasureTheory.Measure.rnDeriv_eq_zero_ae_of_singularPartSet
     (μ ν ξ : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
@@ -231,8 +222,8 @@ lemma _root_.MeasureTheory.Measure.rnDeriv_eq_zero_ae_of_singularPartSet
   Measure.rnDeriv_eq_zero_ae_of_zero_measure _ Measure.measurableSet_singularPartSet
     (Measure.measure_singularPartSet μ ν)
 
-lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
+lemma toReal_statInfo_eq_integral_max_of_le {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    {π : Measure Bool} [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
     (statInfo μ ν π).toReal
       = ∫ x, max 0 ((π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal) ∂ν
         + (π {false} * μ.singularPart ν univ).toReal := by
@@ -344,8 +335,8 @@ lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeas
       rw [setIntegral_zero_measure _ (Measure.measure_singularPartSet μ ν), zero_add]
 
 
-lemma toReal_statInfo_eq_integral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
+lemma toReal_statInfo_eq_integral_max_of_gt {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    {π : Measure Bool} [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
     (statInfo μ ν π).toReal
       = ∫ x, max 0 ((π {true}).toReal - (π {false} * (∂μ/∂ν) x).toReal) ∂ν := by
   by_cases h_false : π {false} = 0
@@ -433,15 +424,11 @@ lemma statInfo_eq_lintegral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
     statInfo μ ν π
       = ∫⁻ x, max 0 (π {false} * (∂μ/∂ν) x - π {true}) ∂ν + π {false} * μ.singularPart ν univ := by
-  rw [statInfo_eq_min_sub_lintegral]
-  rw [min_eq_left h]
-  --maybe first we do the version with toReal
   sorry
 
 lemma statInfo_eq_lintegral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
     statInfo μ ν π = ∫⁻ x, max 0 (π {true} - π {false} * (∂μ/∂ν) x) ∂ν := by
-
   sorry
 
 section StatInfoFun
