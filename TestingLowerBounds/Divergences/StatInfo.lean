@@ -350,9 +350,102 @@ lemma toReal_statInfo_eq_integral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeas
 
 lemma toReal_statInfo_eq_integral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
-    (statInfo μ ν π).toReal = ∫ x, max 0 (π {true} - π {false} * (∂μ/∂ν) x).toReal ∂ν := by
+    (statInfo μ ν π).toReal
+      = ∫ x, max 0 ((π {true}).toReal - (π {false} * (∂μ/∂ν) x).toReal) ∂ν := by
+  by_cases h_false : π {false} = 0
+  · simp [h_false] at h
+  by_cases h_true : π {true} = 0
+  · have (x : 𝒳) : 0 ≥ -((π {false}).toReal * ((∂μ/∂ν) x).toReal) := neg_nonpos.mpr (by positivity)
+    simp [statInfo, h_true, bayesBinaryRisk_of_measure_true_eq_zero, max_eq_left (this _)]
+  have hνac : ν ≪ (π ∘ₘ twoHypKernel μ ν) :=
+    absolutelyContinuous_measure_comp_twoHypKernel_right μ ν h_true
+  have hμ : π {false} * μ univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top μ _)
+  have hν : π {true} * ν univ ≠ ⊤ := ENNReal.mul_ne_top (measure_ne_top π _) (measure_ne_top ν _)
+  rw [toReal_statInfo_eq_min_sub_integral]
+  rw [min_eq_right ((ENNReal.toReal_le_toReal hν hμ).mpr h.le)]
+  let s := Measure.singularPartSet μ ν
+  have hs : MeasurableSet s := Measure.measurableSet_singularPartSet
+  calc
+    _ = (π {true} * ν univ).toReal
+        - ∫ x, (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+          + min 0 ((π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+            - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      congr with x
+      nth_rw 1 [min_comm, ← add_zero (π _ * _).toReal, ← add_sub_cancel_left
+        (π {true} * (∂ν/∂π ∘ₘ ⇑(twoHypKernel μ ν)) x).toReal (π {false} * _).toReal]
+      rw [add_sub_assoc, min_add_add_left]
+    _ = (π {true} * ν univ).toReal
+        - (∫ x, (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal ∂π ∘ₘ twoHypKernel μ ν
+        + ∫ x, min 0 ((π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+            - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν) := by
+      simp_rw [ENNReal.toReal_mul, ← inf_eq_min]
+      congr
+      refine integral_add (Integrable.const_mul Measure.integrable_toReal_rnDeriv _) ?_
+      refine (integrable_zero _ _ _).inf (Integrable.sub ?_ ?_) <;>
+      · exact Measure.integrable_toReal_rnDeriv.const_mul _
+    _ = - ∫ x, min 0 ((π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+          - (π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      simp_rw [ENNReal.toReal_mul, ← sub_sub, sub_eq_neg_self, sub_eq_zero, integral_mul_left,
+        Measure.integral_toReal_rnDeriv hνac]
+    _ = ∫ x, max 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+        - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      simp [← integral_neg, ← inf_eq_min, ← sup_eq_max, neg_inf]
+    _ = ∫ x in s, max 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+          - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν
+        + ∫ x in sᶜ, max 0 ((π {true} * (∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal
+          - (π {false} * (∂μ/∂π ∘ₘ twoHypKernel μ ν) x).toReal) ∂π ∘ₘ twoHypKernel μ ν := by
+      simp_rw [ENNReal.toReal_mul]
+      refine integral_add_compl hs ((integrable_zero _ _ _).sup (Integrable.sub ?_ ?_)) |>.symm <;>
+      · exact Measure.integrable_toReal_rnDeriv.const_mul _
+    _ = ∫ x in s, max 0 (-(π {false} * (∂(μ.singularPart ν)/∂π ∘ₘ twoHypKernel μ ν) x).toReal)
+          ∂π ∘ₘ twoHypKernel μ ν
+        + ∫ x in sᶜ, (max 0
+            ((π {true}).toReal - (π {false} * (∂μ.restrict (μ.singularPartSet ν)ᶜ/∂ν) x).toReal))
+          * ((∂ν/∂π ∘ₘ twoHypKernel μ ν) x).toReal ∂π ∘ₘ twoHypKernel μ ν := by
+      congr 1
+      ·
+        apply setIntegral_congr_ae hs
+        filter_upwards [Measure.rnDeriv_eq_zero_ae_of_singularPartSet  μ ν _, Measure.rnDeriv_add'
+          (μ.singularPart ν) (ν.withDensity (μ.rnDeriv ν)) (π ∘ₘ twoHypKernel μ ν),
+          Measure.rnDeriv_withDensity_left_of_absolutelyContinuous hνac
+          (Measure.measurable_rnDeriv μ ν).aemeasurable] with x hx1 hx2 hx3
+        intro hxs
+        nth_rw 2 [← Measure.singularPart_add_rnDeriv μ ν]
+        rw [hx2]
+        rw [Pi.add_apply, hx3]
+        simp_rw [hx1 hxs, mul_zero, ENNReal.zero_toReal, zero_sub, add_zero]
+      ·
+        apply setIntegral_congr_ae hs.compl
+        filter_upwards [
+          Measure.rnDeriv_restrict μ (π ∘ₘ twoHypKernel μ ν) hs.compl,
+          Measure.rnDeriv_mul_rnDeriv (Measure.absolutelyContinuous_restrict_compl_singularPartSet μ ν)
+          ] with x hx1 hx2
+        intro hxs
+        rw [max_mul_of_nonneg _ _ ENNReal.toReal_nonneg, zero_mul]
+        congr
+        simp_rw [sub_mul, ENNReal.toReal_mul, mul_assoc]
+        congr 2
+        rw [Set.indicator_of_mem hxs] at hx1
+        rw [← hx1]
+        rw [← hx2]
+        rw [Pi.mul_apply, ENNReal.toReal_mul]
+    _ = ∫ x in sᶜ, max 0 ((π {true}).toReal
+          - (π {false} * (∂μ.restrict (μ.singularPartSet ν)ᶜ/∂ν) x).toReal) ∂ν := by
+      simp_rw [max_eq_left (neg_nonpos.mpr ENNReal.toReal_nonneg),
+        mul_comm _ ((∂ν/∂π ∘ₘ _) _).toReal, ← smul_eq_mul, setIntegral_rnDeriv_smul hνac hs.compl]
+      simp
+    _ = ∫ x in sᶜ, (max 0 ((π {true}).toReal - (π {false} * (∂μ/∂ν) x).toReal)) ∂ν := by
+      apply setIntegral_congr_ae hs.compl
+      filter_upwards [Measure.rnDeriv_restrict μ ν hs.compl] with x hx1 hxs
+      rw [hx1, indicator_of_mem hxs]
+    _ = ∫ x, (max 0 ((π {true}).toReal - (π {false} * (∂μ/∂ν) x).toReal)) ∂ν := by
+      simp_rw [ENNReal.toReal_mul]
+      nth_rw 2 [← integral_add_compl hs]
+      swap
+      · exact (integrable_zero _ _ _).sup
+          ((integrable_const _).sub (Measure.integrable_toReal_rnDeriv.const_mul _))
+      rw [setIntegral_zero_measure _ (Measure.measure_singularPartSet μ ν), zero_add]
 
-  sorry
 
 lemma statInfo_eq_lintegral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
