@@ -47,8 +47,8 @@ lemma statInfo_eq_min_sub (μ ν : Measure 𝒳) (π : Measure Bool) :
   simp_rw [statInfo, Measure.comp_discard, bayesBinaryRisk_dirac]
 
 lemma statInfo_eq_bayesRiskIncrease (μ ν : Measure 𝒳) (π : Measure Bool) :
-    statInfo μ ν π = bayesRiskIncrease (simpleBinaryHypTest μ ν) π (kernel.discard 𝒳) := by
-  simp_rw [statInfo, bayesBinaryRisk, bayesRiskIncrease, simpleBinaryHypTest_comp]
+    statInfo μ ν π = bayesRiskIncrease simpleBinaryHypTest (twoHypKernel μ ν) π (kernel.discard 𝒳) := by
+  simp_rw [statInfo, bayesBinaryRisk, bayesRiskIncrease, comp_twoHypKernel]
 
 /-- **Data processing inequality** for the statistical information. -/
 lemma statInfo_comp_le (μ ν : Measure 𝒳) (π : Measure Bool) (η : kernel 𝒳 𝒳') [IsMarkovKernel η] :
