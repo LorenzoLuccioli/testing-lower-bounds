@@ -321,4 +321,13 @@ lemma _root_.MeasureTheory.Measure.rnDeriv_mul_rnDeriv' {κ : Measure α} [Sigma
   nth_rw 2 [hμν]
   rw [hx1, Pi.add_apply, hx2, Pi.mul_apply, hx3, Pi.zero_apply, zero_add]
 
+--PR this to mathlib maybe just after `integral_toReal_rnDeriv` (we need to check that measure_sub_singularPart is imported there)?
+lemma _root_.MeasureTheory.Measure.integral_toReal_rnDeriv' {α : Type*} {m : MeasurableSpace α}
+    {μ : Measure α} {ν : Measure α} [IsFiniteMeasure μ] [SigmaFinite ν] :
+    ∫ (x : α), (μ.rnDeriv ν x).toReal ∂ν
+      = (μ Set.univ).toReal - ((μ.singularPart ν) Set.univ).toReal := by
+  rw [← ENNReal.toReal_sub_of_le (μ.singularPart_le ν Set.univ) (measure_ne_top _ _),
+    ← Measure.sub_apply .univ (Measure.singularPart_le μ ν), Measure.measure_sub_singularPart,
+    ← Measure.setIntegral_toReal_rnDeriv_eq_withDensity, integral_univ]
+
 end MeasureTheory.Measure
