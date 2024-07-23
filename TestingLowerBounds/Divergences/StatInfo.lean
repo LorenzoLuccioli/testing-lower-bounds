@@ -380,7 +380,6 @@ lemma toReal_statInfo_eq_integral_max_of_gt {μ ν : Measure 𝒳} [IsFiniteMeas
           ((integrable_const _).sub (Measure.integrable_toReal_rnDeriv.const_mul _))
       rw [setIntegral_zero_measure _ (Measure.measure_singularPartSet μ ν), zero_add]
 
-
 lemma statInfo_eq_lintegral_max_of_le (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
     statInfo μ ν π
@@ -391,6 +390,42 @@ lemma statInfo_eq_lintegral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ
     (π : Measure Bool) [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
     statInfo μ ν π = ∫⁻ x, max 0 (π {true} - π {false} * (∂μ/∂ν) x) ∂ν := by
   sorry
+
+#check integral_withDensity_eq_integral_smul
+
+lemma toReal_statInfo_eq_integral_abs {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    {π : Measure Bool} [IsFiniteMeasure π]  :
+    (statInfo μ ν π).toReal
+      = 2⁻¹ * (|(π {false} * μ univ).toReal - (π {true} * ν univ).toReal|
+        + ∫ x, |(π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal| ∂ν
+        + (π {false} * (μ.singularPart ν) univ).toReal) := by
+  by_cases h : π {false} * μ univ ≤ π {true} * ν univ
+  ·
+    rw [abs_of_nonpos]
+    swap
+    · refine sub_nonpos.mpr <| (ENNReal.toReal_le_toReal ?_ ?_).mpr h
+        <;> try simp only [ne_eq, measure_ne_top _ _, not_false_eq_true, ENNReal.mul_ne_top]
+    simp_rw [toReal_statInfo_eq_integral_max_of_le h, max_eq_add_add_abs_sub, zero_add, zero_sub,
+      integral_mul_left, abs_neg, neg_sub]
+    calc
+      _ = 2⁻¹ * (∫ x, (π {false} * (∂μ/∂ν) x).toReal ∂ν - ∫ x, (π {true}).toReal ∂ν
+            + ∫ x, |(π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal| ∂ν)
+          + (π {false} * (μ.singularPart ν) univ).toReal := by
+        simp_rw [ENNReal.toReal_mul]
+        have : Integrable (fun x ↦ (π {false}).toReal * ((∂μ/∂ν) x).toReal - (π {true}).toReal) ν :=
+          (Measure.integrable_toReal_rnDeriv.const_mul _).sub (integrable_const _)
+        rw [integral_add this this.abs, integral_sub
+          (Measure.integrable_toReal_rnDeriv.const_mul _) (integrable_const _)]
+      _ = 2⁻¹ * ((π {false} * μ univ).toReal - (π {false} * (μ.singularPart ν) univ).toReal
+            - (π {true} * ν univ).toReal
+            + ∫ x, |(π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal| ∂ν)
+          + (π {false} * (μ.singularPart ν) univ).toReal := by
+        congr
+        · simp_rw [ENNReal.toReal_mul, integral_mul_left, Measure.integral_toReal_rnDeriv', mul_sub]
+        · rw [integral_const, smul_eq_mul, ENNReal.toReal_mul, mul_comm]
+      _ = _ := by sorry
+  ·
+    sorry
 
 section StatInfoFun
 
