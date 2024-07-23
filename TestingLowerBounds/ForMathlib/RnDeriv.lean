@@ -5,6 +5,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import Mathlib.MeasureTheory.Measure.Tilted
 import Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic
+import TestingLowerBounds.ForMathlib.SetIntegral
 
 /-!
 
@@ -105,6 +106,11 @@ lemma rnDeriv_eq_div' {ξ : Measure α} [SigmaFinite μ] [SigmaFinite ν] [Sigma
   filter_upwards [rnDeriv_eq_div μ ν, hν_ac (rnDeriv_div_rnDeriv hμ hν)] with a h1 h2
   exact h1.trans h2.symm
 
+lemma rnDeriv_eq_zero_ae_of_zero_measure (ν : Measure α) {s : Set α} (hs : MeasurableSet s)
+    (hμ : μ s = 0) : ∀ᵐ x ∂ν, x ∈ s → (μ.rnDeriv ν) x = 0 := by
+  rw [← MeasureTheory.setLIntegral_eq_zero_iff hs (Measure.measurable_rnDeriv μ ν)]
+  exact le_antisymm (hμ ▸ Measure.setLIntegral_rnDeriv_le s) (zero_le _)
+
 /--Singular part set of μ with respect to ν.-/
 def singularPartSet (μ ν : Measure α) := {x | ν.rnDeriv (μ + ν) x = 0}
 
@@ -191,6 +197,11 @@ example [SigmaFinite μ] [SigmaFinite ν] :
     μ (singularPartSet μ ν) = μ.singularPart ν Set.univ := by
   rw [← restrict_singularPartSet_eq_singularPart]
   simp only [MeasurableSet.univ, restrict_apply, Set.univ_inter]
+
+lemma rnDeriv_eq_zero_ae_of_singularPartSet (μ ν ξ : Measure α) [SigmaFinite μ] [SigmaFinite ν] :
+    ∀ᵐ x ∂ξ, x ∈ Measure.singularPartSet μ ν → (ν.rnDeriv ξ) x = 0 :=
+  Measure.rnDeriv_eq_zero_ae_of_zero_measure _ Measure.measurableSet_singularPartSet
+    (Measure.measure_singularPartSet μ ν)
 
 section Trim
 
