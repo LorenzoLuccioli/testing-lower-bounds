@@ -644,7 +644,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
   rw [fDiv_of_absolutelyContinuous h_ac, if_pos h_int, EReal.coe_eq_coe_iff]
   simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (integrable_statInfoFun_rnDeriv 1 _ _ _),
     EReal.toReal_coe,
-    ← integral_statInfoFun_curvatureMeasure hf_cvx hf_cont hf_one hfderiv_one]
+    ← integral_statInfoFun_curvatureMeasure' hf_cvx hf_cont hf_one hfderiv_one]
   have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry := by
     change Measurable
       (statInfoFun.uncurry.uncurry ∘ (fun (xγ : 𝒳 × ℝ) ↦ ((1, xγ.2), ((∂μ/∂ν) xγ.1).toReal)))
