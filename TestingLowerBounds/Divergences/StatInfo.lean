@@ -465,6 +465,12 @@ lemma toReal_statInfo_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ
         simp_rw [abs_sub_comm]
         ring
 
+lemma statInfo_eq_min_sub_iInf_measurableSet (μ ν : Measure 𝒳) [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (π : Measure Bool) [IsFiniteMeasure π] :
+    statInfo μ ν π = min (π {false} * μ univ) (π {true} * ν univ)
+      - ⨅ E, ⨅ (_ : MeasurableSet E), π {false} * μ E + π {true} * ν Eᶜ := by
+  rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_iInf_measurableSet]
+
 section StatInfoFun
 
 open Set Filter ConvexOn
