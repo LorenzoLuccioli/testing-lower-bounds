@@ -147,6 +147,8 @@ lemma toReal_statInfo_eq_min_sub_integral (μ ν : Measure 𝒳) [IsFiniteMeasur
   rw [toReal_bayesBinaryRisk_eq_integral_min,
     MonotoneOn.map_min (fun _ _ _ hb hab ↦ ENNReal.toReal_mono hb hab) hμ hν]
 
+#check Measure.rnDeriv_eq_div'
+
 lemma toReal_statInfo_eq_min_sub_integral' {μ ν ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     [SigmaFinite ζ] (π : Measure Bool) [IsFiniteMeasure π]  (hμζ : μ ≪ ζ) (hνζ : ν ≪ ζ) :
     (statInfo μ ν π).toReal = min (π {false} * μ univ).toReal (π {true} * ν univ).toReal
@@ -295,6 +297,25 @@ lemma toReal_statInfo_eq_integral_max_of_le {μ ν : Measure 𝒳} [IsFiniteMeas
           ((Measure.integrable_toReal_rnDeriv.const_mul _).sub (integrable_const _))
       rw [setIntegral_zero_measure _ (Measure.measure_singularPartSet μ ν), zero_add]
 
+/- TODO: Try to prove `toReal_statInfo_eq_integral_max_of_gt` using the previous lemma and the
+symmetry of the statInfo. This should be faster than the current proof, and avoid a lot of code
+duplication. To finish the proof we would need something like `∂μ/∂ν * ∂ν/∂μ =ᵐ[μ] 1`, at least
+when `∂ν/∂μ ≠ 0`, and also that `∂μ/∂ν =ᵐ[ν.simgularPart μ] 0`, if we have this we can split `ν`
+using the Lebesgue decomposition and we should be done quite easily.
+-/
+-- lemma toReal_statInfo_eq_integral_max_of_gt' {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+--     {π : Measure Bool} [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
+--     (statInfo μ ν π).toReal
+--       = ∫ x, max 0 ((π {true}).toReal - (π {false} * (∂μ/∂ν) x).toReal) ∂ν := by
+--   have h1 : (Measure.map Bool.not π) {false} = π {true} := by sorry
+--   have h2 : (Measure.map Bool.not π) {true} = π {false} := by sorry
+--   rw [statInfo_symm]
+--   rw [toReal_statInfo_eq_integral_max_of_le]
+--   swap
+--   · rw [h1, h2]
+--     exact h.le
+--   rw [h1, h2]
+--   sorry
 
 lemma toReal_statInfo_eq_integral_max_of_gt {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     {π : Measure Bool} [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
@@ -391,9 +412,7 @@ lemma statInfo_eq_lintegral_max_of_gt (μ ν : Measure 𝒳) [IsFiniteMeasure μ
     statInfo μ ν π = ∫⁻ x, max 0 (π {true} - π {false} * (∂μ/∂ν) x) ∂ν := by
   sorry
 
-#check integral_withDensity_eq_integral_smul
-
-lemma toReal_statInfo_eq_integral_abs {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma toReal_statInfo_eq_integral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     {π : Measure Bool} [IsFiniteMeasure π]  :
     (statInfo μ ν π).toReal
       = 2⁻¹ * (-|(π {false} * μ univ).toReal - (π {true} * ν univ).toReal|
@@ -590,7 +609,7 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
   simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _), ← EReal.coe_mul, sub_eq_add_neg,
     ← EReal.coe_neg, ← EReal.coe_add, ← EReal.coe_mul]
   ring_nf
-
+--regeneralize relaxing the hp of f 1 = 0 and f' 1 = 0
 lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f)
     (hf_cont : Continuous f) (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) :
     ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t := by
