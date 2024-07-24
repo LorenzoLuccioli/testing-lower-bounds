@@ -226,8 +226,8 @@ The two cases of Theorem~\ref{thm:statInfo_eq_integral} lead to the same express
 
 \begin{lemma}
   \label{lem:statInfo_eq_sub_inf_event}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.statInfo_eq_min_sub_iInf_measurableSet}
+  \leanok
   \uses{def:statInfo}
   For finite measures $\mu, \nu$ and $\xi \in \mathcal M(\{0,1\})$,
   \begin{align*}
@@ -237,7 +237,7 @@ The two cases of Theorem~\ref{thm:statInfo_eq_integral} lead to the same express
   \end{align*}
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:bayesBinaryRisk_eq_event}
 This is a direct application of Lemma~\ref{lem:bayesBinaryRisk_eq_event}.
 \end{proof}
