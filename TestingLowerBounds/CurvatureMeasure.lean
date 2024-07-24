@@ -13,7 +13,7 @@ open scoped Classical
 
 namespace ConvexOn
 
-variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f : ℝ → ℝ} {β γ x t : ℝ}
+variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f g : ℝ → ℝ} {β γ x t : ℝ}
 
 -- Should we define this to be some junk value if f is not convex?
 -- This way we could avoid having to state the convexity every time.
@@ -36,6 +36,12 @@ lemma curvatureMeasure_of_not_convexOn (hf : ¬ConvexOn ℝ univ f) :
 instance {f : ℝ → ℝ} : IsLocallyFiniteMeasure (curvatureMeasure f) := by
   simp_rw [curvatureMeasure]
   split_ifs <;> infer_instance
+
+lemma curvatureMeasure_add (hf : ConvexOn ℝ univ f) (hg : ConvexOn ℝ univ g) :
+    curvatureMeasure (f + g) = curvatureMeasure f + curvatureMeasure g := by
+  rw [curvatureMeasure_of_convexOn hf, curvatureMeasure_of_convexOn hg,
+    curvatureMeasure_of_convexOn (hf.add hg), hf.rightDerivStieltjes_add hg,
+    StieltjesFunction.measure_add]
 
 /-- A Taylor formula for convex functions in terms of the right derivative
 and the curvature measure. -/
