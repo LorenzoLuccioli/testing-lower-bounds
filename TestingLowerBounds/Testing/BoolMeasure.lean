@@ -5,7 +5,7 @@ Authors: Lorenzo Luccioli
 -/
 import Mathlib.MeasureTheory.Measure.WithDensity
 
-open MeasureTheory
+open MeasureTheory Set
 
 open scoped ENNReal NNReal
 
@@ -34,7 +34,7 @@ lemma _root_.MeasureTheory.Measure.measure_bool_ext {π₁ π₂ : Measure Bool}
   ext s
   obtain (rfl | rfl | rfl | rfl) := Bool.cases_set_bool s
     <;> try simp only [measure_empty, h_true, h_false]
-  rw [Set.insert_eq, measure_union, measure_union, h_true, h_false] <;> simp
+  rw [insert_eq, measure_union, measure_union, h_true, h_false] <;> simp
 
 lemma lintegral_bool {f : Bool → ℝ≥0∞} (π : Measure Bool) :
     ∫⁻ x, f x ∂π = f false * π {false} + f true * π {true} := by
@@ -62,12 +62,20 @@ lemma boolMeasure_apply_false (a b : ℝ≥0∞) : boolMeasure a b {false} = a :
 @[simp]
 lemma boolMeasure_apply_true (a b : ℝ≥0∞) : boolMeasure a b {true} = b := by simp [boolMeasure]
 
+@[simp]
+lemma boolMeasure_apply_univ (a b : ℝ≥0∞) : boolMeasure a b {false, true} = a + b := by
+  simp [boolMeasure]
+
 lemma measure_eq_boolMeasure (π : Measure Bool) : π = boolMeasure (π {false}) (π {true}) := by
   ext <;> simp
 
 lemma boolMeasure_withDensity (π : Measure Bool) (f : Bool → ℝ≥0∞) :
     π.withDensity f = boolMeasure (f false * π {false}) (f true * π {true}) := by
   ext <;> simp [lintegral_dirac, mul_comm]
+
+instance {x y : ℝ} : IsFiniteMeasure (boolMeasure (.ofReal x) (.ofReal y)) := by
+  constructor
+  simp
 
 end BoolMeasure
 
