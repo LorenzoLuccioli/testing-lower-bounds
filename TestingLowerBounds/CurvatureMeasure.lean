@@ -7,6 +7,8 @@ import TestingLowerBounds.ForMathlib.ByParts
 import TestingLowerBounds.ForMathlib.LeftRightDeriv
 import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import Mathlib.Probability.Notation
+import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
+
 
 open MeasureTheory Set StieltjesFunction ProbabilityTheory
 open scoped Classical
@@ -37,11 +39,43 @@ instance {f : ℝ → ℝ} : IsLocallyFiniteMeasure (curvatureMeasure f) := by
   simp_rw [curvatureMeasure]
   split_ifs <;> infer_instance
 
+@[simp]
+lemma curvatureMeasure_const (c : ℝ) : curvatureMeasure (fun _ ↦ c) = 0 := by
+  have h : ConvexOn ℝ univ (fun (_ : ℝ) ↦ c) := convexOn_const _ convex_univ
+  rw [curvatureMeasure_of_convexOn h, rightDerivStieltjes_const, StieltjesFunction.measure_zero]
+
+@[simp]
+lemma curvatureMeasure_linear (a : ℝ) : curvatureMeasure (fun x ↦ a * x) = 0 := by
+  have h : ConvexOn ℝ univ (fun x ↦ a * x) := const_mul a
+  rw [curvatureMeasure_of_convexOn h, ConvexOn.rightDerivStieltjes_linear, StieltjesFunction.measure_const]
+
 lemma curvatureMeasure_add (hf : ConvexOn ℝ univ f) (hg : ConvexOn ℝ univ g) :
     curvatureMeasure (f + g) = curvatureMeasure f + curvatureMeasure g := by
   rw [curvatureMeasure_of_convexOn hf, curvatureMeasure_of_convexOn hg,
     curvatureMeasure_of_convexOn (hf.add hg), hf.rightDerivStieltjes_add hg,
     StieltjesFunction.measure_add]
+
+@[simp]
+lemma curvatureMeasure_add_const (c : ℝ) :
+    curvatureMeasure (fun x ↦ f x + c) = curvatureMeasure f := by
+  change (curvatureMeasure (f + fun _ ↦ c)) = curvatureMeasure f
+  by_cases hf : ConvexOn ℝ univ f
+  · rw [hf.curvatureMeasure_add (convexOn_const _ convex_univ), curvatureMeasure_const, add_zero]
+  · rw [curvatureMeasure_of_not_convexOn hf, curvatureMeasure_of_not_convexOn]
+    contrapose! hf
+    have : f = f + (fun _ ↦ c) + fun _ ↦ -c := by ext x; simp
+    exact this ▸ hf.add_const _
+
+@[simp]
+lemma curvatureMeasure_add_linear (a : ℝ) :
+    curvatureMeasure (fun x ↦ f x + a * x) = curvatureMeasure f := by
+  change (curvatureMeasure (f + fun x ↦ a * x)) = curvatureMeasure f
+  by_cases hf : ConvexOn ℝ univ f
+  · rw [hf.curvatureMeasure_add (const_mul a), curvatureMeasure_linear, add_zero]
+  · rw [curvatureMeasure_of_not_convexOn hf, curvatureMeasure_of_not_convexOn]
+    contrapose! hf
+    have : f = f + (fun x ↦ a * x) + fun x ↦ (-a) * x := by ext x; simp
+    exact this ▸ hf.add (const_mul _)
 
 /-- A Taylor formula for convex functions in terms of the right derivative
 and the curvature measure. -/
