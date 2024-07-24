@@ -60,6 +60,24 @@ lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) :
   ext x
   simp [leftDeriv_eq_rightDeriv_apply]
 
+lemma rightDeriv_const (c : ℝ) : rightDeriv (fun _ ↦ c) = 0 := by
+  ext x
+  rw [rightDeriv_def, Pi.zero_apply]
+  exact derivWithin_const x _ c (uniqueDiffWithinAt_Ioi x)
+
+lemma leftDeriv_const (c : ℝ) : leftDeriv (fun _ ↦ c) = 0 := by
+  simp_rw [leftDeriv_eq_rightDeriv, rightDeriv_const, Pi.zero_apply, neg_zero]
+  rfl
+
+lemma rightDeriv_linear (a : ℝ) : rightDeriv (fun x ↦ a * x) = fun _ ↦ a := by
+  ext x
+  rw [rightDeriv_def, derivWithin_const_mul (uniqueDiffWithinAt_Ioi x)]
+  swap; · exact differentiableWithinAt_id
+  change a * derivWithin id (Ioi x) x = a
+  rw [derivWithin_id _ _ (uniqueDiffWithinAt_Ioi x), mul_one]
+
+--add the left verisions
+
 lemma rightDeriv_add {f g : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Ioi x) x)
     (hg : ∀ x, DifferentiableWithinAt ℝ g (Ioi x) x) :
     rightDeriv (f + g) = fun x ↦ rightDeriv f x + rightDeriv g x := by
@@ -74,6 +92,7 @@ lemma leftDeriv_add {f g : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ 
   simp_rw [leftDeriv_def, ← derivWithin_add (uniqueDiffWithinAt_Iio x) (hf x) (hg x)]
   rfl
 
+--add add_cost and add_linear
 namespace ConvexOn
 
 section Slope
