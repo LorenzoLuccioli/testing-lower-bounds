@@ -628,8 +628,8 @@ lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le [IsFiniteMeasure μ] [IsFinit
   sorry
 
 lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
-    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t - f 1 - (rightDeriv f 1) * (t - 1) := by
-  have : f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure hf_cvx) :=
+    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure f) = f t - f 1 - (rightDeriv f 1) * (t - 1) := by
+  have : f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure f) :=
     convex_taylor hf_cvx hf_cont
   rcases le_total t 1 with (ht | ht)
   · simp_rw [this, statInfoFun_of_one_of_right_le_one ht, integral_indicator measurableSet_Ioc,
@@ -639,7 +639,7 @@ lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f) (hf_c
 
 lemma integral_statInfoFun_curvatureMeasure' (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
     (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) :
-    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t := by
+    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure f) = f t := by
   rw [integral_statInfoFun_curvatureMeasure hf_cvx hf_cont, hf_one, hfderiv_one, sub_zero, zero_mul,
     sub_zero]
 
@@ -718,7 +718,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
     (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
-    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure hf_cvx) := by
+    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f) := by
   classical
   rw [fDiv_of_absolutelyContinuous h_ac, if_pos h_int, EReal.coe_eq_coe_iff]
   simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (integrable_statInfoFun_rnDeriv 1 _ _ _),
@@ -728,9 +728,9 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
     stronglyMeasurable_statInfoFun.measurable.comp <|
       (measurable_const.prod_mk measurable_snd).prod_mk <|
       ((μ.measurable_rnDeriv ν).comp measurable_fst).ennreal_toReal
-  have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure hf_cvx ∂ν
+  have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure f ∂ν
       = (∫⁻ x, ∫⁻ γ, ENNReal.ofReal (statInfoFun 1 γ ((∂μ/∂ν) x).toReal)
-        ∂curvatureMeasure hf_cvx ∂ν).toReal := by
+        ∂curvatureMeasure f ∂ν).toReal := by
     rw [integral_eq_lintegral_of_nonneg_ae]
     rotate_left
     · exact eventually_of_forall fun _ ↦ (integral_nonneg (fun _ ↦ statInfoFun_nonneg _ _ _))
@@ -767,7 +767,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
     (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
-    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure hf_cvx)
+    fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f)
       + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
   have : fDiv f μ ν = fDiv (fun x ↦ f x - f 1 - rightDeriv f 1 * (x - 1)) μ ν
       + f 1 * ν univ + rightDeriv f 1 * ((μ univ).toReal - (ν univ).toReal) := by
