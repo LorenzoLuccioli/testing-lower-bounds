@@ -60,6 +60,20 @@ lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) :
   ext x
   simp [leftDeriv_eq_rightDeriv_apply]
 
+lemma rightDeriv_add {f g : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Ioi x) x)
+    (hg : ∀ x, DifferentiableWithinAt ℝ g (Ioi x) x) :
+    rightDeriv (f + g) = fun x ↦ rightDeriv f x + rightDeriv g x := by
+  ext x
+  simp_rw [rightDeriv_def, ← derivWithin_add (uniqueDiffWithinAt_Ioi x) (hf x) (hg x)]
+  rfl
+
+lemma leftDeriv_add {f g : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Iio x) x)
+    (hg : ∀ x, DifferentiableWithinAt ℝ g (Iio x) x) :
+    leftDeriv (f + g) = fun x ↦ leftDeriv f x + leftDeriv g x := by
+  ext x
+  simp_rw [leftDeriv_def, ← derivWithin_add (uniqueDiffWithinAt_Iio x) (hf x) (hg x)]
+  rfl
+
 namespace ConvexOn
 
 section Slope
