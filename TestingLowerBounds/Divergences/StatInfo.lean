@@ -615,20 +615,22 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
   simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _), ← EReal.coe_mul, sub_eq_add_neg,
     ← EReal.coe_neg, ← EReal.coe_add, ← EReal.coe_mul]
   ring_nf
---regeneralize relaxing the hp of f 1 = 0 and f' 1 = 0
-lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f)
-    (hf_cont : Continuous f) (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) :
-    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t := by
-  have h :
-      f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure hf_cvx) :=
+
+lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
+    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t - f 1 - (rightDeriv f 1) * (t - 1) := by
+  have : f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure hf_cvx) :=
     convex_taylor hf_cvx hf_cont
-  rw [hf_one, hfderiv_one, sub_zero, zero_mul, sub_zero] at h
-  rw [h]
   rcases le_total t 1 with (ht | ht)
-  · simp_rw [statInfoFun_of_one_of_right_le_one ht, integral_indicator measurableSet_Ioc,
+  · simp_rw [this, statInfoFun_of_one_of_right_le_one ht, integral_indicator measurableSet_Ioc,
       intervalIntegral.integral_of_ge ht, ← integral_neg, neg_sub]
-  · simp_rw [statInfoFun_of_one_of_one_le_right ht, integral_indicator measurableSet_Ioc,
+  · simp_rw [this, statInfoFun_of_one_of_one_le_right ht, integral_indicator measurableSet_Ioc,
       intervalIntegral.integral_of_le ht]
+
+lemma integral_statInfoFun_curvatureMeasure' (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) :
+    ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t := by
+  rw [integral_statInfoFun_curvatureMeasure hf_cvx hf_cont, hf_one, hfderiv_one, sub_zero, zero_mul,
+    sub_zero]
 
 -- TODO: think about the case when the function is not integrable (`h_int`).
 -- Can we prove that in this case the rhs is also not integrable?
