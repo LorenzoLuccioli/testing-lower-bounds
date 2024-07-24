@@ -5,7 +5,7 @@ Authors: Lorenzo Luccioli
 -/
 import Mathlib.MeasureTheory.Measure.WithDensity
 
-open MeasureTheory Set
+open MeasureTheory
 
 open scoped ENNReal NNReal
 
@@ -34,7 +34,7 @@ lemma _root_.MeasureTheory.Measure.measure_bool_ext {π₁ π₂ : Measure Bool}
   ext s
   obtain (rfl | rfl | rfl | rfl) := Bool.cases_set_bool s
     <;> try simp only [measure_empty, h_true, h_false]
-  rw [insert_eq, measure_union, measure_union, h_true, h_false] <;> simp
+  rw [Set.insert_eq, measure_union, measure_union, h_true, h_false] <;> simp
 
 lemma lintegral_bool {f : Bool → ℝ≥0∞} (π : Measure Bool) :
     ∫⁻ x, f x ∂π = f false * π {false} + f true * π {true} := by
