@@ -654,7 +654,7 @@ lemma integral_statInfoFun_curvatureMeasure' (hf_cvx : ConvexOn ℝ univ f) (hf_
 --   have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry := by
 --     change Measurable
 --       (statInfoFun.uncurry.uncurry ∘ (fun (xγ : 𝒳 × ℝ) ↦ ((1, xγ.2), ((∂μ/∂ν) xγ.1).toReal)))
---     refine stronglymeasurable_statInfoFun.measurable.comp ?_
+--     refine stronglyMeasurable_statInfoFun.measurable.comp ?_
 --     refine (measurable_const.prod_mk measurable_snd).prod_mk ?_
 --     exact ((Measure.measurable_rnDeriv μ ν).comp measurable_fst).ennreal_toReal
 --   have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure hf_cvx ∂ν
@@ -713,12 +713,10 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
   simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (integrable_statInfoFun_rnDeriv 1 _ _ _),
     EReal.toReal_coe,
     ← integral_statInfoFun_curvatureMeasure' hf_cvx hf_cont hf_one hfderiv_one]
-  have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry := by
-    change Measurable
-      (statInfoFun.uncurry.uncurry ∘ (fun (xγ : 𝒳 × ℝ) ↦ ((1, xγ.2), ((∂μ/∂ν) xγ.1).toReal)))
-    refine stronglymeasurable_statInfoFun.measurable.comp ?_
-    refine (measurable_const.prod_mk measurable_snd).prod_mk ?_
-    exact ((Measure.measurable_rnDeriv μ ν).comp measurable_fst).ennreal_toReal
+  have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry :=
+    stronglyMeasurable_statInfoFun.measurable.comp <|
+      (measurable_const.prod_mk measurable_snd).prod_mk <|
+      ((Measure.measurable_rnDeriv μ ν).comp measurable_fst).ennreal_toReal
   have int_eq_lint : ∫ x, ∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure hf_cvx ∂ν
       = (∫⁻ x, ∫⁻ γ, ENNReal.ofReal (statInfoFun 1 γ ((∂μ/∂ν) x).toReal)
         ∂curvatureMeasure hf_cvx ∂ν).toReal := by

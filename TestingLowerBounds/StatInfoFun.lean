@@ -44,7 +44,7 @@ lemma const_mul_statInfoFun {a : ℝ} (ha : 0 ≤ a) :
 
 section Measurability
 
-lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
+lemma stronglyMeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.uncurry := by
   apply Measurable.stronglyMeasurable
   change Measurable (fun (p : (ℝ × ℝ) × ℝ) ↦ if p.1.2 ≤ p.1.1 then max 0 (p.1.2 - p.1.1 * p.2)
     else max 0 (p.1.1 * p.2 - p.1.2))
@@ -55,11 +55,11 @@ lemma stronglymeasurable_statInfoFun : StronglyMeasurable statInfoFun.uncurry.un
 
 lemma measurable_statInfoFun2 : Measurable fun γ ↦ statInfoFun β γ x := by
   change Measurable (statInfoFun.uncurry.uncurry ∘ (fun (γ : ℝ) ↦ ((β, γ), x)))
-  exact stronglymeasurable_statInfoFun.measurable.comp (by fun_prop)
+  exact stronglyMeasurable_statInfoFun.measurable.comp (by fun_prop)
 
 lemma stronglyMeasurable_statInfoFun3 : StronglyMeasurable (statInfoFun β γ) := by
   change StronglyMeasurable (statInfoFun.uncurry.uncurry ∘ (fun (x : ℝ) ↦ ((β, γ), x)))
-  refine stronglymeasurable_statInfoFun.measurable.comp (by fun_prop) |>.stronglyMeasurable
+  refine stronglyMeasurable_statInfoFun.measurable.comp (by fun_prop) |>.stronglyMeasurable
 
 end Measurability
 
