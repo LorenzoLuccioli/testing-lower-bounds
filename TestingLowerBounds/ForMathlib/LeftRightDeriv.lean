@@ -201,4 +201,13 @@ def rightDerivStieltjes {f : ℝ → ℝ} (hf : ConvexOn ℝ univ f) :
   mono' _ _ := fun h ↦ hf.rightDeriv_mono h
   right_continuous' _ := hf.rightDeriv_right_continuous _
 
+lemma rightDerivStieltjes_eq_rightDeriv (hf : ConvexOn ℝ univ f) :
+    rightDerivStieltjes hf = rightDeriv f := rfl
+
+lemma rightDerivStieltjes_add {f g : ℝ → ℝ} (hf : ConvexOn ℝ univ f) (hg : ConvexOn ℝ univ g) :
+    rightDerivStieltjes (hf.add hg) = rightDerivStieltjes hf + rightDerivStieltjes hg := by
+  ext x
+  simp_rw [StieltjesFunction.add_apply, rightDerivStieltjes_eq_rightDeriv, rightDeriv_add
+    (fun x ↦ hf.differentiableWithinAt_Ioi x) (fun x ↦ hg.differentiableWithinAt_Ioi x)]
+
 end ConvexOn
