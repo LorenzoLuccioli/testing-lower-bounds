@@ -614,6 +614,18 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
     ← EReal.coe_neg, ← EReal.coe_add, ← EReal.coe_mul]
   ring_nf
 
+lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hβ : 0 ≤ β) (hγ : γ ≤ β) :
+    fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
+      + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
+        + γ * (ν univ).toReal - β * (μ univ).toReal) := by
+  have : (statInfo μ ν (Bool.boolMeasure (ENNReal.ofReal β) (ENNReal.ofReal γ)) : EReal) = (statInfo μ ν (Bool.boolMeasure (ENNReal.ofReal β) (ENNReal.ofReal γ))).toReal := by
+
+    sorry
+  -- rw [fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le hβ hγ, toReal_statInfo_eq_integral_abs]
+  -- simp only [Bool.boolMeasure_apply_false, Bool.boolMeasure_apply_true]
+  sorry
+
 lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
     ∫ y, statInfoFun 1 y t ∂(curvatureMeasure hf_cvx) = f t - f 1 - (rightDeriv f 1) * (t - 1) := by
   have : f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure hf_cvx) :=
