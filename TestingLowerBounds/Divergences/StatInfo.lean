@@ -496,6 +496,22 @@ lemma nnReal_mul_fDiv {a : NNReal} :
 lemma fDiv_statInfoFun_nonneg : 0 ≤ fDiv (statInfoFun β γ) μ ν :=
   fDiv_nonneg_of_nonneg (fun x ↦ statInfoFun_nonneg β γ x) (derivAtTop_statInfoFun_nonneg β γ)
 
+lemma fDiv_statInfoFun_stronglyMeasurable [SFinite ν] :
+    StronglyMeasurable (Function.uncurry fun β γ ↦ fDiv (statInfoFun β γ) μ ν) := by
+  apply Measurable.stronglyMeasurable
+  simp_rw [fDiv]
+  have h_meas := stronglyMeasurable_statInfoFun.measurable
+  have h_meas' := h_meas.comp (f := fun ((a, b), x) ↦ ((a, b), ((∂μ/∂ν) x).toReal)) (measurable_fst.prod_mk (by fun_prop)) |>.stronglyMeasurable
+  refine Measurable.ite ?_ measurable_const ?_
+  · rw [← Set.compl_setOf, MeasurableSet.compl_iff]
+    exact measurableSet_integrable (by exact h_meas')
+  · refine StronglyMeasurable.integral_prod_right (by exact h_meas')
+      |>.measurable.coe_real_ereal.add ?_
+    simp_rw [derivAtTop_statInfoFun_eq]
+    refine (Measurable.coe_real_ereal ?_).mul_const _
+    apply Measurable.ite (measurableSet_le measurable_const measurable_fst)
+      <;> refine Measurable.ite (measurableSet_le measurable_snd measurable_fst) ?_ ?_ <;> fun_prop
+
 lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
     fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν := by
