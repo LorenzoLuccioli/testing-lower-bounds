@@ -195,6 +195,12 @@ lemma derivAtTop_statInfoFun_ne_top (β γ : ℝ) : derivAtTop (fun x ↦ statIn
     simp [derivAtTop_statInfoFun_of_nonneg_of_le, derivAtTop_statInfoFun_of_nonneg_of_gt,
       derivAtTop_statInfoFun_of_nonpos_of_le, derivAtTop_statInfoFun_of_nonpos_of_gt, hβ, hγ]
 
+lemma derivAtTop_statInfoFun_nonneg (β γ : ℝ) : 0 ≤ derivAtTop (fun x ↦ statInfoFun β γ x) := by
+  rcases le_total 0 β with (hβ | hβ) <;> rcases le_or_lt γ β with (hγ | hγ) <;>
+    simp [derivAtTop_statInfoFun_of_nonneg_of_le, derivAtTop_statInfoFun_of_nonneg_of_gt,
+      ← EReal.coe_neg, derivAtTop_statInfoFun_of_nonpos_of_le,
+      derivAtTop_statInfoFun_of_nonpos_of_gt, hβ, hγ]
+
 end derivAtTop
 
 end statInfoFun_x
