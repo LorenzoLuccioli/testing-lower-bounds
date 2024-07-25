@@ -713,7 +713,7 @@ lemma integral_statInfoFun_curvatureMeasure' (hf_cvx : ConvexOn ℝ univ f) (hf_
 
 -- TODO: think about the case when the function is not integrable (`h_int`).
 -- Can we prove that in this case the rhs is also not integrable?
-lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
+lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
     (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
@@ -762,7 +762,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
 #check fDiv_add_linear'
 
 --swap the names when I'm done
-lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
+lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
     (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
@@ -791,14 +791,21 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
       simp [measure_ne_top]
   rw [this]
   congr
-  ·
-    -- rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous]
-
-    sorry
-  ·
-    sorry
-  ·
-    sorry
+  · have h : ConvexOn ℝ univ (fun x ↦ f x - f 1 - rightDeriv f 1 * (x - 1)) := by
+      simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul]
+      exact hf_cvx.add_const _ |>.add (ConvexOn.const_mul _ |>.add (convexOn_const _ convex_univ))
+    rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
+      h (by continuity) (by simp) _ _ h_ac]
+    · simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul, ← add_assoc,
+        curvatureMeasure_add_const, curvatureMeasure_add_linear, curvatureMeasure_add_const]
+    · have hf_diff x := differentiableWithinAt_Ioi hf_cvx x
+      simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul, ← add_assoc]
+      rw [rightDeriv_add_const (by fun_prop), rightDeriv_add_linear (by fun_prop),
+        rightDeriv_add_const hf_diff]
+      simp
+    · exact (h_int.sub (integrable_const _)).sub
+        ((Measure.integrable_toReal_rnDeriv.sub (integrable_const 1)).const_mul _)
+  all_goals exact ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)
 
 
 --this will be useful later
