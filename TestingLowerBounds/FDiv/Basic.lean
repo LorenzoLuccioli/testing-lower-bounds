@@ -123,6 +123,7 @@ lemma fDiv_ne_bot_of_derivAtTop_nonneg (hf : 0 ≤ derivAtTop f) : fDiv f μ ν 
 @[simp]
 lemma fDiv_zero (μ ν : Measure α) : fDiv (fun _ ↦ 0) μ ν = 0 := by simp [fDiv]
 
+--the name feels a bit wrong, what could I write instead of `on_nonneg`?
 lemma fDiv_of_zero_on_nonneg (μ ν : Measure α) (hf : ∀ x ≥ 0, f x = 0) :
     fDiv f μ ν = 0 := by
   have (x : α) : f ((∂μ/∂ν) x).toReal = 0 := hf _ ENNReal.toReal_nonneg
