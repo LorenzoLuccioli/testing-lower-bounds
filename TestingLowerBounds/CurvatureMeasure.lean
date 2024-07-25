@@ -17,6 +17,11 @@ namespace ConvexOn
 
 variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f g : ℝ → ℝ} {β γ x t : ℝ}
 
+--PR this to mathlib, just before `StieltjesFunction.measure_const`
+@[simp]
+lemma _root_.StieltjesFunction.measure_zero : StieltjesFunction.measure 0 = 0 :=
+  Measure.ext_of_Ioc _ _ (fun _ _ _ ↦ by simp; rfl)
+
 -- Should we define this to be some junk value if f is not convex?
 -- This way we could avoid having to state the convexity every time.
 -- This may be put in some other place, maybe directly in the stieltjes file.
