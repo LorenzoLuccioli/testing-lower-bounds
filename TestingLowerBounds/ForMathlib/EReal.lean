@@ -94,6 +94,14 @@ lemma add_ne_top {x y : EReal} (hx : x ≠ ⊤) (hy : y ≠ ⊤) : x + y ≠ ⊤
   induction y <;> tauto
   exact ne_of_beq_false rfl
 
+lemma add_ne_bot_iff {x y : EReal} : x + y ≠ ⊥ ↔ x ≠ ⊥ ∧ y ≠ ⊥ := by
+  simp_rw [ne_eq, EReal.add_eq_bot_iff]
+  push_neg
+  rfl
+
+lemma add_ne_bot {x y : EReal} (hx : x ≠ ⊥) (hy : y ≠ ⊥) : x + y ≠ ⊥ :=
+  add_ne_bot_iff.mpr ⟨hx, hy⟩
+
 lemma coe_mul_add_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
     x * (y + z) = x * y + x * z := by
   by_cases hx0 : x = 0
