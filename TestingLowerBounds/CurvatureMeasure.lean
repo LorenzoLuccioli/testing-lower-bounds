@@ -11,7 +11,6 @@ import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 
 
 open MeasureTheory Set StieltjesFunction ProbabilityTheory
-open scoped Classical
 
 namespace ConvexOn
 
@@ -26,6 +25,7 @@ lemma _root_.StieltjesFunction.measure_zero : StieltjesFunction.measure 0 = 0 :=
 -- This way we could avoid having to state the convexity every time.
 -- This may be put in some other place, maybe directly in the stieltjes file.
 
+open Classical in
 /-- The curvature measure induced by a convex function. It is defined as the only measure that has
 the right derivative of the function as a CDF. -/
 noncomputable
