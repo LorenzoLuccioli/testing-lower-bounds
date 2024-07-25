@@ -791,7 +791,7 @@ end StatInfoFun
 
 section DataProcessingInequality
 
-/-- **Data processing inequality** for the fDiv of `statInfoFun`. -/
+/-- **Data processing inequality** for the f-divergence of `statInfoFun`. -/
 lemma fDiv_statInfoFun_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (η : Kernel 𝒳 𝒳') [IsMarkovKernel η] (hβ : 0 ≤ β) (hγ : 0 ≤ γ) :
     fDiv (statInfoFun β γ) (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv (statInfoFun β γ) μ ν := by
@@ -802,6 +802,48 @@ lemma fDiv_statInfoFun_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     exact le_refl _
 
 -- do the DPI for general fDiv
+
+#check fDiv_of_zero_on_nonneg
+
+--I put the ' in the name just because it may conflict with the same lemma in FDiv.CompProd, but maybe we will actually remove that one in the future.
+/-- **Data processing inequality** for the f-divergence. -/
+lemma fDiv_comp_right_le_of_absolutelyContinuous
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (η : Kernel 𝒳 𝒳') [IsMarkovKernel η]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν) --this hp may be removed by distingushing the two cases
+    (h_ac : μ ≪ ν)
+    :
+    fDiv f (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv f μ ν := by
+  rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_int h_ac]
+  rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont ]
+  rotate_left
+  ·
+    sorry
+  ·
+    simp_rw [Measure.comp_eq_snd_compProd, Measure.snd]
+    apply Measure.AbsolutelyContinuous.map
+    exact Kernel.Measure.absolutelyContinuous_compProd_left h_ac η
+    sorry
+  simp_rw [Measure.comp_apply_univ]
+  gcongr
+  simp only [EReal.coe_le_coe_iff]
+  apply integral_mono
+  ·
+    sorry
+  ·
+    sorry
+  intro x
+  dsimp
+
+  rcases le_total x 0 with (hx | hx)
+  · rw [fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos, fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos]
+      <;> simp [hx]
+  refine EReal.toReal_le_toReal ?_ fDiv_ne_bot ?_
+  rotate_left
+  ·
+    sorry
+  refine fDiv_statInfoFun_comp_right_le η zero_le_one hx
 
 end DataProcessingInequality
 
