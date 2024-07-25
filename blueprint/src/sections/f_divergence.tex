@@ -1057,8 +1057,8 @@ For the other inequality, remark that $\mu = (\kappa \circ \mu)_X$ (and similarl
 
 \begin{lemma}
   \label{lem:fDiv_statInfoFun_eq}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le, ProbabilityTheory.fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_gt}
+  \leanok
   \uses{def:fDiv, def:statInfoFun}
   Let $a,b \in (0, +\infty)$ and let $\mu, \nu$ be two measures on $\mathcal X$.
   \begin{align*}
@@ -1069,7 +1069,7 @@ For the other inequality, remark that $\mu = (\kappa \circ \mu)_X$ (and similarl
   in which $\text{sign}(b-a)$ is $1$ if $b-a > 0$, $-1$ if $b-a < 0$ and the inequality is true for both values $1$ and $-1$ for $a=b$.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{}
 If $a \le b$,
 \begin{align*}
@@ -1086,8 +1086,8 @@ Similar computations lead to the result for $b \le a$.
 
 \begin{corollary}
   \label{cor:fDiv_statInfoFun_eq_statInfo}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.fDiv_statInfoFun_eq_StatInfo_of_nonneg}
+  \leanok
   \uses{def:fDiv, def:statInfoFun, def:statInfo}
   Let $a,b \in (0, +\infty)$ and let $\mu, \nu$ be two measures on $\mathcal X$.
   \begin{align*}
@@ -1096,7 +1096,7 @@ Similar computations lead to the result for $b \le a$.
   \end{align*}
 \end{corollary}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{lem:fDiv_statInfoFun_eq, cor:statInfo_eq_integral_abs}
 Combine Lemma~\ref{lem:fDiv_statInfoFun_eq} and Corollary~\ref{cor:statInfo_eq_integral_abs}.
 \end{proof}
