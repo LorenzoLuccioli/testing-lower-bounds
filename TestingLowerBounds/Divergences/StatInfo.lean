@@ -519,6 +519,21 @@ lemma fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
   simp_rw [fDiv_of_integrable (integrable_statInfoFun_rnDeriv _ _ _ _),
     derivAtTop_statInfoFun_of_nonpos_of_gt hβ hγ, statInfoFun_of_gt hγ, zero_mul, add_zero]
 
+lemma fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hβ : 0 ≤ β) (hγ : γ ≤ 0) :
+    fDiv (statInfoFun β γ) μ ν = 0 := by
+  rw [fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le hβ (hγ.trans hβ), EReal.coe_eq_zero]
+  convert integral_zero 𝒳 ℝ with x
+  exact max_eq_left <| tsub_nonpos.mpr <| hγ.trans <| mul_nonneg hβ ENNReal.toReal_nonneg
+
+lemma fDiv_statInfoFun_eq_zero_of_nonpos_of_pos [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hβ : β ≤ 0) (hγ : 0 < γ) :
+    fDiv (statInfoFun β γ) μ ν = 0 := by
+  rw [fDiv_statInfoFun_eq_integral_max_of_nonpos_of_gt hβ (hβ.trans_lt hγ), EReal.coe_eq_zero]
+  convert integral_zero 𝒳 ℝ with x
+  exact max_eq_left <| tsub_nonpos.mpr <|
+    (mul_nonpos_iff.mpr <| Or.inr ⟨hβ, ENNReal.toReal_nonneg⟩).trans hγ.le
+
 /-- Auxiliary lemma for `fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le` and
 `fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_le`. -/
 lemma integral_max_eq_integral_abs [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
