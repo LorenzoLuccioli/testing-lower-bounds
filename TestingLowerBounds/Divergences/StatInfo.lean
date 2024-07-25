@@ -689,10 +689,8 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
     Real.norm_of_nonneg (statInfoFun_nonneg _ _ _)]
 
 lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
-    (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
-    (h_ac : μ ≪ ν) :
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν) (h_ac : μ ≪ ν) :
     fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f)
       + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
   have : fDiv f μ ν = fDiv (fun x ↦ f x - f 1 - rightDeriv f 1 * (x - 1)) μ ν
