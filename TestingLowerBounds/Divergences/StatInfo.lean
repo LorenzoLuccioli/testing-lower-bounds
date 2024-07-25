@@ -775,4 +775,21 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
 
 end StatInfoFun
 
+section DataProcessingInequality
+
+/-- **Data processing inequality** for the fDiv of `statInfoFun`. -/
+lemma fDiv_statInfoFun_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (η : Kernel 𝒳 𝒳') [IsMarkovKernel η] (hβ : 0 ≤ β) (hγ : 0 ≤ γ) :
+    fDiv (statInfoFun β γ) (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv (statInfoFun β γ) μ ν := by
+  simp_rw [fDiv_statInfoFun_eq_StatInfo_of_nonneg hβ hγ]
+  gcongr ?_ + ?_
+  · exact EReal.coe_ennreal_le_coe_ennreal_iff.mpr <| statInfo_comp_le _ _ _ _
+  · simp_rw [Measure.comp_apply_univ]
+    exact le_refl _
+
+-- do the DPI for general fDiv
+
+end DataProcessingInequality
+
+
 end ProbabilityTheory
