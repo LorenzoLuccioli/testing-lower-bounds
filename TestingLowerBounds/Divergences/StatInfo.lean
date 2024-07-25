@@ -756,12 +756,6 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
     ENNReal.toReal_ofReal (statInfoFun_nonneg _ _ _),
     Real.norm_of_nonneg (statInfoFun_nonneg _ _ _)]
 
---try to generalize the previous lemma using the lemma itself and something like `fDiv f μ ν = fDiv (x ↦ f x - f 1 * μ univ - rightDeriv f 1 * (μ univ - ν univ)) μ ν + ...`
-
-#check fDiv_add_const
-#check fDiv_add_linear'
-
---swap the names when I'm done
 lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
