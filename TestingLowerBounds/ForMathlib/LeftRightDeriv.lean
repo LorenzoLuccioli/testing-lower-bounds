@@ -60,11 +60,13 @@ lemma leftDeriv_eq_rightDeriv (f : ℝ → ℝ) :
   ext x
   simp [leftDeriv_eq_rightDeriv_apply]
 
+@[simp]
 lemma rightDeriv_const (c : ℝ) : rightDeriv (fun _ ↦ c) = 0 := by
   ext x
   rw [rightDeriv_def, Pi.zero_apply]
   exact derivWithin_const x _ c (uniqueDiffWithinAt_Ioi x)
 
+@[simp]
 lemma leftDeriv_const (c : ℝ) : leftDeriv (fun _ ↦ c) = 0 := by
   simp_rw [leftDeriv_eq_rightDeriv, rightDeriv_const, Pi.zero_apply, neg_zero]
   rfl
@@ -76,7 +78,9 @@ lemma rightDeriv_linear (a : ℝ) : rightDeriv (fun x ↦ a * x) = fun _ ↦ a :
   change a * derivWithin id (Ioi x) x = a
   rw [derivWithin_id _ _ (uniqueDiffWithinAt_Ioi x), mul_one]
 
---add the left verisions
+lemma leftDeriv_linear (a : ℝ) : leftDeriv (fun x ↦ a * x) = fun _ ↦ a := by
+  simp_rw [leftDeriv_eq_rightDeriv, ← neg_mul_comm, rightDeriv_linear]
+  ext; simp
 
 lemma rightDeriv_add {f g : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Ioi x) x)
     (hg : ∀ x, DifferentiableWithinAt ℝ g (Ioi x) x) :
@@ -92,7 +96,29 @@ lemma leftDeriv_add {f g : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ 
   simp_rw [leftDeriv_def, ← derivWithin_add (uniqueDiffWithinAt_Iio x) (hf x) (hg x)]
   rfl
 
---add add_cost and add_linear
+lemma rightDeriv_add_const {f : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Ioi x) x) (c : ℝ) :
+    rightDeriv (fun x ↦ f x + c) = rightDeriv f := by
+  change rightDeriv (f + fun _ ↦ c) = rightDeriv f
+  simp [rightDeriv_add hf (fun _ ↦ differentiableWithinAt_const c)]
+
+lemma leftDeriv_add_const {f : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Iio x) x) (c : ℝ) :
+    leftDeriv (fun x ↦ f x + c) = leftDeriv f := by
+  change leftDeriv (f + fun _ ↦ c) = leftDeriv f
+  simp [leftDeriv_add hf (fun _ ↦ differentiableWithinAt_const c)]
+
+lemma rightDeriv_add_linear {f : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Ioi x) x) (a : ℝ) :
+    rightDeriv (fun x ↦ f x + a * x) = rightDeriv f + fun _ ↦ a := by
+  change rightDeriv (f + fun x ↦ a * x) = rightDeriv f + fun _ ↦ a
+  rw [rightDeriv_add hf (by fun_prop), rightDeriv_linear]
+  ext; simp
+
+lemma leftDeriv_add_linear {f : ℝ → ℝ} (hf : ∀ x, DifferentiableWithinAt ℝ f (Iio x) x) (a : ℝ) :
+    leftDeriv (fun x ↦ f x + a * x) = leftDeriv f + fun _ ↦ a := by
+  change leftDeriv (f + fun x ↦ a * x) = leftDeriv f + fun _ ↦ a
+  rw [leftDeriv_add hf (by fun_prop), leftDeriv_linear]
+  ext; simp
+
+
 namespace ConvexOn
 
 section Slope
