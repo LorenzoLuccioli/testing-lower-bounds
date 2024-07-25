@@ -493,6 +493,9 @@ lemma nnReal_mul_fDiv {a : NNReal} :
   simp_rw [const_mul_statInfoFun a.2]
   rfl
 
+lemma fDiv_statInfoFun_nonneg : 0 ≤ fDiv (statInfoFun β γ) μ ν :=
+  fDiv_nonneg_of_nonneg (fun x ↦ statInfoFun_nonneg β γ x) (derivAtTop_statInfoFun_nonneg β γ)
+
 lemma fDiv_statInfoFun_eq_integral_max_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
     fDiv (statInfoFun β γ) μ ν = ∫ x, max 0 (γ - β * ((∂μ/∂ν) x).toReal) ∂ν := by
