@@ -772,7 +772,6 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
 --this will be useful later
 -- #check fDiv_eq_add_withDensity_singularPart
 
-
 end StatInfoFun
 
 section DataProcessingInequality
