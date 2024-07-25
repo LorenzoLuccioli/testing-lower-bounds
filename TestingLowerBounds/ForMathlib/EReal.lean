@@ -257,6 +257,10 @@ noncomputable def toENNReal (x : EReal) : ENNReal :=
 theorem toENNReal_top : (⊤ : EReal).toENNReal = ⊤ := rfl
 
 @[simp]
+lemma toENNReal_of_ne_top {x : EReal} (hx : x ≠ ⊤) : x.toENNReal = ENNReal.ofReal x.toReal :=
+  if_neg hx
+
+@[simp]
 theorem toENNReal_eq_top_iff {x : EReal} : x.toENNReal = ⊤ ↔ x = ⊤ := by
   by_cases h : x = ⊤
   · simp [h]
