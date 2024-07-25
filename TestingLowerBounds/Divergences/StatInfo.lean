@@ -36,7 +36,7 @@ open scoped ENNReal NNReal
 namespace ProbabilityTheory
 
 variable {𝒳 𝒳' : Type*} {m𝒳 : MeasurableSpace 𝒳} {m𝒳' : MeasurableSpace 𝒳'}
-  {μ ν : Measure 𝒳} {p : ℝ≥0∞} {π : Measure Bool}
+  {μ ν : Measure 𝒳} {p : ℝ≥0∞} {π : Measure Bool} {f : ℝ → ℝ} {β γ x t : ℝ}
 
 /-- The statistical information of the measures `μ` and `ν` with respect to
 the prior `π ∈ ℳ({0,1})`. -/
@@ -478,8 +478,6 @@ lemma statInfo_eq_min_sub_iInf_measurableSet (μ ν : Measure 𝒳) [IsFiniteMea
 section StatInfoFun
 
 open Set Filter ConvexOn
-
-variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f : ℝ → ℝ} {β γ x t : ℝ}
 
 lemma integrable_statInfoFun_rnDeriv (β γ : ℝ)
     (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
