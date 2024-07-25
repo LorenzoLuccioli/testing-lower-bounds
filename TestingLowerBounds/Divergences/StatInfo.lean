@@ -679,6 +679,18 @@ lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg [IsFiniteMeasure μ] [IsFiniteMeasu
   · rw [fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_gt hβ hγ hβγ, if_neg hβγ.not_le, one_mul,
       add_sub_assoc]
 
+lemma fDiv_statInfoFun_ne_top_of_nonneg [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hβ : 0 ≤ β) (hγ : 0 ≤ γ) :
+    fDiv (statInfoFun β γ) μ ν ≠ ⊤ := by
+  rw [fDiv_statInfoFun_eq_StatInfo_of_nonneg hβ hγ]
+  refine EReal.add_ne_top (EReal.coe_ennreal_eq_top_iff.mp.mt statInfo_ne_top) ?_
+  refine (EReal.mul_ne_top _ _).mpr ⟨Or.inl <| EReal.add_top_iff_ne_bot.mp rfl, Or.inl
+    <| EReal.inv_nonneg_of_nonneg zero_le_two, Or.inl <| Ne.symm (ne_of_beq_false rfl), ?_⟩
+  refine Or.inr <| EReal.add_ne_top (EReal.coe_ne_top _) <| (EReal.mul_ne_top _ _).mpr
+    ⟨?_, Or.inr <| EReal.add_top_iff_ne_bot.mp rfl, ?_, Or.inr <| Ne.symm (ne_of_beq_false rfl)⟩
+  · split_ifs <;> exact Or.inl <| EReal.add_top_iff_ne_bot.mp rfl
+  · split_ifs <;> exact Or.inl <| Ne.symm (ne_of_beq_false rfl)
+
 lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
     ∫ y, statInfoFun 1 y t ∂(curvatureMeasure f) = f t - f 1 - (rightDeriv f 1) * (t - 1) := by
   have : f t - f 1 - (rightDeriv f 1) * (t - 1) = ∫ x in (1)..t, t - x ∂(curvatureMeasure f) :=
@@ -839,11 +851,8 @@ lemma fDiv_comp_right_le_of_absolutelyContinuous
   rcases le_total x 0 with (hx | hx)
   · rw [fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos, fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos]
       <;> simp [hx]
-  refine EReal.toReal_le_toReal ?_ fDiv_ne_bot ?_
-  rotate_left
-  ·
-    sorry
-  refine fDiv_statInfoFun_comp_right_le η zero_le_one hx
+  refine EReal.toReal_le_toReal ?_ fDiv_ne_bot (fDiv_statInfoFun_ne_top_of_nonneg zero_le_one hx)
+  exact fDiv_statInfoFun_comp_right_le η zero_le_one hx
 
 end DataProcessingInequality
 
