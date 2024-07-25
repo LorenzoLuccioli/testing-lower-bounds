@@ -64,6 +64,11 @@ lemma statInfo_eq_bayesRiskIncrease (μ ν : Measure 𝒳) (π : Measure Bool) :
 lemma statInfo_le_min : statInfo μ ν π ≤ min (π {false} * μ univ) (π {true} * ν univ) :=
   statInfo_eq_min_sub μ ν π ▸ tsub_le_self
 
+lemma statInfo_ne_top [IsFiniteMeasure μ] [IsFiniteMeasure π] :
+    statInfo μ ν π ≠ ⊤ :=
+  (statInfo_le_min.trans_lt <| min_lt_iff.mpr <| Or.inl
+    <| ENNReal.mul_lt_top (measure_ne_top π _) (measure_ne_top μ _)).ne
+
 lemma statInfo_symm : statInfo μ ν π = statInfo ν μ (π.map Bool.not) := by
   simp_rw [statInfo, bayesBinaryRisk_symm _ _ π]
 
@@ -615,12 +620,18 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
     ← EReal.coe_neg, ← EReal.coe_add, ← EReal.coe_mul]
   ring_nf
 
+#check toReal_statInfo_eq_integral_abs
+
 lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hβ : 0 ≤ β) (hγ : γ ≤ β) :
     fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
       + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
         + γ * (ν univ).toReal - β * (μ univ).toReal) := by
+  rw [← ENNReal.toReal_toEReal_of_ne_top]
+  swap
+  apply?
   have : (statInfo μ ν (Bool.boolMeasure (ENNReal.ofReal β) (ENNReal.ofReal γ)) : EReal) = (statInfo μ ν (Bool.boolMeasure (ENNReal.ofReal β) (ENNReal.ofReal γ))).toReal := by
+
 
     sorry
   -- rw [fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le hβ hγ, toReal_statInfo_eq_integral_abs]
