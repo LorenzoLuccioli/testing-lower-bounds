@@ -123,6 +123,14 @@ lemma fDiv_ne_bot_of_derivAtTop_nonneg (hf : 0 ≤ derivAtTop f) : fDiv f μ ν 
 @[simp]
 lemma fDiv_zero (μ ν : Measure α) : fDiv (fun _ ↦ 0) μ ν = 0 := by simp [fDiv]
 
+lemma fDiv_of_zero_on_nonneg (μ ν : Measure α) (hf : ∀ x ≥ 0, f x = 0) :
+    fDiv f μ ν = 0 := by
+  have (x : α) : f ((∂μ/∂ν) x).toReal = 0 := hf _ ENNReal.toReal_nonneg
+  rw [fDiv_of_integrable (by simp [this])]
+  simp_rw [this, integral_zero, EReal.coe_zero, zero_add]
+  convert zero_mul _
+  exact derivAtTop_of_tendsto (tendsto_atTop_of_eventually_const fun i hi ↦ hf i hi ▸ zero_div _)
+
 @[simp]
 lemma fDiv_zero_measure (ν : Measure α) [IsFiniteMeasure ν] : fDiv f 0 ν = f 0 * ν Set.univ := by
   have : (fun x ↦ f ((∂0/∂ν) x).toReal) =ᵐ[ν] fun _ ↦ f 0 := by
