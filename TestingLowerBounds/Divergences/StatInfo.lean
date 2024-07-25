@@ -620,23 +620,59 @@ lemma fDiv_statInfoFun_eq_integral_abs_of_nonpos_of_gt [IsFiniteMeasure μ] [IsF
     ← EReal.coe_neg, ← EReal.coe_add, ← EReal.coe_mul]
   ring_nf
 
-#check toReal_statInfo_eq_integral_abs
-
 lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (hβ : 0 ≤ β) (hγ : γ ≤ β) :
+    (hβ : 0 ≤ β) (hγ : 0 ≤ γ) (hγβ : γ ≤ β) :
     fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
       + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
         + γ * (ν univ).toReal - β * (μ univ).toReal) := by
-  rw [← ENNReal.toReal_toEReal_of_ne_top]
-  swap
-  apply?
-  have : (statInfo μ ν (Bool.boolMeasure (ENNReal.ofReal β) (ENNReal.ofReal γ)) : EReal) = (statInfo μ ν (Bool.boolMeasure (ENNReal.ofReal β) (ENNReal.ofReal γ))).toReal := by
+  rw [← ENNReal.toReal_toEReal_of_ne_top statInfo_ne_top, toReal_statInfo_eq_integral_abs]
+  simp only [Bool.boolMeasure_apply_false, ENNReal.toReal_mul, hβ, ENNReal.toReal_ofReal,
+    Bool.boolMeasure_apply_true, hγ, EReal.coe_mul, EReal.coe_add, EReal.coe_neg,
+    ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)]
+  rw [show 2⁻¹ = ((2⁻¹ : ℝ) : EReal) from rfl, ← EReal.coe_mul_add_of_nonneg (by positivity),
+    fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le hβ hγβ]
+  simp_rw [sub_eq_add_neg, ← add_assoc]
+  rw [add_comm (-_ + _ + _)]
+  simp_rw [← add_assoc, ← sub_eq_add_neg, ]
+  rw [EReal.sub_self (EReal.coe_ne_top _) (EReal.coe_ne_bot _), zero_add]
+
+lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hβ : 0 ≤ β) (hγ : 0 ≤ γ) (hγβ : β < γ) :
+    fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
+      + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
+        + β * (μ univ).toReal - γ * (ν univ).toReal) := by
+  rw [← ENNReal.toReal_toEReal_of_ne_top statInfo_ne_top, toReal_statInfo_eq_integral_abs]
+  simp only [Bool.boolMeasure_apply_false, ENNReal.toReal_mul, hβ, ENNReal.toReal_ofReal,
+    Bool.boolMeasure_apply_true, hγ, EReal.coe_mul, EReal.coe_add, EReal.coe_neg,
+    ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)]
+  rw [show 2⁻¹ = ((2⁻¹ : ℝ) : EReal) from rfl, ← EReal.coe_mul_add_of_nonneg (by positivity),
+    fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_gt hβ hγβ]
+  simp_rw [sub_eq_add_neg, ← add_assoc]
+  rw [add_comm (-_ + _ + _)]
+  simp_rw [← add_assoc, ← sub_eq_add_neg, ]
+  rw [EReal.sub_self (EReal.coe_ne_top _) (EReal.coe_ne_bot _), zero_add]
+
+--this is false, we would need a sign function that is 1 at zero so that also the case β = γ is true, maybe we can do without this lemma, or maybe we can just put there a custom function with an if
+-- lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+--     (hβ : 0 ≤ β) (hγ : 0 ≤ γ) :
+--     fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
+--       + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
+--         + Real.sign (γ - β) * (β * (μ univ).toReal - γ * (ν univ).toReal)) := by
+--   rcases lt_trichotomy γ β with (hβγ | hβγ | hβγ)
+--   · rw [fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le hβ hγ hβγ.le,
+--       Real.sign_of_neg (sub_neg.mpr hβγ)]
+--     push_cast
+--     rw [neg_one_mul, EReal.neg_sub, add_comm (-_), sub_eq_add_neg, add_assoc]
+--     · exact Or.inl <| EReal.add_top_iff_ne_bot.mp rfl
+--     · exact Or.inl <| Ne.symm (ne_of_beq_false rfl)
+--   ·
+--     rw [fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le hβ hγ hβγ.le]
+--     simp [hβγ]
+--     sorry--this is false, we would need a sign function that is 1 at zero, maybe we can do wothout this lemma
+--   ·
+--     sorry
 
 
-    sorry
-  -- rw [fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le hβ hγ, toReal_statInfo_eq_integral_abs]
-  -- simp only [Bool.boolMeasure_apply_false, Bool.boolMeasure_apply_true]
-  sorry
 
 lemma integral_statInfoFun_curvatureMeasure (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
     ∫ y, statInfoFun 1 y t ∂(curvatureMeasure f) = f t - f 1 - (rightDeriv f 1) * (t - 1) := by
