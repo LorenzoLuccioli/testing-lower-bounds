@@ -953,46 +953,23 @@ lemma fDiv_statInfoFun_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   · simp_rw [Measure.comp_apply_univ]
     exact le_refl _
 
--- do the DPI for general fDiv
-
-#check fDiv_of_zero_on_nonneg
-
 --I put the ' in the name just because it may conflict with the same lemma in FDiv.CompProd, but maybe we will actually remove that one in the future.
 /-- **Data processing inequality** for the f-divergence. -/
-lemma fDiv_comp_right_le_of_absolutelyContinuous
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma fDiv_comp_right_le_of_absolutelyContinuous'[IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (η : Kernel 𝒳 𝒳') [IsMarkovKernel η]
-    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
-    (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν) --this hp may be removed by distingushing the two cases
-    (h_ac : μ ≪ ν)
-    :
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
     fDiv f (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv f μ ν := by
-  rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_int h_ac]
-  rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont ]
-  rotate_left
-  ·
-    sorry
-  ·
-    simp_rw [Measure.comp_eq_snd_compProd, Measure.snd]
-    apply Measure.AbsolutelyContinuous.map
-    exact Kernel.Measure.absolutelyContinuous_compProd_left h_ac η
-    sorry
+  rw [fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_ac,
+    fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont]
+  swap; · exact Measure.absolutelyContinuous_comp_left h_ac _
   simp_rw [Measure.comp_apply_univ]
   gcongr
-  simp only [EReal.coe_le_coe_iff]
-  apply integral_mono
-  ·
-    sorry
-  ·
-    sorry
-  intro x
-  dsimp
-
+  simp only [EReal.coe_ennreal_le_coe_ennreal_iff]
+  refine lintegral_mono fun x ↦ ?_
   rcases le_total x 0 with (hx | hx)
   · rw [fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos, fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos]
       <;> simp [hx]
-  refine EReal.toReal_le_toReal ?_ fDiv_ne_bot fDiv_statInfoFun_ne_top_of_nonneg
-  exact fDiv_statInfoFun_comp_right_le η zero_le_one hx
+  · exact EReal.toENNReal_le_toENNReal <| fDiv_statInfoFun_comp_right_le η zero_le_one hx
 
 end DataProcessingInequality
 
