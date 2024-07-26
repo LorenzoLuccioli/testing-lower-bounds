@@ -947,13 +947,22 @@ section DataProcessingInequality
 lemma fDiv_statInfoFun_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (η : Kernel 𝒳 𝒳') [IsMarkovKernel η] (hβ : 0 ≤ β) :
     fDiv (statInfoFun β γ) (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv (statInfoFun β γ) μ ν := by
+  rcases le_total γ 0 with (hγ | hγ)
+  · rw [fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos hβ hγ,
+      fDiv_statInfoFun_eq_zero_of_nonneg_of_nonpos hβ hγ]
   simp_rw [fDiv_statInfoFun_eq_StatInfo_of_nonneg hβ hγ]
   gcongr ?_ + ?_
   · exact EReal.coe_ennreal_le_coe_ennreal_iff.mpr <| statInfo_comp_le _ _ _ _
-  · simp_rw [Measure.comp_apply_univ]
-    exact le_refl _
+  · simp_rw [Measure.comp_apply_univ, le_refl]
 
---I put the ' in the name just because it may conflict with the same lemma in FDiv.CompProd, but maybe we will actually remove that one in the future.
+--this version is not strictly more general than the previous one, but it covers many cases that the previous one does not. However it is probably not useful since the general case should still be covered by the general DPI for fDiv, since statInfoFun is always convex and continuous
+lemma fDiv_statInfoFun_comp_right_le' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (η : Kernel 𝒳 𝒳') [IsMarkovKernel η] (hβγ : β ≠ γ) :
+    fDiv (statInfoFun β γ) (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv (statInfoFun β γ) μ ν := by
+  rcases le_total 0 β with (hβ | hβ)
+  · exact fDiv_statInfoFun_comp_right_le η hβ
+  · exact statInfoFun_neg_neg hβγ ▸ fDiv_statInfoFun_comp_right_le η (neg_nonneg.mpr hβ)
+
 /-- **Data processing inequality** for the f-divergence. -/
 lemma fDiv_comp_right_le_of_absolutelyContinuous [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (η : Kernel 𝒳 𝒳') [IsMarkovKernel η]
