@@ -40,6 +40,11 @@ lemma const_mul_statInfoFun {a : ℝ} (ha : 0 ≤ a) :
   · simp_rw [mul_le_mul_left ha]
   · simp
 
+lemma statInfoFun_neg_neg (h : β ≠ γ) : statInfoFun (-β) (-γ) = statInfoFun β γ := by
+  ext
+  rcases lt_or_gt_of_ne h with (hγβ | hγβ)
+    <;> simp [statInfoFun, sub_eq_add_neg, hγβ.le, hγβ.not_le, add_comm]
+
 --TODO: for now I will leave the continuity assumption in some lemmas, it should be derived from the convexity but the lemma is not yet in mathlib, when it gets there we can remove this assumption
 
 section Measurability
