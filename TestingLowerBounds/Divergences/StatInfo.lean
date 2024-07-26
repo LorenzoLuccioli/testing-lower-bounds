@@ -118,7 +118,7 @@ lemma statInfo_eq_min_sub_lintegral (μ ν : Measure 𝒳) [IsFiniteMeasure μ] 
       (π {true} * ν.rnDeriv (twoHypKernel μ ν ∘ₘ π) x) ∂(twoHypKernel μ ν ∘ₘ π) := by
   rw [statInfo_eq_min_sub, bayesBinaryRisk_eq_lintegral_min]
 
-lemma statInfo_eq_min_sub_lintegral' {μ ν ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma statInfo_eq_min_sub_lintegral' {ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     [SigmaFinite ζ] (π : Measure Bool) [IsFiniteMeasure π] (hμζ : μ ≪ ζ) (hνζ : ν ≪ ζ) :
     statInfo μ ν π = min (π {false} * μ univ) (π {true} * ν univ)
       - ∫⁻ x, min (π {false} * (∂μ/∂ζ) x) (π {true} * (∂ν/∂ζ) x) ∂ζ := by
@@ -153,7 +153,7 @@ lemma toReal_statInfo_eq_min_sub_integral (μ ν : Measure 𝒳) [IsFiniteMeasur
 
 #check Measure.rnDeriv_eq_div'
 
-lemma toReal_statInfo_eq_min_sub_integral' {μ ν ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma toReal_statInfo_eq_min_sub_integral' {ζ : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     [SigmaFinite ζ] (π : Measure Bool) [IsFiniteMeasure π]  (hμζ : μ ≪ ζ) (hνζ : ν ≪ ζ) :
     (statInfo μ ν π).toReal = min (π {false} * μ univ).toReal (π {true} * ν univ).toReal
       - ∫ x, min (π {false} * (∂μ/∂ζ) x).toReal (π {true} * (∂ν/∂ζ) x).toReal ∂ζ := by
@@ -189,8 +189,8 @@ lemma statInfo_eq_abs_add_lintegral_abs (μ ν : Measure 𝒳) [IsFiniteMeasure 
   --this is hard to prove, because we have to deal with a lot of ENNReals and subtractions and they do not work well together, for now I am leaving this. Maybe it could be a good idea to do the toReal version first, proving it starting from the previous lemma (making a toReal version of that as well) essentially mimiking the results for the binary, but here we would have to do double the work, because we have both the version with twoHypKernel μ ν ∘ₘ π and the one with ζ
   sorry
 
-lemma toReal_statInfo_eq_integral_max_of_le {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    {π : Measure Bool} [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
+lemma toReal_statInfo_eq_integral_max_of_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [IsFiniteMeasure π] (h : π {false} * μ univ ≤ π {true} * ν univ) :
     (statInfo μ ν π).toReal
       = ∫ x, max 0 ((π {false} * (∂μ/∂ν) x).toReal - (π {true}).toReal) ∂ν
         + (π {false} * μ.singularPart ν univ).toReal := by
@@ -321,8 +321,8 @@ using the Lebesgue decomposition and we should be done quite easily.
 --   rw [h1, h2]
 --   sorry
 
-lemma toReal_statInfo_eq_integral_max_of_gt {μ ν : Measure 𝒳} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    {π : Measure Bool} [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
+lemma toReal_statInfo_eq_integral_max_of_gt [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [IsFiniteMeasure π] (h : π {true} * ν univ < π {false} * μ univ) :
     (statInfo μ ν π).toReal
       = ∫ x, max 0 ((π {true}).toReal - (π {false} * (∂μ/∂ν) x).toReal) ∂ν := by
   by_cases h_false : π {false} = 0
@@ -498,14 +498,14 @@ lemma fDiv_statInfoFun_nonneg : 0 ≤ fDiv (statInfoFun β γ) μ ν :=
 
 lemma fDiv_statInfoFun_stronglyMeasurable (μ ν : Measure 𝒳) [SFinite ν] :
     StronglyMeasurable (Function.uncurry fun β γ ↦ fDiv (statInfoFun β γ) μ ν) := by
-  apply Measurable.stronglyMeasurable
   simp_rw [fDiv]
-  have h_meas := stronglyMeasurable_statInfoFun.measurable
-  have h_meas' := h_meas.comp (f := fun ((a, b), x) ↦ ((a, b), ((∂μ/∂ν) x).toReal)) (measurable_fst.prod_mk (by fun_prop)) |>.stronglyMeasurable
-  refine Measurable.ite ?_ measurable_const ?_
+  have h_meas := stronglyMeasurable_statInfoFun.measurable.comp
+    (f := fun ((a, b), x) ↦ ((a, b), ((∂μ/∂ν) x).toReal)) (measurable_fst.prod_mk (by fun_prop))
+    |>.stronglyMeasurable
+  refine Measurable.ite ?_ measurable_const ?_ |>.stronglyMeasurable
   · rw [← Set.compl_setOf, MeasurableSet.compl_iff]
-    exact measurableSet_integrable (by exact h_meas')
-  · refine StronglyMeasurable.integral_prod_right (by exact h_meas')
+    exact measurableSet_integrable h_meas
+  · refine StronglyMeasurable.integral_prod_right (by exact h_meas)
       |>.measurable.coe_real_ereal.add ?_
     simp_rw [derivAtTop_statInfoFun_eq]
     refine (Measurable.coe_real_ereal ?_).mul_const _
@@ -739,11 +739,10 @@ lemma fDiv_eq_fDiv_centeredFunction [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     <;> simp [EReal.mul_ne_top, EReal.mul_ne_bot, measure_ne_top]
 
 lemma lintegral_f_rnDeriv_eq_lintegralfDiv_statInfoFun_of_absolutelyContinuous
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
-    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) --maybe I need a version of this with f 1 = 0 and rightDeriv f 1 = 0, otherwise I have those appear in the integral and I don't want them
-    (h_ac : μ ≪ ν) :
-    ∫⁻ x, ENNReal.ofReal (f ((∂μ/∂ν) x).toReal) ∂ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂curvatureMeasure f  := by
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) (h_ac : μ ≪ ν) :
+    ∫⁻ x, ENNReal.ofReal (f ((∂μ/∂ν) x).toReal) ∂ν
+      = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂curvatureMeasure f  := by
   have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry :=
     stronglyMeasurable_statInfoFun.measurable.comp <|
       (measurable_const.prod_mk measurable_snd).prod_mk <|
@@ -769,17 +768,14 @@ lemma lintegral_f_rnDeriv_eq_lintegralfDiv_statInfoFun_of_absolutelyContinuous
   · simp_rw [ENNReal.toReal_ofReal (statInfoFun_nonneg 1 _ _)]
     exact integrable_statInfoFun_rnDeriv 1 y μ ν
 
---try to do the version without h_one and h_deriv_one, this is not possible, I cannot make the constants appear inside the lintegral, because they may be negative
-
 lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous'
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
-    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0)
-    (h_ac : μ ≪ ν) :
-    fDiv f μ ν ≠ ⊤ ↔ Integrable (fun x ↦ (fDiv (statInfoFun 1 x) μ ν).toReal) (curvatureMeasure f) := by
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) (h_ac : μ ≪ ν) :
+    fDiv f μ ν ≠ ⊤
+      ↔ Integrable (fun x ↦ (fDiv (statInfoFun 1 x) μ ν).toReal) (curvatureMeasure f) := by
   rw [fDiv_ne_top_iff]
   simp only [h_ac, implies_true, and_true]
-  have (x : 𝒳) : f ((∂μ/∂ν) x).toReal = (ENNReal.ofReal (f ((∂μ/∂ν) x).toReal)).toReal := by -- these haves are ugly but I don't know hot to do it otherwise
+  have (x : 𝒳) : f ((∂μ/∂ν) x).toReal = (ENNReal.ofReal (f ((∂μ/∂ν) x).toReal)).toReal := by
     refine (ENNReal.toReal_ofReal ?_).symm
     rw [← integral_statInfoFun_curvatureMeasure' hf_cvx hf_cont hf_one hfderiv_one]
     exact integral_nonneg fun _ ↦ statInfoFun_nonneg 1 _ _
@@ -911,7 +907,8 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous
         (by fun_prop) |>.ereal_toReal.aestronglyMeasurable
     simp_rw [← EReal.toENNReal_of_ne_top fDiv_statInfoFun_ne_top_of_nonneg]
     rw [ENNReal.toReal_toEReal_of_ne_top]
-    rw [integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_ac] at h_int
+    rw [integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx
+      hf_cont h_ac] at h_int
     refine (integrable_toReal_iff ?_ ?_).mp ?_
     · exact (fDiv_statInfoFun_stronglyMeasurable μ ν).measurable.comp (f := fun x ↦ (1, x))
         (by fun_prop) |>.ereal_toENNReal.aemeasurable
