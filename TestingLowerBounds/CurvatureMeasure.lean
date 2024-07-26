@@ -51,8 +51,8 @@ lemma curvatureMeasure_const (c : ℝ) : curvatureMeasure (fun _ ↦ c) = 0 := b
 
 @[simp]
 lemma curvatureMeasure_linear (a : ℝ) : curvatureMeasure (fun x ↦ a * x) = 0 := by
-  have h : ConvexOn ℝ univ (fun x ↦ a * x) := const_mul a
-  rw [curvatureMeasure_of_convexOn h, ConvexOn.rightDerivStieltjes_linear, StieltjesFunction.measure_const]
+  rw [curvatureMeasure_of_convexOn (const_mul a), ConvexOn.rightDerivStieltjes_linear,
+    StieltjesFunction.measure_const]
 
 lemma curvatureMeasure_add (hf : ConvexOn ℝ univ f) (hg : ConvexOn ℝ univ g) :
     curvatureMeasure (f + g) = curvatureMeasure f + curvatureMeasure g := by

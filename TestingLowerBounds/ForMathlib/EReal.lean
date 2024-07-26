@@ -277,7 +277,6 @@ theorem toENNReal_eq_top_iff {x : EReal} : x.toENNReal = ⊤ ↔ x = ⊤ := by
   · simp [h]
   · simp [h, toENNReal]
 
-@[simp]
 theorem toENNReal_ne_top_iff {x : EReal} : x.toENNReal ≠ ⊤ ↔ x ≠ ⊤ := toENNReal_eq_top_iff.not
 
 @[simp]
