@@ -822,12 +822,19 @@ lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
       rightDeriv_add_const hf_diff]
     simp
 
--- TODO: think about the case when the function is not integrable (`h_int`).
--- Can we prove that in this case the rhs is also not integrable?
+lemma integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
+    Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν
+      ↔ Integrable (fun x ↦ (fDiv (statInfoFun 1 x) μ ν).toReal) (curvatureMeasure f) := by
+  rw [← fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_ac]
+  simp [fDiv_ne_top_iff, h_ac]
+
 lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (hf_one : f 1 = 0)
-    (hfderiv_one : rightDeriv f 1 = 0) (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
+    (hfderiv_one : rightDeriv f 1 = 0)
+    (h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν)
     (h_ac : μ ≪ ν) :
     fDiv f μ ν = ∫ x, (fDiv (statInfoFun 1 x) μ ν).toReal ∂(curvatureMeasure f) := by
   classical
