@@ -897,6 +897,44 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
         ((Measure.integrable_toReal_rnDeriv.sub (integrable_const 1)).const_mul _)
   all_goals exact ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)
 
+lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (h_ac : μ ≪ ν) :
+    fDiv f μ ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂(curvatureMeasure f)
+      + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
+  by_cases h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν
+  · rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_int h_ac,
+      integral_eq_lintegral_of_nonneg_ae]
+    rotate_left
+    · exact eventually_of_forall <| fun _ ↦ EReal.toReal_nonneg fDiv_statInfoFun_nonneg
+    · exact (fDiv_statInfoFun_stronglyMeasurable μ ν).measurable.comp (f := fun x ↦ (1, x))
+        (by fun_prop) |>.ereal_toReal.aestronglyMeasurable
+    simp_rw [← EReal.toENNReal_of_ne_top fDiv_statInfoFun_ne_top_of_nonneg]
+    rw [ENNReal.toReal_toEReal_of_ne_top]
+    rw [integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_ac] at h_int
+    refine (integrable_toReal_iff ?_ ?_).mp ?_
+    · exact (fDiv_statInfoFun_stronglyMeasurable μ ν).measurable.comp (f := fun x ↦ (1, x))
+        (by fun_prop) |>.ereal_toENNReal.aemeasurable
+    · exact eventually_of_forall fun _ ↦ EReal.toENNReal_ne_top_iff.mpr
+        fDiv_statInfoFun_ne_top_of_nonneg
+    simp_rw [EReal.toReal_toENNReal fDiv_statInfoFun_nonneg, h_int]
+  · classical
+    rw [fDiv_of_absolutelyContinuous h_ac, if_neg h_int]
+    convert (EReal.top_add_of_ne_bot ?_).symm
+    swap
+    · simp [sub_eq_add_neg, measure_ne_top, EReal.add_ne_top, EReal.add_ne_bot, EReal.mul_ne_bot]
+    convert EReal.top_add_of_ne_bot ?_
+    swap; · simp [measure_ne_top, EReal.mul_ne_bot]
+    simp_rw [EReal.coe_ennreal_eq_top_iff]
+    have h := integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
+      hf_cvx hf_cont h_ac |>.mpr.mt h_int
+    contrapose! h
+    simp_rw [← EReal.toReal_toENNReal fDiv_statInfoFun_nonneg]
+    refine (integrable_toReal_iff ?_ ?_).mpr h
+    · exact (fDiv_statInfoFun_stronglyMeasurable μ ν).measurable.comp (f := fun x ↦ (1, x))
+        (by fun_prop) |>.ereal_toENNReal.aemeasurable
+    · exact eventually_of_forall fun _ ↦ EReal.toENNReal_ne_top_iff.mpr
+        fDiv_statInfoFun_ne_top_of_nonneg
 
 --this will be useful later
 -- #check fDiv_eq_add_withDensity_singularPart
