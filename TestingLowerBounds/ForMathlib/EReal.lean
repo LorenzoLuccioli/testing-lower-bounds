@@ -95,10 +95,15 @@ lemma add_ne_top {x y : EReal} (hx : x ≠ ⊤) (hy : y ≠ ⊤) : x + y ≠ ⊤
   induction y <;> tauto
   exact ne_of_beq_false rfl
 
-lemma add_ne_top_iff_of_ne_bot {x y : EReal} (hx : x ≠ ⊥) (hy : y ≠ ⊥) : x + y ≠ ⊤ ↔ x ≠ ⊤ ∧ y ≠ ⊤ := by
+lemma add_ne_top_iff_of_ne_bot {x y : EReal} (hx : x ≠ ⊥) (hy : y ≠ ⊥) :
+    x + y ≠ ⊤ ↔ x ≠ ⊤ ∧ y ≠ ⊤ := by
   refine ⟨?_, fun h ↦ add_ne_top h.1 h.2⟩
   induction x <;> simp_all
   induction y <;> simp_all
+
+lemma add_ne_top_iff_of_ne_bot_of_ne_top {x y : EReal} (hy : y ≠ ⊥) (hy' : y ≠ ⊤) :
+    x + y ≠ ⊤ ↔ x ≠ ⊤ := by
+  induction x <;> simp [add_ne_top_iff_of_ne_bot, hy, hy']
 
 lemma add_ne_bot_iff {x y : EReal} : x + y ≠ ⊥ ↔ x ≠ ⊥ ∧ y ≠ ⊥ := by
   simp_rw [ne_eq, EReal.add_eq_bot_iff]
