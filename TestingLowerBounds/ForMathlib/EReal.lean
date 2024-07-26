@@ -1,5 +1,6 @@
 import Mathlib.Data.Real.EReal
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
+import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
 import LeanCopilot
 
 open scoped ENNReal NNReal
@@ -305,7 +306,24 @@ theorem toENNReal_le_toENNReal {x y : EReal} (h : x ≤ y) : x.toENNReal ≤ y.t
     refine EReal.toReal_le_toReal h (coe_ne_bot _) hy_top
   · simp_all
 
+@[simp]
 lemma real_coe_toENNReal (x : ℝ) : (x : EReal).toENNReal = ENNReal.ofReal x := rfl
+
+@[simp]
+lemma toReal_toENNReal {x : EReal} (hx : 0 ≤ x) : x.toENNReal.toReal = x.toReal := by
+  by_cases h : x = ⊤
+  · simp [h]
+  · simp [h, toReal_nonneg hx]
+
+@[measurability]
+theorem _root_.measurable_ereal_toENNReal : Measurable EReal.toENNReal :=
+  EReal.measurable_of_measurable_real (by simpa using ENNReal.measurable_ofReal)
+
+@[measurability, fun_prop]
+theorem _root_.Measurable.ereal_toENNReal {α : Type*} [MeasurableSpace α]
+    {f : α → EReal} (hf : Measurable f) :
+    Measurable fun x => (f x).toENNReal :=
+  measurable_ereal_toENNReal.comp hf
 
 end EReal
 
