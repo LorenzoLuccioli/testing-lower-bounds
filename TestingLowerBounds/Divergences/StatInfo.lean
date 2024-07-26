@@ -496,7 +496,7 @@ lemma nnReal_mul_fDiv {a : NNReal} :
 lemma fDiv_statInfoFun_nonneg : 0 ≤ fDiv (statInfoFun β γ) μ ν :=
   fDiv_nonneg_of_nonneg (fun x ↦ statInfoFun_nonneg β γ x) (derivAtTop_statInfoFun_nonneg β γ)
 
-lemma fDiv_statInfoFun_stronglyMeasurable [SFinite ν] :
+lemma fDiv_statInfoFun_stronglyMeasurable (μ ν : Measure 𝒳) [SFinite ν] :
     StronglyMeasurable (Function.uncurry fun β γ ↦ fDiv (statInfoFun β γ) μ ν) := by
   apply Measurable.stronglyMeasurable
   simp_rw [fDiv]
