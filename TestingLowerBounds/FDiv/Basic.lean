@@ -123,6 +123,16 @@ lemma fDiv_ne_bot_of_derivAtTop_nonneg (hf : 0 ≤ derivAtTop f) : fDiv f μ ν 
 @[simp]
 lemma fDiv_zero (μ ν : Measure α) : fDiv (fun _ ↦ 0) μ ν = 0 := by simp [fDiv]
 
+lemma fDiv_of_eq_on_nonneg (μ ν : Measure α) (h : ∀ x ≥ 0, f x = g x) :
+    fDiv f μ ν = fDiv g μ ν := by
+  have (x : α) : f ((∂μ/∂ν) x).toReal = g ((∂μ/∂ν) x).toReal := h _ ENNReal.toReal_nonneg
+  rw [fDiv]
+  congr 3
+  · simp_rw [this]
+  · simp_rw [this]
+  sorry --we should add a lemma for derivAtTop saying that if f = g eventually then derivAtTop f = derivAtTop g
+
+-- shorten the proof of this lemma using `fDiv_of_eq_on_nonneg`, when it is sorry free.
 --the name feels a bit wrong, what could I write instead of `on_nonneg`?
 lemma fDiv_of_zero_on_nonneg (μ ν : Measure α) (hf : ∀ x ≥ 0, f x = 0) :
     fDiv f μ ν = 0 := by
