@@ -305,6 +305,8 @@ theorem toENNReal_le_toENNReal {x y : EReal} (h : x ≤ y) : x.toENNReal ≤ y.t
     refine EReal.toReal_le_toReal h (coe_ne_bot _) hy_top
   · simp_all
 
+lemma real_coe_toENNReal (x : ℝ) : (x : EReal).toENNReal = ENNReal.ofReal x := rfl
+
 end EReal
 
 namespace ENNReal
