@@ -738,6 +738,90 @@ lemma fDiv_eq_fDiv_centeredFunction [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   rw [add_assoc, add_comm (-(_ * _)), ← sub_eq_add_neg, EReal.sub_self, add_zero]
     <;> simp [EReal.mul_ne_top, EReal.mul_ne_bot, measure_ne_top]
 
+lemma lintegral_f_rnDeriv_eq_lintegralfDiv_statInfoFun_of_absolutelyContinuous
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0) --maybe I need a version of this with f 1 = 0 and rightDeriv f 1 = 0, otherwise I have those appear in the integral and I don't want them
+    (h_ac : μ ≪ ν) :
+    ∫⁻ x, ENNReal.ofReal (f ((∂μ/∂ν) x).toReal) ∂ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂curvatureMeasure f  := by
+  have h_meas : Measurable (fun x γ ↦ statInfoFun 1 γ ((∂μ/∂ν) x).toReal).uncurry :=
+    stronglyMeasurable_statInfoFun.measurable.comp <|
+      (measurable_const.prod_mk measurable_snd).prod_mk <|
+      ((μ.measurable_rnDeriv ν).comp measurable_fst).ennreal_toReal
+  classical
+  simp_rw [fDiv_of_absolutelyContinuous h_ac, if_pos (integrable_statInfoFun_rnDeriv 1 _ _ _),
+    EReal.real_coe_toENNReal,
+    ← integral_statInfoFun_curvatureMeasure' hf_cvx hf_cont hf_one hfderiv_one]
+  have (x : 𝒳) : ENNReal.ofReal (∫ γ, statInfoFun 1 γ ((∂μ/∂ν) x).toReal ∂curvatureMeasure f) =
+      ∫⁻ γ, ENNReal.ofReal (statInfoFun 1 γ ((∂μ/∂ν) x).toReal) ∂curvatureMeasure f := by
+    rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun y ↦ statInfoFun_nonneg _ _ _)
+        h_meas.of_uncurry_left.stronglyMeasurable.aestronglyMeasurable]
+    refine ENNReal.ofReal_toReal <| (lintegral_ofReal_le_lintegral_nnnorm _).trans_lt ?_ |>.ne
+    exact (integrable_statInfoFun 1 _).hasFiniteIntegral
+  simp_rw [this]
+  rw [lintegral_lintegral_swap h_meas.ennreal_ofReal.aemeasurable]
+  congr with y
+  rw [integral_eq_lintegral_of_nonneg_ae (eventually_of_forall fun _ ↦ statInfoFun_nonneg _ _ _)
+    h_meas.of_uncurry_right.stronglyMeasurable.aestronglyMeasurable, ENNReal.ofReal_toReal]
+  refine (integrable_toReal_iff ?_ ?_).mp ?_
+  · exact h_meas.comp (f := fun x ↦ (x, y)) (by fun_prop) |>.ennreal_ofReal.aemeasurable
+  · exact eventually_of_forall fun _ ↦ ENNReal.ofReal_ne_top
+  · simp_rw [ENNReal.toReal_ofReal (statInfoFun_nonneg 1 _ _)]
+    exact integrable_statInfoFun_rnDeriv 1 y μ ν
+
+--try to do the version without h_one and h_deriv_one, this is not possible, I cannot make the constants appear inside the lintegral, because they may be negative
+
+lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous'
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
+    (hf_one : f 1 = 0) (hfderiv_one : rightDeriv f 1 = 0)
+    (h_ac : μ ≪ ν) :
+    fDiv f μ ν ≠ ⊤ ↔ Integrable (fun x ↦ (fDiv (statInfoFun 1 x) μ ν).toReal) (curvatureMeasure f) := by
+  rw [fDiv_ne_top_iff]
+  simp only [h_ac, implies_true, and_true]
+  have (x : 𝒳) : f ((∂μ/∂ν) x).toReal = (ENNReal.ofReal (f ((∂μ/∂ν) x).toReal)).toReal := by -- these haves are ugly but I don't know hot to do it otherwise
+    refine (ENNReal.toReal_ofReal ?_).symm
+    rw [← integral_statInfoFun_curvatureMeasure' hf_cvx hf_cont hf_one hfderiv_one]
+    exact integral_nonneg fun _ ↦ statInfoFun_nonneg 1 _ _
+  have : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν
+      ↔ Integrable (fun x ↦ (ENNReal.ofReal (f ((∂μ/∂ν) x).toReal)).toReal) ν := by
+    simp_rw [← this]
+  simp_rw [this, ← EReal.toReal_toENNReal fDiv_statInfoFun_nonneg]
+  rw [integrable_toReal_iff]
+  rotate_left
+  · exact hf_cont.measurable.comp (Measure.measurable_rnDeriv μ ν).ennreal_toReal
+      |>.ennreal_ofReal.aemeasurable
+  · exact eventually_of_forall fun _ ↦ ENNReal.ofReal_ne_top
+  rw [integrable_toReal_iff]
+  rotate_left
+  · exact (fDiv_statInfoFun_stronglyMeasurable μ ν).measurable.comp (f := fun x ↦ (1, x))
+      (by fun_prop) |>.ereal_toENNReal.aemeasurable
+  · exact eventually_of_forall fun _ ↦ EReal.toENNReal_ne_top_iff.mpr
+      fDiv_statInfoFun_ne_top_of_nonneg
+  rw [lintegral_f_rnDeriv_eq_lintegralfDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont
+    hf_one hfderiv_one h_ac]
+
+lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
+    [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
+    fDiv f μ ν ≠ ⊤
+      ↔ Integrable (fun x ↦ (fDiv (statInfoFun 1 x) μ ν).toReal) (curvatureMeasure f) := by
+  rw [fDiv_eq_fDiv_centeredFunction hf_cvx, EReal.add_ne_top_iff_of_ne_bot_of_ne_top]
+  rotate_left
+  · exact EReal.add_top_iff_ne_bot.mp rfl
+  · exact Ne.symm (ne_of_beq_false rfl)
+  rw [EReal.add_ne_top_iff_of_ne_bot_of_ne_top]
+    <;> try {· simp [EReal.mul_ne_top, EReal.mul_ne_bot, measure_ne_top]}
+  simp_rw [sub_eq_add_neg, ← neg_mul, mul_add, ← add_assoc]
+  rw [fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous' _ _ (by ring) _ h_ac,
+    curvatureMeasure_add_const, curvatureMeasure_add_linear, curvatureMeasure_add_const]
+  · exact (hf_cvx.add_const _).add (const_mul (-rightDeriv f 1)) |>.add_const _
+  · exact ((hf_cont.add continuous_const).add (continuous_mul_left _)).add continuous_const
+  · have hf_diff x := differentiableWithinAt_Ioi hf_cvx x
+    rw [rightDeriv_add_const (by fun_prop), rightDeriv_add_linear (by fun_prop),
+      rightDeriv_add_const hf_diff]
+    simp
+
 -- TODO: think about the case when the function is not integrable (`h_int`).
 -- Can we prove that in this case the rhs is also not integrable?
 lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
