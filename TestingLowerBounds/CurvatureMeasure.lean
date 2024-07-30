@@ -43,6 +43,7 @@ lemma measure_Ioi {l : ℝ} (hf : Tendsto f atTop (𝓝 l)) (x : ℝ) :
     f.measure_Ici hf, ← ofReal_sub _ (sub_nonneg.mpr <| Monotone.leftLim_le f.mono' (le_refl _))]
     <;> simp
 
+--PR this and the following lemmas to mathlib, just after `StieltjesFunction.measure_univ`
 lemma measure_Ioi_of_tendsto_atTop_atTop (hf : Tendsto f atTop atTop) (x : ℝ) :
     f.measure (Ioi x) = ⊤ := by
   refine ENNReal.eq_top_of_forall_nnreal_le fun r ↦ ?_
