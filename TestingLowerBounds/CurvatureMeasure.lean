@@ -12,19 +12,44 @@ import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 
 open MeasureTheory Set StieltjesFunction ProbabilityTheory
 
-namespace ConvexOn
-
 variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f g : ℝ → ℝ} {β γ x t : ℝ}
+
+section StieltjesFunction
+
+namespace StieltjesFunction
+
+open Set Filter Function ENNReal NNReal Topology MeasureTheory
+open ENNReal (ofReal)
+
+variable (f : StieltjesFunction)
 
 --PR this to mathlib, just before `StieltjesFunction.measure_const`
 @[simp]
-lemma _root_.StieltjesFunction.measure_zero : StieltjesFunction.measure 0 = 0 :=
+lemma measure_zero : StieltjesFunction.measure 0 = 0 :=
   Measure.ext_of_Ioc _ _ (fun _ _ _ ↦ by simp; rfl)
+
+
+--PR this to mathlib, just after `StieltjesFunction.measure_Iic`
+lemma measure_Iio {l : ℝ} (hf : Tendsto f atBot (𝓝 l)) (x : ℝ) :
+    f.measure (Iio x) = ofReal (leftLim f x - l) := by
+  rw [← Iic_diff_right, measure_diff _ (measurableSet_singleton x), measure_singleton,
+    f.measure_Iic hf, ← ofReal_sub _ (sub_nonneg.mpr <| Monotone.leftLim_le f.mono' (le_refl _))]
+    <;> simp
+
+--PR this to mathlib, just after `StieltjesFunction.measure_Ici`
+lemma measure_Ioi {l : ℝ} (hf : Tendsto f atTop (𝓝 l)) (x : ℝ) :
+    f.measure (Ioi x) = ofReal (l - f x) := by
+  rw [← Ici_diff_left, measure_diff _ (measurableSet_singleton x), measure_singleton,
+    f.measure_Ici hf, ← ofReal_sub _ (sub_nonneg.mpr <| Monotone.leftLim_le f.mono' (le_refl _))]
+    <;> simp
+
+end StieltjesFunction
+
+namespace ConvexOn
 
 -- Should we define this to be some junk value if f is not convex?
 -- This way we could avoid having to state the convexity every time.
 -- This may be put in some other place, maybe directly in the stieltjes file.
-
 open Classical in
 /-- The curvature measure induced by a convex function. It is defined as the only measure that has
 the right derivative of the function as a CDF. -/
