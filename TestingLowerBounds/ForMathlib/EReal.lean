@@ -384,11 +384,29 @@ theorem _root_.Measurable.ereal_toENNReal {α : Type*} [MeasurableSpace α]
     Measurable fun x => (f x).toENNReal :=
   measurable_ereal_toENNReal.comp hf
 
-lemma toENNReal_add {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) : (x + y).toENNReal = x.toENNReal + y.toENNReal := by
+lemma toENNReal_add {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+    (x + y).toENNReal = x.toENNReal + y.toENNReal := by
   induction x <;> induction y <;> try {· simp_all}
   norm_cast
   simp_rw [real_coe_toENNReal]
   simp_all [ENNReal.ofReal_add]
+
+lemma toENNReal_mul {x y : EReal} (hx : 0 ≤ x) :
+    (x * y).toENNReal = x.toENNReal * y.toENNReal := by
+  induction x <;> induction y
+    <;> try {· simp_all [mul_nonpos_iff, ENNReal.ofReal_mul, ← EReal.coe_mul]}
+  · rcases eq_or_lt_of_le hx with (hx | hx)
+    · simp [← hx]
+    · simp_all [EReal.mul_top_of_pos hx]
+  · rename_i a
+    rcases lt_trichotomy a 0 with (ha | ha | ha)
+    · simp_all [le_of_lt, top_mul_of_neg (EReal.coe_neg'.mpr ha)]
+    · simp [ha]
+    · simp_all [top_mul_of_pos (EReal.coe_pos.mpr ha)]
+
+lemma toENNReal_mul' {x y : EReal} (hy : 0 ≤ y) :
+    (x * y).toENNReal = x.toENNReal * y.toENNReal := by
+  rw [mul_comm, toENNReal_mul hy, mul_comm]
 
 end EReal
 
