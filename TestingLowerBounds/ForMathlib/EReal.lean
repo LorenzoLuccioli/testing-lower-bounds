@@ -337,6 +337,12 @@ theorem _root_.Measurable.ereal_toENNReal {α : Type*} [MeasurableSpace α]
     Measurable fun x => (f x).toENNReal :=
   measurable_ereal_toENNReal.comp hf
 
+lemma toENNReal_add {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) : (x + y).toENNReal = x.toENNReal + y.toENNReal := by
+  induction x <;> induction y <;> try {· simp_all}
+  norm_cast
+  simp_rw [real_coe_toENNReal]
+  simp_all [ENNReal.ofReal_add]
+
 end EReal
 
 namespace ENNReal
