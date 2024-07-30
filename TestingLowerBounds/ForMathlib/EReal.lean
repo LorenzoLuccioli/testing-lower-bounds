@@ -13,6 +13,15 @@ lemma coe_ennreal_toReal {x : ℝ≥0∞} (hx : x ≠ ∞) : (x.toReal : EReal) 
   lift x to ℝ≥0 using hx
   rfl
 
+lemma lt_neg_iff_lt_neg {x y : EReal} : x < -y ↔ y < -x := by
+  nth_rw 1 [← neg_neg x, neg_lt_neg_iff]
+
+lemma le_neg_iff_le_neg {x y : EReal} : x ≤ -y ↔ y ≤ -x := by
+  nth_rw 1 [← neg_neg x, neg_le_neg_iff]
+
+lemma neg_le_iff_neg_le {x y : EReal} : -x ≤ y ↔ -y ≤ x := by
+  nth_rw 1 [← neg_neg y, neg_le_neg_iff]
+
 lemma top_mul_ennreal_coe {x : ℝ≥0∞} (hx : x ≠ 0) : ⊤ * (x : EReal) = ⊤ := by
   by_cases hx_top : x = ∞
   · simp [hx_top]
