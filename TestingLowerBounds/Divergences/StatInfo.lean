@@ -1104,5 +1104,4 @@ lemma fDiv_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
 
 end DataProcessingInequality
 
-
 end ProbabilityTheory
