@@ -933,6 +933,27 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous [IsFiniteMeasur
     · exact eventually_of_forall fun _ ↦ EReal.toENNReal_ne_top_iff.mpr
         fDiv_statInfoFun_ne_top_of_nonneg
 
+lemma lintegral_statInfoFun_one_zero (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
+    ∫⁻ x, ENNReal.ofReal (statInfoFun 1 x 0) ∂curvatureMeasure f
+      = (f 0).toEReal - f 1 + rightDeriv f 1 := by
+  norm_cast
+  have := convex_taylor hf_cvx hf_cont (a := 1) (b := 0)
+  simp only [zero_sub, mul_neg, mul_one, sub_neg_eq_add] at this
+  rw [this, intervalIntegral.integral_of_ge (zero_le_one' _), integral_neg, neg_neg,
+    ← ofReal_integral_eq_lintegral_ofReal _
+    (eventually_of_forall fun x ↦ statInfoFun_nonneg 1 x 0)]
+  rotate_left
+  · refine Integrable.mono' (g := (Ioc 0 1).indicator 1) ?_
+      measurable_statInfoFun2.aestronglyMeasurable ?_
+    · exact IntegrableOn.integrable_indicator
+        (integrableOn_const.mpr (Or.inr measure_Ioc_lt_top)) measurableSet_Ioc
+    · simp_rw [Real.norm_of_nonneg (statInfoFun_nonneg 1 _ 0),
+        statInfoFun_of_one_of_right_le_one zero_le_one, sub_zero]
+      exact eventually_of_forall fun x ↦ Set.indicator_le_indicator' fun hx ↦ hx.2
+  rw [EReal.coe_ennreal_ofReal, max_eq_left (integral_nonneg_of_ae <| eventually_of_forall
+    fun x ↦ statInfoFun_nonneg 1 x 0), ← integral_indicator measurableSet_Ioc]
+  simp_rw [statInfoFun_of_one_of_right_le_one zero_le_one, sub_zero]
+
 lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ms : μ ⟂ₘ ν) :
     fDiv f μ ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂(curvatureMeasure f)
@@ -959,33 +980,14 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
       EReal.toENNReal_mul (derivAtTop_statInfoFun_nonneg 1 x)]
     simp [-statInfoFun_of_one]
   rw [this]
-  have h1 : ∫⁻ x, ENNReal.ofReal (statInfoFun 1 x 0) ∂curvatureMeasure f
-      = (f 0).toEReal - (f 1).toEReal + (rightDeriv f 1).toEReal := by
-    norm_cast
-    have := convex_taylor hf_cvx hf_cont (a := 1) (b := 0)
-    simp only [zero_sub, mul_neg, mul_one, sub_neg_eq_add] at this
-    rw [this, intervalIntegral.integral_of_ge (zero_le_one' _), integral_neg, neg_neg,
-      ← ofReal_integral_eq_lintegral_ofReal _
-      (eventually_of_forall fun x ↦ statInfoFun_nonneg 1 x 0)]
-    rotate_left
-    · refine Integrable.mono' (g := (Ioc 0 1).indicator 1) ?_
-        measurable_statInfoFun2.aestronglyMeasurable ?_
-      · exact IntegrableOn.integrable_indicator
-          (integrableOn_const.mpr (Or.inr measure_Ioc_lt_top)) measurableSet_Ioc
-      · simp_rw [Real.norm_of_nonneg (statInfoFun_nonneg 1 _ 0),
-          statInfoFun_of_one_of_right_le_one zero_le_one, sub_zero]
-        exact eventually_of_forall fun x ↦ Set.indicator_le_indicator' fun hx ↦ hx.2
-    rw [EReal.coe_ennreal_ofReal, max_eq_left (integral_nonneg_of_ae <| eventually_of_forall
-      fun x ↦ statInfoFun_nonneg 1 x 0), ← integral_indicator measurableSet_Ioc]
-    simp_rw [statInfoFun_of_one_of_right_le_one zero_le_one, sub_zero]
-  have h2 : ∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f
+  have h1 : ∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f
       = curvatureMeasure f (Ioi 1) := by
     simp_rw [derivAtTop_statInfoFun_eq, ← lintegral_indicator_one measurableSet_Ioi, zero_le_one]
     congr with x
     by_cases h : x ∈ Ioi 1
     · simpa [h]
     · simp [h, show x ≤ 1 from le_of_not_lt h]
-  have h3 : curvatureMeasure f (Ioi 1) = (derivAtTop f - rightDeriv f 1).toENNReal := by
+  have h2 : curvatureMeasure f (Ioi 1) = (derivAtTop f - rightDeriv f 1).toENNReal := by
     rw [curvatureMeasure_of_convexOn hf_cvx]
     by_cases h_top : derivAtTop f = ⊤
     · rw [h_top, EReal.top_sub_coe, EReal.toENNReal_top,
@@ -997,9 +999,9 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
       · norm_cast
       --here we need the new def of derivAtTop
       sorry
-  rw [h3] at h2 --maybe h2 and h3 should become one have
+  rw [h2] at h1 --maybe h1 and h2 should become one have
   push_cast
-  rw [h1, h2, EReal.coe_toENNReal]
+  rw [lintegral_statInfoFun_one_zero hf_cvx hf_cont, h1, EReal.coe_toENNReal]
   swap
   · --this should be fairly simple to prove when we have the new def of derivAtTop, since the right deriv is monotone and the derivAtTop is the limit of the right deriv, maybe it could even become a separate lemma
     sorry
