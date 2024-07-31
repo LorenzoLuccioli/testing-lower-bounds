@@ -958,13 +958,12 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ms : μ ⟂ₘ ν) :
     fDiv f μ ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂(curvatureMeasure f)
       + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
-  simp_rw [fDiv_of_mutuallySingular h_ms]
-  have : ∫⁻ x, (statInfoFun 1 x 0 * (ν univ : EReal) + derivAtTop (statInfoFun 1 x) * μ univ).toENNReal
-        ∂curvatureMeasure f
+  have h1 : ∫⁻ x, (statInfoFun 1 x 0 * (ν univ).toEReal
+        + derivAtTop (statInfoFun 1 x) * μ univ).toENNReal ∂curvatureMeasure f
       = (∫⁻ x, ENNReal.ofReal (statInfoFun 1 x 0) ∂curvatureMeasure f) * ν univ
         + (∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f) * μ univ := by
     rw [← lintegral_mul_const _ (Measurable.ennreal_ofReal measurable_statInfoFun2),
-      ← lintegral_mul_const _ ]
+      ← lintegral_mul_const _]
     swap
     · simp_rw [derivAtTop_statInfoFun_eq]
       refine (Measurable.ite (MeasurableSet.const _) ?_ ?_).coe_real_ereal.ereal_toENNReal <;>
@@ -979,29 +978,30 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
     rw [EReal.toENNReal_mul (EReal.coe_nonneg.mpr <| statInfoFun_nonneg 1 x 0),
       EReal.toENNReal_mul (derivAtTop_statInfoFun_nonneg 1 x)]
     simp [-statInfoFun_of_one]
-  rw [this]
-  have h1 : ∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f
-      = curvatureMeasure f (Ioi 1) := by
-    simp_rw [derivAtTop_statInfoFun_eq, ← lintegral_indicator_one measurableSet_Ioi, zero_le_one]
-    congr with x
-    by_cases h : x ∈ Ioi 1
-    · simpa [h]
-    · simp [h, show x ≤ 1 from le_of_not_lt h]
-  have h2 : curvatureMeasure f (Ioi 1) = (derivAtTop f - rightDeriv f 1).toENNReal := by
-    rw [curvatureMeasure_of_convexOn hf_cvx]
-    by_cases h_top : derivAtTop f = ⊤
-    · rw [h_top, EReal.top_sub_coe, EReal.toENNReal_top,
-        StieltjesFunction.measure_Ioi_of_tendsto_atTop_atTop]
-      --here we need the new def of derivAtTop
-      sorry
-    · have ⟨x, hx⟩ := EReal.eq_coe_of_ne_top_of_ne_bot h_top (derivAtTop_ne_bot)
-      rw [hx, StieltjesFunction.measure_Ioi _ _ 1 (l := x)]
-      · norm_cast
-      --here we need the new def of derivAtTop
-      sorry
-  rw [h2] at h1 --maybe h1 and h2 should become one have
+  have h2 : ∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f
+      = (derivAtTop f - rightDeriv f 1).toENNReal := by
+    calc
+      _ = curvatureMeasure f (Ioi 1) := by
+        simp_rw [derivAtTop_statInfoFun_eq, ← lintegral_indicator_one measurableSet_Ioi]
+        congr with x
+        by_cases h : x ∈ Ioi 1
+        · simpa [h]
+        · simp [h, show x ≤ 1 from le_of_not_lt h]
+      _ = (derivAtTop f - rightDeriv f 1).toENNReal := by
+        rw [curvatureMeasure_of_convexOn hf_cvx]
+        by_cases h_top : derivAtTop f = ⊤
+        · rw [h_top, EReal.top_sub_coe, EReal.toENNReal_top,
+            StieltjesFunction.measure_Ioi_of_tendsto_atTop_atTop]
+          --here we need the new def of derivAtTop
+          sorry
+        · have ⟨x, hx⟩ := EReal.eq_coe_of_ne_top_of_ne_bot h_top (derivAtTop_ne_bot)
+          rw [hx, StieltjesFunction.measure_Ioi _ _ 1 (l := x)]
+          · norm_cast
+          --here we need the new def of derivAtTop
+          sorry
+  simp_rw [fDiv_of_mutuallySingular h_ms, h1]
   push_cast
-  rw [lintegral_statInfoFun_one_zero hf_cvx hf_cont, h1, EReal.coe_toENNReal]
+  rw [lintegral_statInfoFun_one_zero hf_cvx hf_cont, h2, EReal.coe_toENNReal]
   swap
   · --this should be fairly simple to prove when we have the new def of derivAtTop, since the right deriv is monotone and the derivAtTop is the limit of the right deriv, maybe it could even become a separate lemma
     sorry
