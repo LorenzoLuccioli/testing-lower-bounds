@@ -205,6 +205,9 @@ lemma sub_self {x : EReal} (h_top : x ≠ ⊤) (h_bot : x ≠ ⊥) : x - x = 0 :
 lemma sub_self_le_zero {x : EReal} : x - x ≤ 0 := by
   induction x <;> simp
 
+lemma top_sub_of_ne_top {x : EReal} (hx : x ≠ ⊤) : ⊤ - x = ⊤ := by
+  induction x <;> tauto
+
 lemma top_mul_add_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     ⊤ * (x + y) = ⊤ * x + ⊤ * y := by
   induction x, y using EReal.induction₂_symm with
