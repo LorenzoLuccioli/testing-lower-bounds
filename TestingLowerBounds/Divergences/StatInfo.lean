@@ -973,7 +973,8 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
     congr with x
     rw [EReal.toENNReal_add]
     rotate_left
-    · exact mul_nonneg (EReal.coe_nonneg.mpr <| statInfoFun_nonneg 1 x 0) (EReal.coe_ennreal_nonneg _)
+    · exact mul_nonneg (EReal.coe_nonneg.mpr (statInfoFun_nonneg 1 x 0))
+        (EReal.coe_ennreal_nonneg _)
     · exact mul_nonneg (derivAtTop_statInfoFun_nonneg 1 x) (EReal.coe_ennreal_nonneg _)
     rw [EReal.toENNReal_mul (EReal.coe_nonneg.mpr <| statInfoFun_nonneg 1 x 0),
       EReal.toENNReal_mul (derivAtTop_statInfoFun_nonneg 1 x)]
