@@ -894,9 +894,8 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
         ((Measure.integrable_toReal_rnDeriv.sub (integrable_const 1)).const_mul _)
   all_goals exact ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)
 
-lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous
-    [IsFiniteMeasure μ] [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f)
-    (h_ac : μ ≪ ν) :
+lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous [IsFiniteMeasure μ]
+    [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
     fDiv f μ ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂(curvatureMeasure f)
       + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
   by_cases h_int : Integrable (fun x ↦ f ((∂μ/∂ν) x).toReal) ν
@@ -1044,7 +1043,7 @@ lemma fDiv_statInfoFun_comp_right_le' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   · exact fDiv_statInfoFun_comp_right_le η hβ
   · exact statInfoFun_neg_neg hβγ ▸ fDiv_statInfoFun_comp_right_le η (neg_nonneg.mpr hβ)
 
-/-- **Data processing inequality** for the f-divergence. -/
+/-- **Data processing inequality** for the f-divergence in the absolutely continuous case. -/
 lemma fDiv_comp_right_le_of_absolutelyContinuous [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (η : Kernel 𝒳 𝒳') [IsMarkovKernel η]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
