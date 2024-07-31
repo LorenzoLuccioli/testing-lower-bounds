@@ -11,6 +11,7 @@ import TestingLowerBounds.Testing.Binary
 import Mathlib.MeasureTheory.Constructions.Prod.Integral
 import TestingLowerBounds.ForMathlib.SetIntegral
 import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
+import TestingLowerBounds.ForMathlib.Indicator
 
 /-!
 # Statistical information
@@ -932,6 +933,89 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous
         (by fun_prop) |>.ereal_toENNReal.aemeasurable
     · exact eventually_of_forall fun _ ↦ EReal.toENNReal_ne_top_iff.mpr
         fDiv_statInfoFun_ne_top_of_nonneg
+
+lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ms : μ ⟂ₘ ν) :
+    fDiv f μ ν = ∫⁻ x, (fDiv (statInfoFun 1 x) μ ν).toENNReal ∂(curvatureMeasure f)
+      + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
+  simp_rw [fDiv_of_mutuallySingular h_ms]
+  have : ∫⁻ x, (statInfoFun 1 x 0 * (ν univ : EReal) + derivAtTop (statInfoFun 1 x) * μ univ).toENNReal
+        ∂curvatureMeasure f
+      = (∫⁻ x, ENNReal.ofReal (statInfoFun 1 x 0) ∂curvatureMeasure f) * ν univ
+        + (∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f) * μ univ := by
+    rw [← lintegral_mul_const _ (Measurable.ennreal_ofReal measurable_statInfoFun2),
+      ← lintegral_mul_const _ ]
+    swap
+    · simp_rw [derivAtTop_statInfoFun_eq]
+      refine (Measurable.ite (MeasurableSet.const _) ?_ ?_).coe_real_ereal.ereal_toENNReal <;>
+      · refine Measurable.ite (measurableSet_le (fun _ a ↦ a) ?_) ?_ ?_ <;> exact measurable_const
+    rw [← lintegral_add_left]
+    swap; · exact measurable_statInfoFun2.ennreal_ofReal.mul_const _
+    congr with x
+    rw [EReal.toENNReal_add]
+    rotate_left
+    · exact mul_nonneg (EReal.coe_nonneg.mpr <| statInfoFun_nonneg 1 x 0) (EReal.coe_ennreal_nonneg _)
+    · exact mul_nonneg (derivAtTop_statInfoFun_nonneg 1 x) (EReal.coe_ennreal_nonneg _)
+    rw [EReal.toENNReal_mul (EReal.coe_nonneg.mpr <| statInfoFun_nonneg 1 x 0),
+      EReal.toENNReal_mul (derivAtTop_statInfoFun_nonneg 1 x)]
+    simp [-statInfoFun_of_one]
+  rw [this]
+  have h1 : ∫⁻ x, ENNReal.ofReal (statInfoFun 1 x 0) ∂curvatureMeasure f
+      = (f 0).toEReal - (f 1).toEReal + (rightDeriv f 1).toEReal := by
+    norm_cast
+    have := convex_taylor hf_cvx hf_cont (a := 1) (b := 0)
+    simp only [zero_sub, mul_neg, mul_one, sub_neg_eq_add] at this
+    rw [this, intervalIntegral.integral_of_ge (zero_le_one' _), integral_neg, neg_neg,
+      ← ofReal_integral_eq_lintegral_ofReal _
+      (eventually_of_forall fun x ↦ statInfoFun_nonneg 1 x 0)]
+    rotate_left
+    · refine Integrable.mono' (g := (Ioc 0 1).indicator 1) ?_
+        measurable_statInfoFun2.aestronglyMeasurable ?_
+      · exact IntegrableOn.integrable_indicator
+          (integrableOn_const.mpr (Or.inr measure_Ioc_lt_top)) measurableSet_Ioc
+      · simp_rw [Real.norm_of_nonneg (statInfoFun_nonneg 1 _ 0),
+          statInfoFun_of_one_of_right_le_one zero_le_one, sub_zero]
+        exact eventually_of_forall fun x ↦ Set.indicator_le_indicator' fun hx ↦ hx.2
+    rw [EReal.coe_ennreal_ofReal, max_eq_left (integral_nonneg_of_ae <| eventually_of_forall
+      fun x ↦ statInfoFun_nonneg 1 x 0), ← integral_indicator measurableSet_Ioc]
+    simp_rw [statInfoFun_of_one_of_right_le_one zero_le_one, sub_zero]
+  have h2 : ∫⁻ x, (derivAtTop (statInfoFun 1 x)).toENNReal ∂curvatureMeasure f
+      = curvatureMeasure f (Ioi 1) := by
+    simp_rw [derivAtTop_statInfoFun_eq, ← lintegral_indicator_one measurableSet_Ioi, zero_le_one]
+    congr with x
+    by_cases h : x ∈ Ioi 1
+    · simpa [h]
+    · simp [h, show x ≤ 1 from le_of_not_lt h]
+  have h3 : curvatureMeasure f (Ioi 1) = (derivAtTop f - rightDeriv f 1).toENNReal := by
+    rw [curvatureMeasure_of_convexOn hf_cvx]
+    by_cases h_top : derivAtTop f = ⊤
+    · rw [h_top, EReal.top_sub_coe, EReal.toENNReal_top,
+        StieltjesFunction.measure_Ioi_of_tendsto_atTop_atTop]
+      --here we need the new def of derivAtTop
+      sorry
+    · have ⟨x, hx⟩ := EReal.eq_coe_of_ne_top_of_ne_bot h_top (derivAtTop_ne_bot)
+      rw [hx, StieltjesFunction.measure_Ioi _ _ 1 (l := x)]
+      · norm_cast
+      --here we need the new def of derivAtTop
+      sorry
+  rw [h3] at h2 --maybe h2 and h3 should become one have
+  push_cast
+  rw [h1, h2, EReal.coe_toENNReal]
+  swap
+  · --this should be fairly simple to prove when we have the new def of derivAtTop, since the right deriv is monotone and the derivAtTop is the limit of the right deriv, maybe it could even become a separate lemma
+    sorry
+  simp_rw [sub_eq_add_neg, ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top ν _),
+    ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top μ _),
+    EReal.add_mul_coe_of_nonneg ENNReal.toReal_nonneg, ← EReal.coe_neg (ν univ).toReal,
+    ← EReal.coe_add, ← EReal.coe_mul _ (_ + _), mul_add, EReal.coe_add, neg_mul, ← EReal.coe_mul,
+    mul_neg, EReal.coe_neg, add_assoc]
+  congr
+  simp_rw [add_comm (rightDeriv f 1 * (ν _).toReal).toEReal, add_assoc,
+    add_comm _ (rightDeriv f 1 * _).toEReal, ← add_assoc, ← sub_eq_add_neg,
+    EReal.add_sub_cancel_right, sub_eq_add_neg, add_assoc, add_comm _ (_ + (_ + (_ + _))),
+    add_comm (f 1 * _).toEReal, ← add_assoc, ← sub_eq_add_neg, EReal.add_sub_cancel_right,
+    sub_eq_add_neg, add_assoc, add_comm (-(rightDeriv f 1 * _).toEReal), ← add_assoc,
+    ← sub_eq_add_neg, EReal.add_sub_cancel_right]
 
 --this will be useful later
 -- #check fDiv_eq_add_withDensity_singularPart
