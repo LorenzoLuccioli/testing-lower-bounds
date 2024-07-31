@@ -1100,15 +1100,11 @@ lemma fDiv_statInfoFun_comp_right_le' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   · exact fDiv_statInfoFun_comp_right_le η hβ
   · exact statInfoFun_neg_neg hβγ ▸ fDiv_statInfoFun_comp_right_le η (neg_nonneg.mpr hβ)
 
-/-- **Data processing inequality** for the f-divergence in the absolutely continuous case. -/
-lemma fDiv_comp_right_le_of_absolutelyContinuous [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (η : Kernel 𝒳 𝒳') [IsMarkovKernel η]
-    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
+/-- **Data processing inequality** for the f-divergence. -/
+lemma fDiv_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (η : Kernel 𝒳 𝒳') [IsMarkovKernel η] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
     fDiv f (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv f μ ν := by
-  rw [fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont h_ac,
-    fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx hf_cont]
-  swap; · exact Measure.absolutelyContinuous_comp_left h_ac _
-  simp_rw [Measure.comp_apply_univ]
+  simp_rw [fDiv_eq_lintegral_fDiv_statInfoFun hf_cvx hf_cont, Measure.comp_apply_univ]
   gcongr
   simp only [EReal.coe_ennreal_le_coe_ennreal_iff]
   exact lintegral_mono fun x ↦ EReal.toENNReal_le_toENNReal <|
