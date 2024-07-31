@@ -290,6 +290,9 @@ lemma toReal_eq_zero_iff {x : EReal} : x.toReal = 0 ↔ x = 0 ∨ x = ⊤ ∨ x 
 lemma sub_nonneg {x y : EReal} (hy : y ≠ ⊤) (hy' : y ≠ ⊥) : 0 ≤ x - y ↔ y ≤ x := by
   obtain ⟨_, ha⟩ := eq_coe_of_ne_top_of_ne_bot hy hy'
   rw [ha]
+
+lemma sub_nonpos {x y : EReal} (hy : y ≠ ⊤) (hy' : y ≠ ⊥) : x - y ≤ 0 ↔ x ≤ y := by
+  obtain ⟨_, ha⟩ := eq_coe_of_ne_top_of_ne_bot hy hy'
   induction x <;> simp [← EReal.coe_sub]
 
 @[simp]
