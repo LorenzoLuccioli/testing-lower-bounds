@@ -1122,6 +1122,23 @@ lemma fDiv_comp_le_compProd' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   simp_rw [Measure.snd, ← Measure.comp_deterministic_eq_map measurable_snd]
   exact fDiv_comp_right_le' _ hf_cvx hf_cont
 
+lemma fDiv_comp_le_compProd_right' [IsFiniteMeasure μ]
+    (κ η : Kernel 𝒳 𝒳') [IsMarkovKernel κ] [IsMarkovKernel η] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
+    fDiv f (κ ∘ₘ μ) (η ∘ₘ μ) ≤ fDiv f (μ ⊗ₘ κ) (μ ⊗ₘ η) :=
+  fDiv_comp_le_compProd' κ η hf_cvx hf_cont
+
+lemma fDiv_fst_le' (μ ν : Measure (𝒳 × 𝒳')) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
+    fDiv f μ.fst ν.fst ≤ fDiv f μ ν := by
+  simp_rw [Measure.fst, ← Measure.comp_deterministic_eq_map measurable_fst]
+  exact fDiv_comp_right_le' _ hf_cvx hf_cont
+
+lemma fDiv_snd_le' (μ ν : Measure (𝒳 × 𝒳')) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
+    fDiv f μ.snd ν.snd ≤ fDiv f μ ν := by
+  simp_rw [Measure.snd, ← Measure.comp_deterministic_eq_map measurable_snd]
+  exact fDiv_comp_right_le' _ hf_cvx hf_cont
+
 end DataProcessingInequality
 
 end ProbabilityTheory
