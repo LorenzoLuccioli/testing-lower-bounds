@@ -812,7 +812,7 @@ lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
   simp_rw [sub_eq_add_neg, ← neg_mul, mul_add, ← add_assoc]
   rw [fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous' _ _ (by ring) _ h_ac,
     curvatureMeasure_add_const, curvatureMeasure_add_linear, curvatureMeasure_add_const]
-  · exact (hf_cvx.add_const _).add (const_mul (-rightDeriv f 1)) |>.add_const _
+  · exact (hf_cvx.add_const _).add (const_mul_id (-rightDeriv f 1)) |>.add_const _
   · exact ((hf_cont.add continuous_const).add (continuous_mul_left _)).add continuous_const
   · have hf_diff x := differentiableWithinAt_Ioi hf_cvx x
     rw [rightDeriv_add_const (by fun_prop), rightDeriv_add_linear (by fun_prop),
@@ -880,7 +880,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
   congr
   · have h : ConvexOn ℝ univ (fun x ↦ f x - f 1 - rightDeriv f 1 * (x - 1)) := by
       simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul]
-      exact hf_cvx.add_const _ |>.add (ConvexOn.const_mul _ |>.add (convexOn_const _ convex_univ))
+      exact (hf_cvx.add_const _).add ((ConvexOn.const_mul_id _).add (convexOn_const _ convex_univ))
     rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
       h (by continuity) (by simp) _ _ h_ac]
     · simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul, ← add_assoc,
@@ -1093,8 +1093,9 @@ lemma fDiv_statInfoFun_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   · exact EReal.coe_ennreal_le_coe_ennreal_iff.mpr <| statInfo_comp_le _ _ _ _
   · simp_rw [Measure.comp_apply_univ, le_refl]
 
+-- The name is `fDiv_comp_right_le'`, since there is already `fDiv_comp_right_le` in the `fDiv.CompProd` file.
 /-- **Data processing inequality** for the f-divergence. -/
-lemma fDiv_comp_right_le [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma fDiv_comp_right_le' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (η : Kernel 𝒳 𝒳') [IsMarkovKernel η] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
     fDiv f (η ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv f μ ν := by
   simp_rw [fDiv_eq_lintegral_fDiv_statInfoFun hf_cvx hf_cont, Measure.comp_apply_univ]
