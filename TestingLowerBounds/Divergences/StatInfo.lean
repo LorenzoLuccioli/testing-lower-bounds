@@ -1115,6 +1115,13 @@ lemma fDiv_compProd_right' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
   simp_rw [Measure.compProd_eq_comp]
   exact fDiv_comp_right_le' _ hf_cvx hf_cont
 
+lemma fDiv_comp_le_compProd' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ η : Kernel 𝒳 𝒳') [IsMarkovKernel κ] [IsMarkovKernel η] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) :
+    fDiv f (κ ∘ₘ μ) (η ∘ₘ ν) ≤ fDiv f (μ ⊗ₘ κ) (ν ⊗ₘ η) := by
+  nth_rw 1 [← Measure.snd_compProd μ κ, ← Measure.snd_compProd ν η]
+  simp_rw [Measure.snd, ← Measure.comp_deterministic_eq_map measurable_snd]
+  exact fDiv_comp_right_le' _ hf_cvx hf_cont
+
 end DataProcessingInequality
 
 end ProbabilityTheory
