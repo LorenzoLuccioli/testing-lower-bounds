@@ -14,7 +14,11 @@ lemma countable_right_of_prod_of_nonempty [Nonempty α] (h : Countable (α × β
   contrapose h
   rw [not_countable_iff] at *
   infer_instance
-
+-- PRed, see #15418
+instance [hα : CountableOrCountablyGenerated α γ] [hβ : CountableOrCountablyGenerated β γ] :
+    CountableOrCountablyGenerated (α × β) γ := by
+  rcases hα with (hα | hα) <;> rcases hβ with (hβ | hβ) <;> infer_instance
+-- PRed, see #15418
 lemma countableOrCountablyGenerated_left_of_prod_left_of_nonempty [Nonempty β]
     [h : CountableOrCountablyGenerated (α × β) γ] :
     CountableOrCountablyGenerated α γ := by
