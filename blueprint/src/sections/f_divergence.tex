@@ -1078,13 +1078,13 @@ This proof uses that every $f$-divergence is an integral over $\gamma \ge 0$ of 
   \lean{ProbabilityTheory.fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le, ProbabilityTheory.fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_gt}
   \leanok
   \uses{def:fDiv, def:statInfoFun}
-  Let $a,b \in (0, +\infty)$ and let $\mu, \nu$ be two measures on $\mathcal X$.
+  Let $a,b \in [0, +\infty)$ and let $\mu, \nu$ be two measures on $\mathcal X$.
   \begin{align*}
   D_{\phi_{a,b}}(\mu, \nu)
   &= \text{sign}(b-a)\frac{1}{2}(a \mu(\mathcal X) - b \nu(\mathcal X)) + \frac{1}{2}\nu\left[ \left\vert a \frac{d\mu}{d\nu} - b \right\vert \right] + \frac{1}{2}a \mu_{\perp \nu}(\mathcal X)
   \: ,
   \end{align*}
-  in which $\text{sign}(b-a)$ is $1$ if $b-a > 0$, $-1$ if $b-a < 0$ and the inequality is true for both values $1$ and $-1$ for $a=b$.
+  in which $\text{sign}(b-a)$ is $1$ if $b-a > 0$ and $-1$ if $b-a \le 0$.
 \end{lemma}
 
 \begin{proof}\leanok
@@ -1107,7 +1107,7 @@ Similar computations lead to the result for $b \le a$.
   \lean{ProbabilityTheory.fDiv_statInfoFun_eq_StatInfo_of_nonneg}
   \leanok
   \uses{def:fDiv, def:statInfoFun, def:statInfo}
-  Let $a,b \in (0, +\infty)$ and let $\mu, \nu$ be two measures on $\mathcal X$.
+  Let $a,b \in [0, +\infty)$ and let $\mu, \nu$ be two measures on $\mathcal X$.
   \begin{align*}
   D_{\phi_{a,b}}(\mu, \nu) = \mathcal I_{(a,b)}(\mu, \nu) + \frac{1}{2} \left\vert a \mu(\mathcal X) - b \nu(\mathcal X) \right\vert + \text{sign}(b-a)\frac{1}{2}(a \mu(\mathcal X) - b \nu(\mathcal X))
   \: .
@@ -1121,14 +1121,14 @@ Combine Lemma~\ref{lem:fDiv_statInfoFun_eq} and Corollary~\ref{cor:statInfo_eq_i
 
 \begin{lemma}
   \label{lem:fDiv_phi_data_proc}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.fDiv_statInfoFun_comp_right_le}
+  \leanok
   \uses{def:fDiv, def:statInfoFun}
-  Let $a,b \in (0, +\infty)$. Let $\mu, \nu$ be two measures on $\mathcal X$ and let $\kappa : \mathcal X \rightsquigarrow \mathcal Y$ be a Markov kernel.
+  Let $a,b \in [0, +\infty)$. Let $\mu, \nu$ be two finite measures on $\mathcal X$ and let $\kappa : \mathcal X \rightsquigarrow \mathcal Y$ be a Markov kernel.
   Then $D_{\phi_{a,b}}(\kappa \circ \mu, \kappa \circ \nu) \le D_{\phi_{a,b}}(\mu, \nu)$.
 \end{lemma}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{thm:data_proc_statInfo, cor:fDiv_statInfoFun_eq_statInfo}
 By Corollary~\ref{cor:fDiv_statInfoFun_eq_statInfo},
 \begin{align*}
@@ -1140,14 +1140,14 @@ The statistical information satisfies the data-processing inequality (Theorem~\r
 
 \begin{theorem}[Data-processing]
   \label{thm:fDiv_data_proc_2}
-  %\lean{}
-  %\leanok
+  \lean{ProbabilityTheory.fDiv_comp_right_le'}
+  \leanok
   \uses{def:fDiv}
   Let $\mu, \nu$ be two finite measures on $\mathcal X$ and let $\kappa : \mathcal X \rightsquigarrow \mathcal Y$ be a Markov kernel.
   Then $D_f(\kappa \circ \mu, \kappa \circ \nu) \le D_f(\mu, \nu)$.
 \end{theorem}
 
-\begin{proof}%\leanok
+\begin{proof}\leanok
 \uses{thm:fDiv_eq_integral_eGamma, lem:fDiv_phi_data_proc}
 By Theorem~\ref{thm:fDiv_eq_integral_eGamma},
 \begin{align*}
