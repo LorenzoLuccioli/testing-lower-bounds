@@ -118,8 +118,7 @@ lemma mul_ne_bot (a b : EReal) :
 
 lemma mul_pos_iff {a b : EReal} : 0 < a * b ↔ 0 < a ∧ 0 < b ∨ a < 0 ∧ b < 0 := by
   induction a, b using EReal.induction₂_symm with
-  | symm h =>
-    simp [mul_comm, h, and_comm]
+  | symm h => simp [mul_comm, h, and_comm]
   | top_top => simp
   | top_pos _ hx => simp [EReal.top_mul_coe_of_pos hx, hx]
   | top_zero => simp
@@ -137,8 +136,7 @@ lemma mul_neg_iff {a b : EReal} : a * b < 0 ↔ 0 < a ∧ b < 0 ∨ a < 0 ∧ 0 
 
 lemma mul_nonneg_iff {a b : EReal} : 0 ≤ a * b ↔ 0 ≤ a ∧ 0 ≤ b ∨ a ≤ 0 ∧ b ≤ 0 := by
   induction a, b using EReal.induction₂_symm with
-  | symm h =>
-    simp [mul_comm, h, and_comm]
+  | symm h => simp [mul_comm, h, and_comm]
   | top_top => simp
   | top_pos _ hx => simp [EReal.top_mul_coe_of_pos hx, hx, le_of_lt]
   | top_zero => simp
