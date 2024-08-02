@@ -15,8 +15,6 @@ open MeasureTheory Set StieltjesFunction ProbabilityTheory
 
 variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f g : ℝ → ℝ} {β γ x t : ℝ}
 
-section StieltjesFunction
-
 namespace StieltjesFunction
 
 open Set Filter Function ENNReal NNReal Topology MeasureTheory
