@@ -298,6 +298,7 @@ lemma ae_integrable_of_ae_integrable_mul_rnDeriv {κ : α → Measure β} [Sigma
   exact isUnit_iff_ne_zero.mpr h_pos.ne'
 
 -- in mathlib this lemma could be put just before `MeasureTheory.Measure.rnDeriv_le_one_of_le`
+-- PRed, see #15473
 lemma rnDeriv_le_one_iff_le [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
     μ.rnDeriv ν ≤ᵐ[ν] 1 ↔ μ ≤ ν := by
   refine ⟨fun h s ↦ ?_, fun h ↦ rnDeriv_le_one_of_le h⟩
@@ -305,6 +306,7 @@ lemma rnDeriv_le_one_iff_le [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν
   exact setLIntegral_mono_ae aemeasurable_const (h.mono fun _ hh _ ↦ hh)
 
 -- in mathlib this lemma could be put just before `MeasureTheory.Measure.rnDeriv_eq_zero_of_mutuallySingular`
+-- PRed, see #15473
 lemma rnDeriv_eq_one_iff_eq [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
     μ.rnDeriv ν =ᵐ[ν] 1 ↔ μ = ν := by
   refine ⟨fun h ↦ ?_, fun h ↦ h ▸ Measure.rnDeriv_self ν⟩
