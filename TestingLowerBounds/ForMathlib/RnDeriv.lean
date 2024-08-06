@@ -313,6 +313,7 @@ lemma rnDeriv_eq_one_iff_eq [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν
   rw [← withDensity_rnDeriv_eq _ _ hμν, MeasureTheory.withDensity_congr_ae h, withDensity_one]
 
 -- in mathlib this lemma could be put just after `Measure.rnDeriv_mul_rnDeriv`
+--PRed, see #15548.
 lemma _root_.MeasureTheory.Measure.rnDeriv_mul_rnDeriv' {κ : Measure α} [SigmaFinite μ]
     [SigmaFinite ν] [SigmaFinite κ] (hνκ : ν ≪ κ) :
     μ.rnDeriv ν * ν.rnDeriv κ =ᵐ[ν] μ.rnDeriv κ := by
@@ -324,6 +325,7 @@ lemma _root_.MeasureTheory.Measure.rnDeriv_mul_rnDeriv' {κ : Measure α} [Sigma
   rw [hx1, Pi.add_apply, hx2, Pi.mul_apply, hx3, Pi.zero_apply, zero_add]
 
 --PR this to mathlib maybe just after `integral_toReal_rnDeriv` (we need to check that measure_sub_singularPart is imported there)?
+--PRed, see #15545.
 lemma _root_.MeasureTheory.Measure.integral_toReal_rnDeriv' {α : Type*} {m : MeasurableSpace α}
     {μ : Measure α} {ν : Measure α} [IsFiniteMeasure μ] [SigmaFinite ν] :
     ∫ (x : α), (μ.rnDeriv ν x).toReal ∂ν
