@@ -24,9 +24,6 @@ instance : NoZeroDivisors EReal where
     · rcases lt_or_gt_of_ne h.2 with (h | h)
         <;> simp [EReal.top_mul_of_pos, EReal.top_mul_of_neg, h]
 
-lemma eq_coe_of_ne_top_of_ne_bot {x : EReal} (hx : x ≠ ⊤) (hx' : x ≠ ⊥) : ∃ r : ℝ, x = r := by
-  induction x <;> tauto
-
 lemma coe_ennreal_toReal {x : ℝ≥0∞} (hx : x ≠ ∞) : (x.toReal : EReal) = x := by
   lift x to ℝ≥0 using hx
   rfl
@@ -301,12 +298,12 @@ lemma toReal_eq_zero_iff {x : EReal} : x.toReal = 0 ↔ x = 0 ∨ x = ⊤ ∨ x 
   induction x <;> norm_num
 
 lemma sub_nonneg {x y : EReal} (hy : y ≠ ⊤) (hy' : y ≠ ⊥) : 0 ≤ x - y ↔ y ≤ x := by
-  obtain ⟨_, ha⟩ := eq_coe_of_ne_top_of_ne_bot hy hy'
-  induction x <;> simp [← EReal.coe_sub, ha]
+  lift y to ℝ using ⟨hy, hy'⟩
+  induction x <;> simp [← EReal.coe_sub]
 
 lemma sub_nonpos {x y : EReal} (hy : y ≠ ⊤) (hy' : y ≠ ⊥) : x - y ≤ 0 ↔ x ≤ y := by
-  obtain ⟨_, ha⟩ := eq_coe_of_ne_top_of_ne_bot hy hy'
-  induction x <;> simp [← EReal.coe_sub, ha]
+  lift y to ℝ using ⟨hy, hy'⟩
+  induction x <;> simp [← EReal.coe_sub]
 
 @[simp]
 lemma nsmul_eq_mul {n : ℕ} {x : EReal} : n • x = n * x := by
