@@ -208,8 +208,8 @@ lemma convexOn_hellingerFun (ha_pos : 0 ≤ a) : ConvexOn ℝ (Set.Ici 0) (helli
   rcases (lt_trichotomy a 1) with (ha | ha | ha)
   · have : hellingerFun a = - (fun x ↦ (1 - a)⁻¹ • (x ^ a - 1)) := by
       ext x
-      simp only [Pi.neg_apply]
-      rw [hellingerFun_of_ne_zero_of_ne_one ha_pos.ne' ha.ne, smul_eq_mul, ← neg_mul, neg_inv, neg_sub]
+      rw [Pi.neg_apply, hellingerFun_of_ne_zero_of_ne_one ha_pos.ne' ha.ne, smul_eq_mul, ← neg_mul,
+        neg_inv, neg_sub]
     rw [this]
     refine ConcaveOn.neg ?_
     exact ((Real.concaveOn_rpow ha_pos.le ha.le).sub (convexOn_const _ (convex_Ici 0))).smul
