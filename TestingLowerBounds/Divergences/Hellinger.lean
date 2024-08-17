@@ -202,8 +202,7 @@ lemma convexOn_hellingerFun (ha_pos : 0 ≤ a) : ConvexOn ℝ (Set.Ici 0) (helli
     simp only [(lt_of_le_of_lt hx hxy).ne', ↓reduceIte, zero_sub,
       (gt_trans hyz <| lt_of_le_of_lt hx hxy).ne', sub_self, zero_div, div_nonpos_iff,
       Left.nonneg_neg_iff, tsub_le_iff_right, zero_add, Left.neg_nonpos_iff, sub_nonneg]
-    right
-    exact ⟨by positivity, by linarith⟩
+    exact Or.inr ⟨by positivity, by linarith⟩
   replace ha_pos := ha_pos.lt_of_ne fun h ↦ ha_zero h.symm
   rcases (lt_trichotomy a 1) with (ha | ha | ha)
   · have : hellingerFun a = - (fun x ↦ (1 - a)⁻¹ • (x ^ a - 1)) := by
@@ -211,16 +210,12 @@ lemma convexOn_hellingerFun (ha_pos : 0 ≤ a) : ConvexOn ℝ (Set.Ici 0) (helli
       rw [Pi.neg_apply, hellingerFun_of_ne_zero_of_ne_one ha_pos.ne' ha.ne, smul_eq_mul, ← neg_mul,
         neg_inv, neg_sub]
     rw [this]
-    refine ConcaveOn.neg ?_
     exact ((Real.concaveOn_rpow ha_pos.le ha.le).sub (convexOn_const _ (convex_Ici 0))).smul
-      (by simp [ha.le])
+      (by simp [ha.le]) |>.neg
   · simp only [hellingerFun, ha, one_ne_zero, ↓reduceIte]
     exact convexOn_mul_log
-  · have h := convexOn_rpow ha.le
-    unfold hellingerFun
-    simp_rw [← smul_eq_mul, if_neg ha_pos.ne', if_neg ha.ne']
-    refine ConvexOn.smul (by simp [ha.le]) ?_
-    exact h.sub (concaveOn_const _ (convex_Ici 0))
+  · simp_rw [hellingerFun, ← smul_eq_mul, if_neg ha_pos.ne', if_neg ha.ne']
+    exact (convexOn_rpow ha.le).sub (concaveOn_const _ (convex_Ici 0)) |>.smul (by simp [ha.le])
 
 lemma tendsto_rightDeriv_hellingerFun_atTop_of_one_lt (ha : 1 < a) :
     Tendsto (rightDeriv (hellingerFun a)) atTop atTop := by
@@ -236,9 +231,8 @@ lemma derivAtTop_hellingerFun_of_one_lt (ha : 1 < a) : derivAtTop (hellingerFun 
 lemma derivAtTop_hellingerFun_of_one_le (ha : 1 ≤ a) :
     derivAtTop (hellingerFun a) = ⊤ := by
   by_cases ha_eq : a = 1
-  · simp only [hellingerFun, ha, ha_eq, one_ne_zero, ↓reduceIte]
-    exact derivAtTop_mul_log
-  · exact derivAtTop_hellingerFun_of_one_lt <| lt_of_le_of_ne ha fun ha ↦ ha_eq ha.symm
+  · simp only [hellingerFun, ha, ha_eq, one_ne_zero, ↓reduceIte, derivAtTop_mul_log]
+  · exact derivAtTop_hellingerFun_of_one_lt <| lt_of_le_of_ne ha fun h ↦ ha_eq h.symm
 
 lemma derivAtTop_hellingerFun_of_lt_one (ha : a < 1) :
     derivAtTop (hellingerFun a) = 0 :=
@@ -253,9 +247,7 @@ lemma integrable_hellingerFun_iff_integrable_rpow (ha_one : a ≠ 1) [IsFiniteMe
       Pi.one_comp]
     refine (integrable_indicator_iff ?_).mpr ?_
     · apply measurableSet_eq_fun <;> fun_prop
-    · apply integrableOn_const.mpr
-      right
-      exact measure_lt_top ν _
+    · exact integrableOn_const.mpr (Or.inr (measure_lt_top ν _))
   rw [hellingerFun_of_ne_zero_of_ne_one ha_zero ha_one, integrable_const_mul_iff]
   swap; · simp [sub_eq_zero, ha_one]
   simp_rw [sub_eq_add_neg, integrable_add_const_iff]
@@ -331,8 +323,7 @@ lemma hellingerDiv_zero'' (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure
 
 lemma hellingerDiv_zero_toReal (μ ν : Measure α) [SigmaFinite μ] [IsFiniteMeasure ν] :
     (hellingerDiv 0 μ ν).toReal = (ν Set.univ).toReal - (ν {x | 0 < (∂μ/∂ν) x}).toReal := by
-  rw [hellingerDiv_zero'']
-  rw [EReal.toReal_sub]
+  rw [hellingerDiv_zero'', EReal.toReal_sub]
   all_goals simp [measure_ne_top]
 
 lemma hellingerDiv_zero_ne_top (μ ν : Measure α) [IsFiniteMeasure ν] :
