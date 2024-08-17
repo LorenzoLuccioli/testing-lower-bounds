@@ -9,6 +9,7 @@ lemma countable_left_of_prod_of_nonempty [Nonempty β] (h : Countable (α × β)
   contrapose h
   rw [not_countable_iff] at *
   infer_instance
+
 -- PRed, see #15418
 lemma countable_right_of_prod_of_nonempty [Nonempty α] (h : Countable (α × β)) : Countable β := by
   contrapose h
@@ -26,6 +27,7 @@ lemma countableOrCountablyGenerated_left_of_prod_left_of_nonempty [Nonempty β]
   · have := countable_left_of_prod_of_nonempty h
     infer_instance
   · infer_instance
+
 -- PRed, see #15418
 lemma countableOrCountablyGenerated_right_of_prod_left_of_nonempty [Nonempty α]
     [h : CountableOrCountablyGenerated (α × β) γ] :
@@ -64,8 +66,10 @@ lemma countableOrCountablyGenerated_left_of_prod_right_of_nonempty [Nonempty γ]
   · infer_instance
   · have := countablyGenerated_left_of_prod_of_nonempty h
     infer_instance
+
 -- PRed, see #15418
 instance [Countable (α × β)] : Countable (β × α) := Countable.of_equiv _ (Equiv.prodComm α β)
+
 -- PRed, see #15418
 instance [h : CountableOrCountablyGenerated (α × β) γ] :
     CountableOrCountablyGenerated (β × α) γ := by

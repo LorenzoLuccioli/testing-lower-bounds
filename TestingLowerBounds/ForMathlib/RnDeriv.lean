@@ -6,7 +6,6 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 import Mathlib.MeasureTheory.Measure.Tilted
 import Mathlib.MeasureTheory.Function.ConditionalExpectation.Basic
 import TestingLowerBounds.ForMathlib.SetIntegral
-import TestingLowerBounds.ForMathlib.Measure
 
 /-!
 
@@ -116,13 +115,13 @@ lemma rnDeriv_eq_zero_ae_of_zero_measure (ν : Measure α) {s : Set α} (hs : Me
 lemma measure_sub_singularPart (μ ν : Measure α) [HaveLebesgueDecomposition μ ν] [IsFiniteMeasure μ] :
     μ - μ.singularPart ν = ν.withDensity (μ.rnDeriv ν) := by
   nth_rw 1 [← rnDeriv_add_singularPart μ ν]
-  exact add_sub_cancel
+  exact Measure.add_sub_cancel
 
 --PRed, see #15540
 lemma measure_sub_rnDeriv (μ ν : Measure α) [HaveLebesgueDecomposition μ ν] [IsFiniteMeasure μ] :
     μ - ν.withDensity (μ.rnDeriv ν) = μ.singularPart ν := by
   nth_rw 1 [← singularPart_add_rnDeriv μ ν]
-  exact add_sub_cancel
+  exact Measure.add_sub_cancel
 
 /--Singular part set of μ with respect to ν.-/
 def singularPartSet (μ ν : Measure α) := {x | ν.rnDeriv (μ + ν) x = 0}
@@ -296,33 +295,6 @@ lemma ae_integrable_of_ae_integrable_mul_rnDeriv {κ : α → Measure β} [Sigma
   filter_upwards [hμν.ae_le h, Measure.rnDeriv_toReal_pos hμν] with a ha h_pos
   apply (integrable_const_mul_iff _ (g a)).mp ha
   exact isUnit_iff_ne_zero.mpr h_pos.ne'
-
--- in mathlib this lemma could be put just before `MeasureTheory.Measure.rnDeriv_le_one_of_le`
--- PRed, see #15473
-lemma rnDeriv_le_one_iff_le [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
-    μ.rnDeriv ν ≤ᵐ[ν] 1 ↔ μ ≤ ν := by
-  refine ⟨fun h s ↦ ?_, fun h ↦ rnDeriv_le_one_of_le h⟩
-  rw [← withDensity_rnDeriv_eq _ _ hμν, withDensity_apply', ← setLIntegral_one]
-  exact setLIntegral_mono_ae aemeasurable_const (h.mono fun _ hh _ ↦ hh)
-
--- in mathlib this lemma could be put just before `MeasureTheory.Measure.rnDeriv_eq_zero_of_mutuallySingular`
--- PRed, see #15473
-lemma rnDeriv_eq_one_iff_eq [SigmaFinite μ] [SigmaFinite ν] (hμν : μ ≪ ν) :
-    μ.rnDeriv ν =ᵐ[ν] 1 ↔ μ = ν := by
-  refine ⟨fun h ↦ ?_, fun h ↦ h ▸ Measure.rnDeriv_self ν⟩
-  rw [← withDensity_rnDeriv_eq _ _ hμν, MeasureTheory.withDensity_congr_ae h, withDensity_one]
-
--- in mathlib this lemma could be put just after `Measure.rnDeriv_mul_rnDeriv`
---PRed, see #15548.
-lemma _root_.MeasureTheory.Measure.rnDeriv_mul_rnDeriv' {κ : Measure α} [SigmaFinite μ]
-    [SigmaFinite ν] [SigmaFinite κ] (hνκ : ν ≪ κ) :
-    μ.rnDeriv ν * ν.rnDeriv κ =ᵐ[ν] μ.rnDeriv κ := by
-  obtain ⟨h_meas, h_sing, hμν⟩ := Measure.haveLebesgueDecomposition_spec μ ν
-  filter_upwards [hνκ <| Measure.rnDeriv_add' (μ.singularPart ν) (ν.withDensity (μ.rnDeriv ν)) κ,
-    hνκ <| Measure.rnDeriv_withDensity_left_of_absolutelyContinuous hνκ h_meas.aemeasurable,
-    Measure.rnDeriv_eq_zero_of_mutuallySingular h_sing hνκ] with x hx1 hx2 hx3
-  nth_rw 2 [hμν]
-  rw [hx1, Pi.add_apply, hx2, Pi.mul_apply, hx3, Pi.zero_apply, zero_add]
 
 --PR this to mathlib maybe just after `integral_toReal_rnDeriv` (we need to check that measure_sub_singularPart is imported there)?
 --PRed, see #15545.
