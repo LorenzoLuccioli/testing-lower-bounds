@@ -143,12 +143,12 @@ lemma kl_ne_bot (μ ν : Measure α) : kl μ ν ≠ ⊥ := by
 
 lemma kl_ge_mul_log' [IsFiniteMeasure μ] [IsProbabilityMeasure ν]
     (hμν : μ ≪ ν) :
-    (μ Set.univ).toReal * log (μ Set.univ).toReal ≤ kl μ ν :=
+    (μ .univ).toReal * log (μ .univ).toReal ≤ kl μ ν :=
   (le_fDiv_of_ac convexOn_mul_log continuous_mul_log.continuousOn hμν).trans_eq
     kl_eq_fDiv.symm
 
 lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
-    (μ Set.univ).toReal * log ((μ Set.univ).toReal / (ν Set.univ).toReal) ≤ kl μ ν := by
+    (μ .univ).toReal * log ((μ .univ).toReal / (ν .univ).toReal) ≤ kl μ ν := by
   by_cases hμν : μ ≪ ν
   swap; · simp [hμν]
   by_cases h_int : Integrable (llr μ ν) μ
@@ -161,7 +161,7 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
   · refine absurd ?_ hμ
     rw [hν] at hμν
     exact Measure.absolutelyContinuous_zero_iff.mp hμν
-  let ν' := (ν Set.univ)⁻¹ • ν
+  let ν' := (ν .univ)⁻¹ • ν
   have : IsProbabilityMeasure ν' := by
     constructor
     simp only [ν', Measure.coe_smul, Pi.smul_apply, smul_eq_mul]
@@ -172,11 +172,11 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
     refine Measure.AbsolutelyContinuous.trans hμν (Measure.absolutelyContinuous_smul ?_)
     simp [measure_ne_top ν]
   have h := kl_ge_mul_log' hμν'
-  rw [kl_of_ac_of_integrable hμν', integral_congr_ae (llr_smul_right hμν (ν Set.univ)⁻¹ _ _)] at h
+  rw [kl_of_ac_of_integrable hμν', integral_congr_ae (llr_smul_right hμν (ν .univ)⁻¹ _ _)] at h
   rotate_left
   · simp [measure_ne_top ν _]
   · simp [hν]
-  · rw [integrable_congr (llr_smul_right hμν (ν Set.univ)⁻¹ _ _)]
+  · rw [integrable_congr (llr_smul_right hμν (ν .univ)⁻¹ _ _)]
     rotate_left
     · simp [measure_ne_top ν _]
     · simp [hν]
@@ -191,14 +191,14 @@ lemma kl_ge_mul_log (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure �
     simp [hν, measure_ne_top ν]
 
 lemma kl_nonneg' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (h : μ Set.univ ≥ ν Set.univ) :
+    (h : μ .univ ≥ ν .univ) :
     0 ≤ kl μ ν := by
   by_cases hμν : μ ≪ ν
   swap; · rw [kl_of_not_ac hμν]; simp
   by_cases h_int : Integrable (llr μ ν) μ
   swap; · rw [kl_of_not_integrable h_int]; simp
   calc 0
-    ≤ ((μ Set.univ).toReal : EReal) * log ((μ Set.univ).toReal / (ν Set.univ).toReal) := by
+    ≤ ((μ .univ).toReal : EReal) * log ((μ .univ).toReal / (ν .univ).toReal) := by
         by_cases h_zero : NeZero ν
         swap; · simp [not_neZero.mp h_zero]
         refine mul_nonneg (EReal.coe_nonneg.mpr ENNReal.toReal_nonneg) ?_
@@ -216,7 +216,7 @@ lemma kl_nonneg (μ ν : Measure α) [IsProbabilityMeasure μ] [IsProbabilityMea
 
 /-- **Converse Gibbs' inequality**: the Kullback-Leibler divergence between two finite measures is
 zero if and only if the two distributions are equal. -/
-lemma kl_eq_zero_iff [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_mass : μ Set.univ = ν Set.univ) :
+lemma kl_eq_zero_iff [IsFiniteMeasure μ] [IsFiniteMeasure ν] (h_mass : μ .univ = ν .univ) :
     kl μ ν = 0 ↔ μ = ν :=
   kl_eq_fDiv (μ := μ) (ν := ν) ▸ fDiv_eq_zero_iff h_mass derivAtTop_mul_log
     Real.strictConvexOn_mul_log Real.continuous_mul_log.continuousOn (by norm_num)
@@ -407,7 +407,7 @@ lemma condKL_nonneg (κ η : Kernel α β) [IsMarkovKernel κ] [IsMarkovKernel �
 
 @[simp]
 lemma condKL_const {ξ : Measure β} [IsFiniteMeasure ξ] [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
-    condKL (Kernel.const β μ) (Kernel.const β ν) ξ = (kl μ ν) * ξ Set.univ := by
+    condKL (Kernel.const β μ) (Kernel.const β ν) ξ = (kl μ ν) * ξ .univ := by
   rw [condKL_eq_condFDiv, kl_eq_fDiv]
   exact condFDiv_const convexOn_mul_log
 
@@ -757,7 +757,7 @@ variable {β : Type*} {mβ : MeasurableSpace β}
 
 lemma kl_prod_two' [CountableOrCountablyGenerated α β] {ξ ψ : Measure β} [IsProbabilityMeasure ξ]
     [IsProbabilityMeasure ψ] [IsFiniteMeasure μ] [IsFiniteMeasure ν]:
-    kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ Set.univ) := by
+    kl (μ.prod ξ) (ν.prod ψ) = kl μ ν + kl ξ ψ * (μ .univ) := by
   simp only [← condKL_const, ← kl_compProd, Measure.compProd_const]
 
 /--Tensorization property for KL divergence-/
@@ -783,7 +783,7 @@ lemma Measure.pi_map_piCongrLeft {ι ι' : Type*} [hι : Fintype ι] [hι' : Fin
   refine Measure.pi_eq (fun s _ ↦ ?_) |>.symm
   rw [e_meas.measurableEmbedding.map_apply]
   let s' : (i : ι) → Set (β (e i)) := fun i ↦ s (e i)
-  have : e_meas ⁻¹' Set.pi Set.univ s = Set.pi Set.univ s' := by
+  have : e_meas ⁻¹' Set.univ.pi s = Set.univ.pi s' := by
     ext x
     simp only [Set.mem_preimage, Set.mem_pi, Set.mem_univ, forall_true_left, s']
     refine (e.forall_congr ?_).symm

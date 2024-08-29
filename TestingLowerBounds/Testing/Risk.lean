@@ -160,7 +160,7 @@ lemma bayesRiskPrior_compProd_le_bayesRiskPrior (E : estimationProblem Θ 𝒴 �
   exact bayesRiskPrior_le_bayesRiskPrior_comp _ _ _ _
 
 -- Do we also need a version without the `IsMarkovKernel` assumption? it would be of the form:
--- `bayesRiskPrior E π ≤ ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) * (E.P θ) Set.univ ∂π`
+-- `bayesRiskPrior E π ≤ ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) * (E.P θ) .univ ∂π`
 lemma bayesRiskPrior_le_inf (E : estimationProblem Θ 𝒴 𝒵) (P : Kernel Θ 𝒳)
     (π : Measure Θ) [IsMarkovKernel P] :
     bayesRiskPrior E P π ≤ ⨅ z : 𝒵, ∫⁻ θ, E.ℓ (E.y θ, z) ∂π := by

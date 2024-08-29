@@ -71,8 +71,8 @@ lemma lintegral_rnDeriv_mul_withDensity (μ ν : Measure α) [IsFiniteMeasure μ
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {t : Set β} (ht : MeasurableSet t) :
     ∫⁻ a, (∂μ/∂ν) a * Kernel.withDensity η (Kernel.rnDeriv κ η) a t ∂ν
-      = (ν ⊗ₘ η).withDensity (∂(μ ⊗ₘ κ)/∂(ν ⊗ₘ η)) (Set.univ ×ˢ t) := by
-  rw [← setLIntegral_rnDeriv_mul_withDensity _ _ _ _ MeasurableSet.univ ht, setLIntegral_univ]
+      = (ν ⊗ₘ η).withDensity (∂(μ ⊗ₘ κ)/∂(ν ⊗ₘ η)) (.univ ×ˢ t) := by
+  rw [← setLIntegral_rnDeriv_mul_withDensity _ _ _ _ .univ ht, setLIntegral_univ]
 
 lemma setLIntegral_rnDeriv_mul_singularPart
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -97,8 +97,8 @@ lemma lintegral_rnDeriv_mul_singularPart (μ ν : Measure α) [IsFiniteMeasure �
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {t : Set β} (ht : MeasurableSet t) :
     ∫⁻ a, (∂μ/∂ν) a * (κ a).singularPart (η a) t ∂ν
-      = ((ν.withDensity (∂μ/∂ν)) ⊗ₘ κ).singularPart (ν ⊗ₘ η) (Set.univ ×ˢ t) := by
-  rw [← setLIntegral_rnDeriv_mul_singularPart _ _ _ _ MeasurableSet.univ ht, setLIntegral_univ]
+      = ((ν.withDensity (∂μ/∂ν)) ⊗ₘ κ).singularPart (ν ⊗ₘ η) (.univ ×ˢ t) := by
+  rw [← setLIntegral_rnDeriv_mul_singularPart _ _ _ _ .univ ht, setLIntegral_univ]
 
 lemma setLIntegral_withDensity (μ : Measure α) [IsFiniteMeasure μ]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
@@ -122,47 +122,45 @@ lemma lintegral_withDensity (μ : Measure α) [IsFiniteMeasure μ]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {s : Set β} (hs : MeasurableSet s) :
     ∫⁻ a, Kernel.withDensity η (Kernel.rnDeriv κ η) a s ∂μ
-      = (μ ⊗ₘ η).withDensity (∂(μ ⊗ₘ κ)/∂(μ ⊗ₘ η)) (Set.univ ×ˢ s) := by
-  rw [← setLIntegral_univ, setLIntegral_withDensity _ _ _ MeasurableSet.univ hs]
+      = (μ ⊗ₘ η).withDensity (∂(μ ⊗ₘ κ)/∂(μ ⊗ₘ η)) (.univ ×ˢ s) := by
+  rw [← setLIntegral_univ, setLIntegral_withDensity _ _ _ .univ hs]
 
 lemma lintegral_singularPart (μ : Measure α) [IsFiniteMeasure μ]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {s : Set β} (hs : MeasurableSet s) :
-    ∫⁻ a, (κ a).singularPart (η a) s ∂μ = (μ ⊗ₘ κ).singularPart (μ ⊗ₘ η) (Set.univ ×ˢ s) := by
-  rw [← setLIntegral_univ, setLIntegral_singularPart _ _ _ MeasurableSet.univ hs]
+    ∫⁻ a, (κ a).singularPart (η a) s ∂μ = (μ ⊗ₘ κ).singularPart (μ ⊗ₘ η) (.univ ×ˢ s) := by
+  rw [← setLIntegral_univ, setLIntegral_singularPart _ _ _ .univ hs]
 
 lemma integrable_rnDeriv_mul_withDensity (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     Integrable (fun x ↦
-      ((∂μ/∂ν) x).toReal * (Kernel.withDensity η (Kernel.rnDeriv κ η) x Set.univ).toReal) ν := by
+      ((∂μ/∂ν) x).toReal * (Kernel.withDensity η (Kernel.rnDeriv κ η) x .univ).toReal) ν := by
   simp_rw [← ENNReal.toReal_mul]
   refine integrable_toReal_of_lintegral_ne_top ?_ (ne_of_lt ?_)
-  · refine AEMeasurable.mul ?_ ?_
-    · exact (Measure.measurable_rnDeriv _ _).aemeasurable
-    · exact (Kernel.measurable_coe _ MeasurableSet.univ).aemeasurable
-  rw [lintegral_rnDeriv_mul_withDensity _ _ _ _ MeasurableSet.univ]
+  · refine (μ.measurable_rnDeriv _).aemeasurable.mul ?_
+    exact (Kernel.measurable_coe _ .univ).aemeasurable
+  rw [lintegral_rnDeriv_mul_withDensity _ _ _ _ .univ]
   exact measure_lt_top _ _
 
 lemma integrable_rnDeriv_mul_singularPart
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
-    Integrable (fun x ↦ ((∂μ/∂ν) x).toReal * ((κ x).singularPart (η x) Set.univ).toReal) ν := by
+    Integrable (fun x ↦ ((∂μ/∂ν) x).toReal * ((κ x).singularPart (η x) .univ).toReal) ν := by
   simp_rw [← ENNReal.toReal_mul]
   refine integrable_toReal_of_lintegral_ne_top ?_ (ne_of_lt ?_)
   · simp_rw [← Kernel.singularPart_eq_singularPart_measure]
-    refine AEMeasurable.mul ?_ ?_
-    · exact (Measure.measurable_rnDeriv _ _).aemeasurable
-    · exact (Kernel.measurable_coe _ MeasurableSet.univ).aemeasurable
-  rw [lintegral_rnDeriv_mul_singularPart _ _ _ _ MeasurableSet.univ]
+    refine (μ.measurable_rnDeriv _).aemeasurable.mul ?_
+    exact (Kernel.measurable_coe _ .univ).aemeasurable
+  rw [lintegral_rnDeriv_mul_singularPart _ _ _ _ .univ]
   exact measure_lt_top _ _
 
 lemma integrable_singularPart [IsFiniteMeasure μ]
     [IsFiniteKernel κ] [IsFiniteKernel η] :
-    Integrable (fun x ↦ ((κ x).singularPart (η x) Set.univ).toReal) μ := by
+    Integrable (fun x ↦ ((κ x).singularPart (η x) .univ).toReal) μ := by
   refine integrable_toReal_of_lintegral_ne_top ?_ (ne_of_lt ?_)
   · simp_rw [← Kernel.singularPart_eq_singularPart_measure]
-    exact (Kernel.measurable_coe _ MeasurableSet.univ).aemeasurable
-  rw [lintegral_singularPart _ _ _ MeasurableSet.univ]
+    exact (Kernel.measurable_coe _ .univ).aemeasurable
+  rw [lintegral_singularPart _ _ _ .univ]
   exact measure_lt_top _ _
 
 lemma setIntegral_rnDeriv_mul_withDensity
@@ -186,8 +184,8 @@ lemma integral_rnDeriv_mul_withDensity
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {t : Set β} (ht : MeasurableSet t) :
     ∫ a, ((∂μ/∂ν) a).toReal *(Kernel.withDensity η (Kernel.rnDeriv κ η) a t).toReal ∂ν
-      = ((ν ⊗ₘ η).withDensity (∂(μ ⊗ₘ κ)/∂(ν ⊗ₘ η)) (Set.univ ×ˢ t)).toReal := by
-  rw [← setIntegral_rnDeriv_mul_withDensity μ ν κ η MeasurableSet.univ ht, integral_univ]
+      = ((ν ⊗ₘ η).withDensity (∂(μ ⊗ₘ κ)/∂(ν ⊗ₘ η)) (.univ ×ˢ t)).toReal := by
+  rw [← setIntegral_rnDeriv_mul_withDensity μ ν κ η .univ ht, integral_univ]
 
 lemma setIntegral_rnDeriv_mul_singularPart
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -211,8 +209,8 @@ lemma integral_rnDeriv_mul_singularPart
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {t : Set β} (ht : MeasurableSet t) :
     ∫ a, ((∂μ/∂ν) a).toReal * ((κ a).singularPart (η a) t).toReal ∂ν
-      = (((ν.withDensity (∂μ/∂ν)) ⊗ₘ κ).singularPart (ν ⊗ₘ η) (Set.univ ×ˢ t)).toReal := by
-  rw [← setIntegral_rnDeriv_mul_singularPart μ ν κ η MeasurableSet.univ ht, integral_univ]
+      = (((ν.withDensity (∂μ/∂ν)) ⊗ₘ κ).singularPart (ν ⊗ₘ η) (.univ ×ˢ t)).toReal := by
+  rw [← setIntegral_rnDeriv_mul_singularPart μ ν κ η .univ ht, integral_univ]
 
 lemma setIntegral_singularPart
     (μ : Measure α) [IsFiniteMeasure μ] (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
@@ -228,8 +226,8 @@ lemma integral_singularPart
     (μ : Measure α) [IsFiniteMeasure μ] (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     {s : Set β} (hs : MeasurableSet s) :
     ∫ a, ((κ a).singularPart (η a) s).toReal ∂μ
-      = ((μ ⊗ₘ κ).singularPart (μ ⊗ₘ η) (Set.univ ×ˢ s)).toReal := by
-  rw [← integral_univ, setIntegral_singularPart _ _ _ MeasurableSet.univ hs]
+      = ((μ ⊗ₘ κ).singularPart (μ ⊗ₘ η) (.univ ×ˢ s)).toReal := by
+  rw [← integral_univ, setIntegral_singularPart _ _ _ .univ hs]
 
 end IntegralRnDeriv
 
@@ -242,7 +240,7 @@ apply (integrable_const C.toReal).mono'
 · exact Kernel.measurable_coe κ hs |>.ennreal_toReal.aestronglyMeasurable
 simp_rw [Real.norm_eq_abs, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal
   (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
-exact Filter.eventually_of_forall <| fun x ↦ (κ x).mono (Set.subset_univ s) |>.trans (hC_le x)
+exact Filter.eventually_of_forall <| fun x ↦ (κ x).mono s.subset_univ |>.trans (hC_le x)
 
 lemma Measure.rnDeriv_measure_compProd_Kernel_withDensity [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]

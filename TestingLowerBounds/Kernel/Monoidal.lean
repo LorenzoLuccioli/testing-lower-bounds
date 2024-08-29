@@ -84,7 +84,7 @@ lemma comp_discard (κ : Kernel α β) [IsMarkovKernel κ] : discard β ∘ₖ �
 
 @[simp]
 lemma _root_.MeasureTheory.Measure.comp_discard (μ : Measure α) :
-    μ.bind (discard α) = μ Set.univ • (Measure.dirac ()) := by
+    μ.bind (discard α) = μ .univ • (Measure.dirac ()) := by
   ext s hs; simp [Measure.bind_apply hs (Kernel.measurable _), mul_comm]
 
 end Discard
@@ -172,7 +172,7 @@ lemma measurable_Kernel_prod_mk_left'' {κ : Kernel α β}
     [IsSFiniteKernel κ] {t : Set (γ × β)} (ht : MeasurableSet t) :
     Measurable (Function.uncurry fun a y ↦ (κ a) (Prod.mk y ⁻¹' t)) := by
   have h1 (p : α × γ) : (Prod.mk p.2 ⁻¹' t)
-      = (Prod.mk p ⁻¹' (MeasurableEquiv.prodAssoc ⁻¹' (Set.univ ×ˢ t))) := by
+      = (Prod.mk p ⁻¹' (MeasurableEquiv.prodAssoc ⁻¹' (.univ ×ˢ t))) := by
     ext x; simp [MeasurableEquiv.prodAssoc]
   have h2 (p : α × γ) : κ p.1
       = (κ ∘ₖ (deterministic (fun (p : α × γ) ↦ p.1) measurable_fst (mα := inferInstance))) p := by

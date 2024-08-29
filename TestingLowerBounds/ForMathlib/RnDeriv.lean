@@ -206,7 +206,7 @@ lemma absolutelyContinuous_restrict_compl_singularPartSet
   exact withDensity_absolutelyContinuous _ _
 
 example [SigmaFinite μ] [SigmaFinite ν] :
-    μ (singularPartSet μ ν) = μ.singularPart ν Set.univ := by
+    μ (singularPartSet μ ν) = μ.singularPart ν .univ := by
   rw [← restrict_singularPartSet_eq_singularPart]
   simp only [MeasurableSet.univ, restrict_apply, Set.univ_inter]
 
@@ -260,7 +260,7 @@ lemma ae_rnDeriv_ne_zero_imp_of_ae_aux [SigmaFinite μ] [SigmaFinite ν] {p : α
         zero_mul]
       rw [← Measure.restrict_singularPartSet_eq_singularPart, Measure.restrict_restrict hs,
         Measure.setLIntegral_rnDeriv hμν]
-      exact measure_mono_null Set.inter_subset_right (Measure.measure_singularPartSet _ _)
+      exact measure_mono_null Set.inter_subset_right (ν.measure_singularPartSet _)
     filter_upwards [this] with x hx h_absurd using absurd hx h_absurd
   · have h_ac : μ.withDensity (ν.rnDeriv μ) ≪ μ := withDensity_absolutelyContinuous _ _
     rw [← Measure.haveLebesgueDecomposition_add ν μ]
@@ -301,8 +301,8 @@ lemma ae_integrable_of_ae_integrable_mul_rnDeriv {κ : α → Measure β} [Sigma
 lemma _root_.MeasureTheory.Measure.integral_toReal_rnDeriv' {α : Type*} {m : MeasurableSpace α}
     {μ : Measure α} {ν : Measure α} [IsFiniteMeasure μ] [SigmaFinite ν] :
     ∫ (x : α), (μ.rnDeriv ν x).toReal ∂ν
-      = (μ Set.univ).toReal - ((μ.singularPart ν) Set.univ).toReal := by
-  rw [← ENNReal.toReal_sub_of_le (μ.singularPart_le ν Set.univ) (measure_ne_top _ _),
+      = (μ .univ).toReal - ((μ.singularPart ν) .univ).toReal := by
+  rw [← ENNReal.toReal_sub_of_le (μ.singularPart_le ν .univ) (measure_ne_top _ _),
     ← Measure.sub_apply .univ (Measure.singularPart_le μ ν), Measure.measure_sub_singularPart,
     ← Measure.setIntegral_toReal_rnDeriv_eq_withDensity, integral_univ]
 
