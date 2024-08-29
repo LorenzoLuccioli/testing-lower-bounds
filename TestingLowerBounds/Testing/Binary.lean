@@ -481,7 +481,7 @@ lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
   -- the `Bool.not` operation, maybe it can be shortened or something can be separated as
   -- a different lemma, but I'm not sure how useful this would be
   let e : (Kernel 𝒳 Bool) ≃ (Kernel 𝒳 Bool) := by
-    have h_id : Kernel.comap (Kernel.deterministic Bool.not (fun _ a ↦ a)) Bool.not (fun _ a ↦ a)
+    have h_id : (Kernel.deterministic Bool.not (fun _ a ↦ a)).comap Bool.not (fun _ a ↦ a)
         = Kernel.id := by
       ext x : 1
       simp_rw [Kernel.comap_apply, Kernel.deterministic_apply, Kernel.id_apply, Bool.not_not]

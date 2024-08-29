@@ -92,7 +92,7 @@ lemma bayesianRisk_le_iSup_risk (E : estimationProblem Θ 𝒴 𝒵) (P : Kernel
 lemma bayesianRisk_comap_measurableEquiv (E : estimationProblem Θ 𝒴 𝒵) (P : Kernel Θ 𝒳)
     [IsSFiniteKernel P]
     (κ : Kernel 𝒳 𝒵) [IsSFiniteKernel κ] (π : Measure Θ) (e : Θ ≃ᵐ Θ') :
-    bayesianRisk (E.comap e.symm e.symm.measurable) (Kernel.comap P e.symm e.symm.measurable)
+    bayesianRisk (E.comap e.symm e.symm.measurable) (P.comap e.symm e.symm.measurable)
       κ (π.map e) = bayesianRisk E P κ π := by
   simp only [bayesianRisk, risk, estimationProblem.comap_y, Function.comp_apply,
     estimationProblem.comap_ℓ]
@@ -100,7 +100,7 @@ lemma bayesianRisk_comap_measurableEquiv (E : estimationProblem Θ 𝒴 𝒵) (P
   · congr with θ
     congr -- todo: `congr with z hz` gives a warning. bug.
     ext z hz
-    · rw [Kernel.comp_apply' _ _ _ hz, Kernel.comp_apply' _ _ _ hz, Kernel.comap_apply]
+    · rw [κ.comp_apply' _ _ hz, κ.comp_apply' _ _ hz, Kernel.comap_apply]
       simp
     · simp
   · refine Measurable.lintegral_kernel_prod_right ?_
@@ -119,7 +119,7 @@ lemma bayesRiskPrior_le_bayesRiskPrior_comp (E : estimationProblem Θ 𝒴 𝒵)
     bayesRiskPrior E P π ≤ bayesRiskPrior E (η ∘ₖ P) π := by
   simp only [bayesRiskPrior, bayesianRisk, risk, le_iInf_iff]
   intro κ hκ
-  rw [← Kernel.comp_assoc κ η]
+  rw [← κ.comp_assoc η]
   exact iInf_le_of_le (κ ∘ₖ η) (iInf_le_of_le inferInstance le_rfl)
 
 /-- An estimator is a Bayes estimator for a prior `π` if it attains the Bayes risk for `π`. -/

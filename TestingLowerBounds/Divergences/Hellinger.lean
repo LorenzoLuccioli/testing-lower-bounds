@@ -804,7 +804,7 @@ lemma integrable_hellingerDiv_iff' (ha_pos : 0 < a) (ha_ne_one : a ≠ 1)
     <| inv_eq_zero.mp.mt <| sub_ne_zero_of_ne ha_ne_one)]
   obtain ⟨C, ⟨hC_finite, hC⟩⟩ := IsFiniteKernel.exists_univ_le (κ := η)
   refine integrable_add_iff_integrable_left <| (integrable_const C.toReal).mono' ?_ ?_
-  · exact Kernel.measurable_coe η .univ |>.ennreal_toReal.neg.aestronglyMeasurable
+  · exact η.measurable_coe .univ |>.ennreal_toReal.neg.aestronglyMeasurable
   refine eventually_of_forall (fun x ↦ ?_)
   rw [norm_eq_abs, abs_neg, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal
     (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
@@ -819,18 +819,18 @@ lemma integrable_hellingerDiv_zero [CountableOrCountablyGenerated α β]
   obtain ⟨C, ⟨hC_finite, hC⟩⟩ := IsFiniteKernel.exists_univ_le (κ := η)
   simp only [EReal.toReal_coe_ennreal]
   have h_eq : (fun x ↦ ((η x) {y | ((κ x).rnDeriv (η x) y).toReal = 0}).toReal) =
-      fun x ↦ ((η x) {y | (Kernel.rnDeriv κ η x y).toReal = 0}).toReal := by
+      fun x ↦ ((η x) {y | (κ.rnDeriv η x y).toReal = 0}).toReal := by
     ext x
     congr 1
     apply measure_congr
-    filter_upwards [Kernel.rnDeriv_eq_rnDeriv_measure κ η x] with y hy
+    filter_upwards [κ.rnDeriv_eq_rnDeriv_measure η x] with y hy
     simp only [Set.setOf_app_iff, eq_iff_iff, hy]
   simp_rw [h_eq]
   apply (integrable_const C.toReal).mono'
   · apply Measurable.aestronglyMeasurable
     apply Measurable.ennreal_toReal
     exact Kernel.measurable_kernel_prod_mk_left
-      (measurableSet_eq_fun (Kernel.measurable_rnDeriv _ _).ennreal_toReal measurable_const)
+      (measurableSet_eq_fun (κ.measurable_rnDeriv η).ennreal_toReal measurable_const)
   · refine eventually_of_forall (fun x ↦ ?_)
     simp only [norm_eq_abs, ENNReal.abs_toReal, ENNReal.toReal_le_toReal
     (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]

@@ -345,7 +345,7 @@ lemma condFDiv_snd'_toReal_eq_ae [CountableOrCountablyGenerated β γ] {ξ : Ker
     (h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a, Integrable (fun x ↦ f ((∂κ (a, b)/∂η (a, b)) x).toReal) (η (a, b)))
     (h_int2 : ∀ᵐ a ∂μ, Integrable
       (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a)) :
-    ∀ᵐ a ∂μ, (condFDiv f (Kernel.snd' κ a) (Kernel.snd' η a) (ξ a)).toReal =
+    ∀ᵐ a ∂μ, (condFDiv f (κ.snd' a) (η.snd' a) (ξ a)).toReal =
       ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a := by
   simp_rw [← Kernel.snd'_apply] at h_int2 h_int h_ac ⊢
   rw [← eventually_all] at h_ac
@@ -360,7 +360,7 @@ lemma condFDiv_kernel_snd'_integrable_iff [CountableOrCountablyGenerated (α × 
     (h_int2 : ∀ᵐ a ∂μ, Integrable (fun b ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ a))
     (hf_meas : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Ici 0) f)
     (hf_cont : ContinuousOn f (Ici 0)) (hf_one : f 1 = 0) :
-    Integrable (fun a ↦ (condFDiv f (Kernel.snd' κ a) (Kernel.snd' η a) (ξ a)).toReal) μ ↔
+    Integrable (fun a ↦ (condFDiv f (κ.snd' a) (η.snd' a) (ξ a)).toReal) μ ↔
       Integrable (fun a ↦ ∫ b, |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)| ∂ξ a) μ := by
   by_cases h_empty : Nonempty α
   swap; simp only [not_nonempty_iff.mp h_empty, Integrable.of_isEmpty]
@@ -442,7 +442,7 @@ lemma condFDiv_kernel_fst'_integrable_iff [CountableOrCountablyGenerated (α × 
     (h_int2 : ∀ᵐ b ∂μ, Integrable (fun a ↦ ∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)) (ξ b))
     (hf_meas : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Ici 0) f)
     (hf_cont : ContinuousOn f (Ici 0)) (hf_one : f 1 = 0) :
-    Integrable (fun b ↦ (condFDiv f (Kernel.fst' κ b) (Kernel.fst' η b) (ξ b)).toReal) μ ↔
+    Integrable (fun b ↦ (condFDiv f (κ.fst' b) (η.fst' b) (ξ b)).toReal) μ ↔
       Integrable (fun b ↦ ∫ a, |∫ x, f ((∂κ (a, b)/∂η (a, b)) x).toReal ∂η (a, b)| ∂ξ b) μ := by
   simp_rw [← Kernel.snd'_swapRight]
   exact condFDiv_kernel_snd'_integrable_iff h_ac h_int h_int2 hf_meas hf_cvx hf_cont hf_one
@@ -453,8 +453,8 @@ lemma condFDiv_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ
     (hf_meas : StronglyMeasurable f) (hf_cvx : ConvexOn ℝ (Ici 0) f)
     (hf_cont : ContinuousOn f (Ici 0)) (hf_one : f 1 = 0) :
     condFDiv f κ η (μ ⊗ₘ ξ) = ⊤
-      ↔ ¬ (∀ᵐ a ∂μ, condFDiv f (Kernel.snd' κ a) (Kernel.snd' η a) (ξ a) ≠ ⊤) ∨
-        ¬ Integrable (fun x ↦ (condFDiv f (Kernel.snd' κ x) (Kernel.snd' η x) (ξ x)).toReal) μ := by
+      ↔ ¬ (∀ᵐ a ∂μ, condFDiv f (κ.snd' a) (η.snd' a) (ξ a) ≠ ⊤) ∨
+        ¬ Integrable (fun x ↦ (condFDiv f (κ.snd' x) (η.snd' x) (ξ x)).toReal) μ := by
   by_cases h_empty : Nonempty α
   swap; simp only [isEmpty_prod, not_nonempty_iff.mp h_empty, true_or, condFDiv_of_isEmpty_left,
     EReal.zero_ne_top, IsEmpty.forall_iff, eventually_of_forall, not_true_eq_false,
@@ -464,13 +464,13 @@ lemma condFDiv_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ
   constructor
   · by_cases h_ac : derivAtTop f = ⊤ → ∀ᵐ x ∂(μ ⊗ₘ ξ), κ x ≪ η x
     swap
-    · rw [Measure.ae_compProd_iff (Kernel.measurableSet_absolutelyContinuous _ _)] at h_ac
+    · rw [Measure.ae_compProd_iff (κ.measurableSet_absolutelyContinuous _)] at h_ac
       simp_rw [condFDiv_ne_top_iff hf_cvx, Kernel.snd'_apply, eventually_and, not_and_or,
         eventually_all]
       intro; left; right; right
       exact h_ac
     have h_ac' := h_ac
-    rw [Measure.ae_compProd_iff (Kernel.measurableSet_absolutelyContinuous _ _)] at h_ac
+    rw [Measure.ae_compProd_iff (κ.measurableSet_absolutelyContinuous _)] at h_ac
     by_cases h_int : ∀ᵐ a ∂μ, ∀ᵐ b ∂ξ a,
       Integrable (fun y ↦ f ((∂κ (a, b)/∂η (a, b)) y).toReal) (η (a, b))
     swap; · simp only [not_eventually, ne_eq, condFDiv_ne_top_iff hf_cvx, Kernel.snd'_apply,
@@ -499,7 +499,7 @@ lemma condFDiv_compProd_meas_eq_top [CountableOrCountablyGenerated (α × β) γ
     contrapose! h
     rcases h with ⟨h_int1, ⟨h_int2, h_ac⟩⟩
     rw [Measure.ae_compProd_iff (measurableSet_integrable_f_rnDeriv κ η hf_meas)] at h_int1
-    rw [Measure.ae_compProd_iff (Kernel.measurableSet_absolutelyContinuous _ _)] at h_ac
+    rw [Measure.ae_compProd_iff (κ.measurableSet_absolutelyContinuous _)] at h_ac
     rw [Measure.integrable_compProd_iff h_int2.aestronglyMeasurable] at h_int2
     simp_all only [implies_true, forall_true_left, norm_eq_abs]
     refine ⟨?_, condFDiv_kernel_snd'_integrable_iff h_ac h_int1 h_int2.1 hf_meas hf_cvx hf_cont
@@ -516,7 +516,7 @@ lemma condFDiv_compProd_meas [CountableOrCountablyGenerated (α × β) γ] [IsFi
     (hf_cont : ContinuousOn f (Ici 0)) (hf_one : f 1 = 0)
     (h_top : condFDiv f κ η (μ ⊗ₘ ξ) ≠ ⊤) :
     condFDiv f κ η (μ ⊗ₘ ξ)
-      = ∫ x, (condFDiv f (Kernel.snd' κ x) (Kernel.snd' η x) (ξ x)).toReal ∂μ := by
+      = ∫ x, (condFDiv f (κ.snd' x) (η.snd' x) (ξ x)).toReal ∂μ := by
   by_cases h_empty : Nonempty α
   swap; simp only [isEmpty_prod, not_nonempty_iff.mp h_empty, true_or, condFDiv_of_isEmpty_left,
     integral_of_isEmpty, EReal.coe_zero]
