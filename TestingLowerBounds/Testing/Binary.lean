@@ -100,14 +100,14 @@ lemma sum_smul_rnDeriv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] 
     (π : Measure Bool) [IsFiniteMeasure π] :
     (π {true} • ν.rnDeriv (twoHypKernel μ ν ∘ₘ π) + π {false} • (μ.rnDeriv (twoHypKernel μ ν ∘ₘ π)))
       =ᵐ[twoHypKernel μ ν ∘ₘ π] 1 := by
-  have h1 := Measure.rnDeriv_smul_left_of_ne_top ν (twoHypKernel μ ν ∘ₘ π)
+  have h1 := ν.rnDeriv_smul_left_of_ne_top (twoHypKernel μ ν ∘ₘ π)
     (measure_ne_top π {true})
-  have h2 := Measure.rnDeriv_smul_left_of_ne_top μ (twoHypKernel μ ν ∘ₘ π)
+  have h2 := μ.rnDeriv_smul_left_of_ne_top (twoHypKernel μ ν ∘ₘ π)
     (measure_ne_top π {false})
   have : IsFiniteMeasure (π {true} • ν) := ν.smul_finite (measure_ne_top _ _)
   have : IsFiniteMeasure (π {false} • μ) := μ.smul_finite (measure_ne_top _ _)
-  have h3 := Measure.rnDeriv_add (π {true} • ν) (π {false} • μ) (twoHypKernel μ ν ∘ₘ π)
-  have h4 := Measure.rnDeriv_self (twoHypKernel μ ν ∘ₘ π)
+  have h3 := (π {true} • ν).rnDeriv_add  (π {false} • μ) (twoHypKernel μ ν ∘ₘ π)
+  have h4 := (twoHypKernel μ ν ∘ₘ π).rnDeriv_self
   filter_upwards [h1, h2, h3, h4] with a h1 h2 h3 h4
   simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.one_apply] at h1 h2 h3 h4 ⊢
   rw [← h1, ← h2, ← h3, ← measure_comp_twoHypKernel, h4]
@@ -134,13 +134,12 @@ def twoHypKernelInv (μ ν : Measure 𝒳) (π : Measure Bool) : Kernel 𝒳 Boo
   measurable' := by
     refine Measurable.ite ?_ ?_ measurable_const
     · refine measurableSet_preimage ?_ (measurableSet_singleton _)
-      exact ((Measure.measurable_rnDeriv _ _).const_mul _).add
-        ((Measure.measurable_rnDeriv _ _).const_mul _)
+      exact ((ν.measurable_rnDeriv _).const_mul _).add ((μ.measurable_rnDeriv _).const_mul _)
     refine Measure.measurable_of_measurable_coe _ (fun s _ ↦ ?_)
     simp only [Measure.coe_add, Measure.coe_smul, Pi.add_apply, Pi.smul_apply,
       MeasurableSpace.measurableSet_top, Measure.dirac_apply', smul_eq_mul]
-    exact ((measurable_const.mul (Measure.measurable_rnDeriv _ _)).mul measurable_const).add
-      ((measurable_const.mul (Measure.measurable_rnDeriv _ _)).mul measurable_const)
+    exact ((measurable_const.mul (ν.measurable_rnDeriv _)).mul measurable_const).add
+      ((measurable_const.mul (μ.measurable_rnDeriv _)).mul measurable_const)
 
 lemma twoHypKernelInv_apply (μ ν : Measure 𝒳) (π : Measure Bool) (x : 𝒳) :
     twoHypKernelInv μ ν π x
@@ -470,10 +469,10 @@ lemma bayesBinaryRisk_of_measure_false_eq_zero (μ ν : Measure 𝒳) (hπ : π 
 lemma bayesBinaryRisk_symm (μ ν : Measure 𝒳) (π : Measure Bool) :
     bayesBinaryRisk μ ν π = bayesBinaryRisk ν μ (π.map Bool.not) := by
   have : (Bool.not ⁻¹' {true}) = {false} := by ext x; simp
-  have h1 : (Measure.map Bool.not π) {true} = π {false} := by
+  have h1 : (π.map Bool.not) {true} = π {false} := by
     rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
   have : (Bool.not ⁻¹' {false}) = {true} := by ext x; simp
-  have h2 : (Measure.map Bool.not π) {false} = π {true} := by
+  have h2 : (π.map Bool.not) {false} = π {true} := by
     rw [Measure.map_apply (by exact fun _ a ↦ a) (by trivial), this]
   simp_rw [bayesBinaryRisk_eq, h1, h2, add_comm, iInf_subtype']
   -- from this point on the proof is basically a change of variable inside the iInf,
@@ -562,7 +561,7 @@ lemma toReal_bayesBinaryRisk_eq_integral_min (μ ν : Measure 𝒳) [IsFiniteMea
       <;> exact Measure.measurable_rnDeriv _ _ |>.const_mul _ |>.ennreal_toNNReal |>.coe_nnreal_real
   congr 1
   apply lintegral_congr_ae
-  filter_upwards [Measure.rnDeriv_ne_top μ _, Measure.rnDeriv_ne_top ν _] with x hxμ hxν
+  filter_upwards [μ.rnDeriv_ne_top _, ν.rnDeriv_ne_top _] with x hxμ hxν
   have : (π {false} * μ.rnDeriv (twoHypKernel μ ν ∘ₘ π) x) ≠ ⊤ :=
     (ENNReal.mul_ne_top (measure_ne_top _ _) hxμ)
   have : (π {true} * ν.rnDeriv (twoHypKernel μ ν ∘ₘ π) x) ≠ ⊤ :=

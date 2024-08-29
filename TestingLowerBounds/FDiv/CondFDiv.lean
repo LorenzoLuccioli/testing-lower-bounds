@@ -203,10 +203,9 @@ lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
     norm_cast
     exact integral_mul_left (f 0) _
   · filter_upwards with _
-    simp only [ne_eq, EReal.mul_eq_top, EReal.coe_ne_bot, false_and, EReal.coe_neg',
-      EReal.coe_ennreal_ne_bot, and_false, EReal.coe_ne_top, EReal.coe_ennreal_pos,
-      Measure.measure_univ_pos, EReal.coe_pos, EReal.coe_ennreal_eq_top_iff, measure_ne_top,
-      or_self, not_false_eq_true]
+    simp only [ne_eq, EReal.mul_eq_top, EReal.coe_ne_bot, false_and, EReal.coe_neg', and_false,
+      EReal.coe_ennreal_ne_bot, EReal.coe_ne_top, EReal.coe_ennreal_pos, Measure.measure_univ_pos,
+      EReal.coe_pos, EReal.coe_ennreal_eq_top_iff, measure_ne_top, or_self, not_false_eq_true]
   · simp_rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
     apply MeasureTheory.Integrable.const_mul
     exact Kernel.IsFiniteKernel.integrable μ η .univ
@@ -272,8 +271,7 @@ lemma condFDiv_const' {ξ : Measure β} [IsFiniteMeasure ξ] (h_ne_bot : fDiv f 
   · rw [h_top, EReal.top_mul_of_pos _]
     · simp only [condFDiv_of_not_ae_finite, Kernel.const_apply, h_top, ne_eq, not_true_eq_false,
         eventually_false_iff_eq_bot, ae_eq_bot, hξ_zero, not_false_eq_true]
-    · simp only [EReal.coe_ennreal_pos, Measure.measure_univ_pos, ne_eq, hξ_zero,
-        not_false_eq_true]
+    · simp only [EReal.coe_ennreal_pos, Measure.measure_univ_pos, ne_eq, hξ_zero, not_false_eq_true]
   rw [condFDiv_eq' (by simp [h_top]) _]
   swap; simp [integrable_const_iff, lt_top_iff_ne_top]
   simp only [Kernel.const_apply, integral_const, smul_eq_mul, mul_comm, EReal.coe_mul]
@@ -385,7 +383,7 @@ lemma condFDiv_kernel_snd'_integrable_iff [CountableOrCountablyGenerated (α × 
         apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
         gcongr
         · exact measure_ne_top (κ (a, b)) .univ
-        · exact Measure.singularPart_le (κ (a, b)) (η (a, b)) .univ
+        · exact (κ (a, b)).singularPart_le (η (a, b)) .univ
       _ = _ := by rw [measure_univ, ENNReal.one_toReal, mul_one]
   have h_int2' : ∀ᵐ a ∂μ, Integrable (fun b ↦ (fDiv f (κ (a, b)) (η (a, b))).toReal) (ξ a) := by
     filter_upwards [eventually_all.mpr h_ac, h_int, h_int2] with a ha_ae ha_int ha_int2

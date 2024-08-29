@@ -762,7 +762,7 @@ lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous'
   simp_rw [this, ← EReal.toReal_toENNReal fDiv_statInfoFun_nonneg]
   rw [integrable_toReal_iff]
   rotate_left
-  · exact hf_cont.measurable.comp (Measure.measurable_rnDeriv μ ν).ennreal_toReal
+  · exact hf_cont.measurable.comp (μ.measurable_rnDeriv ν).ennreal_toReal
       |>.ennreal_ofReal.aemeasurable
   · exact eventually_of_forall fun _ ↦ ENNReal.ofReal_ne_top
   rw [integrable_toReal_iff]

@@ -7,7 +7,7 @@ variable {α E : Type*} [MeasurableSpace α] {μ ν : Measure α} [NormedAddComm
 
 -- PR this, just after `integral_rnDeriv_smul`
 --PRed, see #15551.
-lemma setIntegral_rnDeriv_smul [Measure.HaveLebesgueDecomposition μ ν] (hμν : μ ≪ ν)
+lemma setIntegral_rnDeriv_smul [μ.HaveLebesgueDecomposition ν] (hμν : μ ≪ ν)
     [SigmaFinite μ] {f : α → E} {s : Set α} (hs : MeasurableSet s) :
     ∫ x in s, (μ.rnDeriv ν x).toReal • f x ∂ν = ∫ x in s, f x ∂μ := by
   simp_rw [← integral_indicator hs, Set.indicator_smul, integral_rnDeriv_smul hμν]

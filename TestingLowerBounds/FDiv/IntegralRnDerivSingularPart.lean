@@ -81,15 +81,14 @@ lemma setLIntegral_rnDeriv_mul_singularPart
       = ((ν.withDensity (∂μ/∂ν)) ⊗ₘ κ).singularPart (ν ⊗ₘ η) (s ×ˢ t) := by
   rw [singularPart_compProd', Measure.coe_add, Pi.add_apply, Measure.compProd_apply (hs.prod ht),
     Measure.compProd_apply (hs.prod ht), lintegral_measure_prod_mk_left (by simp) hs,
-    lintegral_measure_prod_mk_left (by simp) hs, Measure.singularPart_withDensity ν]
+    lintegral_measure_prod_mk_left (by simp) hs, ν.singularPart_withDensity]
   simp only [Measure.restrict_zero, lintegral_zero_measure, zero_add]
-  have : Measure.withDensity ν (∂Measure.withDensity ν (∂μ/∂ν)/∂ν)
-      = Measure.withDensity ν (∂μ/∂ν) :=
-    withDensity_congr_ae (Measure.rnDeriv_withDensity _ (Measure.measurable_rnDeriv _ _))
+  have : ν.withDensity (∂ν.withDensity (∂μ/∂ν)/∂ν) = ν.withDensity (∂μ/∂ν) :=
+    withDensity_congr_ae (ν.rnDeriv_withDensity (μ.measurable_rnDeriv _))
   rw [this, ← setLIntegral_rnDeriv_mul (μ := ν.withDensity (∂μ/∂ν)) (ν := ν)
     (withDensity_absolutelyContinuous _ _) (Kernel.measurable_coe _ ht).aemeasurable hs]
   refine setLIntegral_congr_fun hs ?_
-  filter_upwards [Measure.rnDeriv_withDensity _ (Measure.measurable_rnDeriv μ ν)] with x hx _
+  filter_upwards [ν.rnDeriv_withDensity (μ.measurable_rnDeriv ν)] with x hx _
   rw [hx, Kernel.singularPart_eq_singularPart_measure]
 
 lemma lintegral_rnDeriv_mul_singularPart (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -171,10 +170,10 @@ lemma setIntegral_rnDeriv_mul_withDensity
   simp_rw [← ENNReal.toReal_mul]
   rw [integral_toReal]
   · refine AEMeasurable.mul ?_ ?_
-    · exact (Measure.measurable_rnDeriv _ _).aemeasurable
+    · exact (μ.measurable_rnDeriv _).aemeasurable
     · exact (Kernel.measurable_coe _ ht).aemeasurable
   · refine ae_restrict_of_ae ?_
-    filter_upwards [Measure.rnDeriv_lt_top μ ν] with a ha
+    filter_upwards [μ.rnDeriv_lt_top ν] with a ha
     exact ENNReal.mul_lt_top ha.ne (measure_ne_top _ _)
 
 lemma integral_rnDeriv_mul_withDensity
@@ -196,10 +195,10 @@ lemma setIntegral_rnDeriv_mul_singularPart
   rw [integral_toReal]
   · simp_rw [← Kernel.singularPart_eq_singularPart_measure]
     refine AEMeasurable.mul ?_ ?_
-    · exact (Measure.measurable_rnDeriv _ _).aemeasurable
+    · exact (μ.measurable_rnDeriv _).aemeasurable
     · exact (Kernel.measurable_coe _ ht).aemeasurable
   · refine ae_restrict_of_ae ?_
-    filter_upwards [Measure.rnDeriv_lt_top μ ν] with a ha
+    filter_upwards [μ.rnDeriv_lt_top ν] with a ha
     exact ENNReal.mul_lt_top ha.ne (measure_ne_top _ _)
 
 lemma integral_rnDeriv_mul_singularPart
