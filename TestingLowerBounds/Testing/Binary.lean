@@ -622,8 +622,7 @@ lemma bayesBinaryRisk_eq_lintegral_ennnorm (μ ν : Measure 𝒳) [IsFiniteMeasu
     toReal_bayesBinaryRisk_eq_integral_abs, ENNReal.ofReal_mul (inv_nonneg.mpr zero_le_two),
     ENNReal.ofReal_inv_of_pos zero_lt_two, ENNReal.ofReal_ofNat,
     ENNReal.ofReal_sub _ (by positivity), ENNReal.ofReal_toReal (measure_ne_top _ _),
-    MeasureTheory.ofReal_integral_eq_lintegral_ofReal _
-    (Filter.eventually_of_forall fun _ ↦ by positivity)]
+    ofReal_integral_eq_lintegral_ofReal _ (Filter.eventually_of_forall fun _ ↦ by positivity)]
   swap
   · refine ⟨Measurable.aestronglyMeasurable (by fun_prop), ?_⟩
     simp_rw [HasFiniteIntegral, Real.nnnorm_abs]

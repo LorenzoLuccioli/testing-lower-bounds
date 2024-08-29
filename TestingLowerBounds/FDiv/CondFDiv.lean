@@ -207,8 +207,7 @@ lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
       EReal.coe_ennreal_ne_bot, EReal.coe_ne_top, EReal.coe_ennreal_pos, Measure.measure_univ_pos,
       EReal.coe_pos, EReal.coe_ennreal_eq_top_iff, measure_ne_top, or_self, not_false_eq_true]
   · simp_rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
-    apply MeasureTheory.Integrable.const_mul
-    exact Kernel.IsFiniteKernel.integrable μ η .univ
+    exact (Kernel.IsFiniteKernel.integrable μ η .univ).const_mul _
 
 lemma condFDiv_zero_left' [IsProbabilityMeasure μ] [IsMarkovKernel η] :
     condFDiv f 0 η μ = f 0 := by

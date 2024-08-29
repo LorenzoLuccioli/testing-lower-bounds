@@ -40,7 +40,7 @@ variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β
 Defined using `MeasureTheory.Measure.bind` -/
 --scoped[ProbabilityTheory] infixl:100 " ∘ₘ " => fun μ κ ↦ MeasureTheory.Measure.bind κ μ
 
-scoped[ProbabilityTheory] notation3 κ " ∘ₘ " μ:100 => MeasureTheory.Measure.bind μ κ
+scoped[ProbabilityTheory] notation3 κ " ∘ₘ " μ:100 => Measure.bind μ κ
 
 lemma Measure.map_comp (μ : Measure α) (κ : Kernel α β) {f : β → γ} (hf : Measurable f) :
     (κ ∘ₘ μ).map f = (κ.map f hf) ∘ₘ μ := by

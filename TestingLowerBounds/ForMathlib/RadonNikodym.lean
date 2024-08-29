@@ -103,7 +103,7 @@ lemma Measure.mutuallySingular_of_mutuallySingular_compProd {μ ν ξ : Measure 
   have hs := h.measurableSet_nullSet
   have hμ_zero:= h.measure_nullSet
   have hν_zero := h.measure_compl_nullSet
-  rw [Measure.compProd_apply, MeasureTheory.lintegral_eq_zero_iff'] at hμ_zero hν_zero
+  rw [Measure.compProd_apply, lintegral_eq_zero_iff'] at hμ_zero hν_zero
   rotate_left
   · exact measurable_kernel_prod_mk_left hs.compl |>.aemeasurable
   · exact measurable_kernel_prod_mk_left hs |>.aemeasurable

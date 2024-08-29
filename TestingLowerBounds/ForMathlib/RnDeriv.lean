@@ -106,7 +106,7 @@ lemma rnDeriv_eq_div' {ξ : Measure α} [SigmaFinite μ] [SigmaFinite ν] [Sigma
 
 lemma rnDeriv_eq_zero_ae_of_zero_measure (ν : Measure α) {s : Set α} (hs : MeasurableSet s)
     (hμ : μ s = 0) : ∀ᵐ x ∂ν, x ∈ s → (μ.rnDeriv ν) x = 0 := by
-  rw [← MeasureTheory.setLIntegral_eq_zero_iff hs (μ.measurable_rnDeriv ν)]
+  rw [← setLIntegral_eq_zero_iff hs (μ.measurable_rnDeriv ν)]
   exact le_antisymm (hμ ▸ Measure.setLIntegral_rnDeriv_le s) (zero_le _)
 
 --PRed, see #15540
