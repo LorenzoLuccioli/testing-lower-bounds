@@ -174,7 +174,7 @@ lemma setIntegral_rnDeriv_mul_withDensity
     · exact (Kernel.measurable_coe _ ht).aemeasurable
   · refine ae_restrict_of_ae ?_
     filter_upwards [μ.rnDeriv_lt_top ν] with a ha
-    exact ENNReal.mul_lt_top ha.ne (measure_ne_top _ _)
+    exact ENNReal.mul_lt_top ha (measure_lt_top _ _)
 
 lemma integral_rnDeriv_mul_withDensity
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -198,8 +198,7 @@ lemma setIntegral_rnDeriv_mul_singularPart
     · exact (μ.measurable_rnDeriv _).aemeasurable
     · exact (Kernel.measurable_coe _ ht).aemeasurable
   · refine ae_restrict_of_ae ?_
-    filter_upwards [μ.rnDeriv_lt_top ν] with a ha
-    exact ENNReal.mul_lt_top ha.ne (measure_ne_top _ _)
+    filter_upwards [μ.rnDeriv_lt_top ν] with a ha using ENNReal.mul_lt_top ha (measure_lt_top _ _)
 
 lemma integral_rnDeriv_mul_singularPart
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -237,7 +236,7 @@ apply (integrable_const C.toReal).mono'
 · exact κ.measurable_coe hs |>.ennreal_toReal.aestronglyMeasurable
 simp_rw [Real.norm_eq_abs, abs_eq_self.mpr ENNReal.toReal_nonneg, ENNReal.toReal_le_toReal
   (measure_ne_top _ _) (lt_top_iff_ne_top.mp hC_finite)]
-exact Filter.eventually_of_forall <| fun x ↦ (κ x).mono s.subset_univ |>.trans (hC_le x)
+exact .of_forall <| fun x ↦ (κ x).mono s.subset_univ |>.trans (hC_le x)
 
 lemma Measure.rnDeriv_measure_compProd_Kernel_withDensity [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
