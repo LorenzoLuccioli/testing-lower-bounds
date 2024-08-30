@@ -541,23 +541,18 @@ lemma fDiv_add_measure_le (μ₁ μ₂ ν : Measure α) [IsFiniteMeasure μ₁] 
   calc fDiv f (ν.withDensity (∂μ₁/∂ν) + ν.withDensity (∂μ₂/∂ν)) ν +
       derivAtTop f * (↑(μ₁.singularPart ν .univ) + ↑(μ₂.singularPart ν .univ))
     = fDiv f (ν.withDensity (∂μ₁/∂ν) + ν.withDensity (∂μ₂/∂ν)) ν
-      + derivAtTop f * μ₁.singularPart ν .univ
-      + derivAtTop f * μ₂.singularPart ν .univ := by
+      + derivAtTop f * μ₁.singularPart ν .univ + derivAtTop f * μ₂.singularPart ν .univ := by
         simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
         rw [add_assoc, EReal.mul_add_coe_of_nonneg _ ENNReal.toReal_nonneg ENNReal.toReal_nonneg]
   _ ≤ fDiv f (ν.withDensity (∂μ₁/∂ν)) ν + derivAtTop f * ν.withDensity (∂μ₂/∂ν) .univ
-      + derivAtTop f * μ₁.singularPart ν .univ
-      + derivAtTop f * μ₂.singularPart ν .univ := by
+      + derivAtTop f * μ₁.singularPart ν .univ + derivAtTop f * μ₂.singularPart ν .univ := by
         gcongr
         exact fDiv_add_measure_le_of_ac (withDensity_absolutelyContinuous _ _)
           (withDensity_absolutelyContinuous _ _) hf hf_cvx
-  _ = fDiv f (ν.withDensity (∂μ₁/∂ν)) ν
-      + derivAtTop f * μ₁.singularPart ν .univ
-      + derivAtTop f * μ₂.singularPart ν .univ
-      + derivAtTop f * ν.withDensity (∂μ₂/∂ν) .univ := by
+  _ = fDiv f (ν.withDensity (∂μ₁/∂ν)) ν + derivAtTop f * μ₁.singularPart ν .univ
+      + derivAtTop f * μ₂.singularPart ν .univ + derivAtTop f * ν.withDensity (∂μ₂/∂ν) .univ := by
         abel
-  _ = fDiv f (ν.withDensity (∂μ₁/∂ν)) ν
-      + derivAtTop f * μ₁.singularPart ν .univ
+  _ = fDiv f (ν.withDensity (∂μ₁/∂ν)) ν + derivAtTop f * μ₁.singularPart ν .univ
       + derivAtTop f * (↑(μ₂.singularPart ν .univ) + ↑(ν.withDensity (∂μ₂/∂ν) .univ)) := by
         simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
         rw [add_assoc, EReal.mul_add_coe_of_nonneg _ ENNReal.toReal_nonneg ENNReal.toReal_nonneg]
@@ -600,13 +595,13 @@ lemma fDiv_le_zero_add_top [IsFiniteMeasure μ] [IsFiniteMeasure ν]
       + derivAtTop f * μ.singularPart ν .univ := by
         gcongr
         exact fDiv_le_zero_add_top_of_ac (withDensity_absolutelyContinuous _ _) hf hf_cvx
-  _ ≤ f 0 * ν .univ + derivAtTop f * μ .univ := by
-        rw [add_assoc]
-        gcongr
-        conv_rhs => rw [μ.haveLebesgueDecomposition_add ν, add_comm]
-        simp only [Measure.coe_add, Pi.add_apply, EReal.coe_ennreal_add]
-        simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
-        rw [EReal.mul_add_coe_of_nonneg _ ENNReal.toReal_nonneg ENNReal.toReal_nonneg]
+    _ ≤ f 0 * ν .univ + derivAtTop f * μ .univ := by
+      rw [add_assoc]
+      gcongr
+      conv_rhs => rw [μ.haveLebesgueDecomposition_add ν, add_comm]
+      simp only [Measure.coe_add, Pi.add_apply, EReal.coe_ennreal_add]
+      simp_rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
+      rw [EReal.mul_add_coe_of_nonneg _ ENNReal.toReal_nonneg ENNReal.toReal_nonneg]
 
 section derivAtTopTop
 

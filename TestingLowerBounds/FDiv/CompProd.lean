@@ -321,8 +321,7 @@ lemma integral_f_rnDeriv_mul_le_integral [CountableOrCountablyGenerated α β]
     (hf_cvx : ConvexOn ℝ (Ici 0) f) (hf_cont : ContinuousOn f (Ici 0))
     (h_int : Integrable (fun p ↦ f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ η) p).toReal) (ν ⊗ₘ η))
     (hκη : ∀ᵐ a ∂μ, κ a ≪ η a) :
-    ∫ x, f ((∂μ/∂ν) x * κ x .univ).toReal ∂ν
-      ≤ ∫ x, f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ η) x).toReal ∂(ν ⊗ₘ η) := by
+    ∫ x, f ((∂μ/∂ν) x * κ x .univ).toReal ∂ν ≤ ∫ x, f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ η) x).toReal ∂(ν ⊗ₘ η) := by
   rw [Measure.integral_compProd h_int]
   refine integral_mono_ae ?_ ?_ ?_
   · exact integrable_f_rnDeriv_mul_kernel μ ν κ η hf hf_cvx hf_cont h_int hκη
@@ -524,8 +523,7 @@ lemma le_fDiv_compProd [CountableOrCountablyGenerated α β] (μ ν : Measure α
         congr
         rw [singularPart_compProd]
         simp only [Measure.coe_add, Pi.add_apply]
-        rw [Measure.compProd_apply .univ]
-        rw [Measure.compProd_apply .univ]
+        simp_rw [Measure.compProd_apply .univ]
         simp only [Measure.singularPart_singularPart, Set.preimage_univ]
         rw [← lintegral_add_right]
         · rw [← lintegral_one]
