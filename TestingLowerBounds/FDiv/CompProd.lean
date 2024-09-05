@@ -374,26 +374,16 @@ lemma f_rnDeriv_le_add [CountableOrCountablyGenerated α β]
   simp only [ENNReal.toReal_mul]
   let κ' := η.withDensity (κ.rnDeriv η)
   calc f ((∂μ/∂ν) a).toReal
-  _ ≤ f (((∂μ/∂ν) a).toReal * (κ' a .univ).toReal)
-        + (derivAtTop f).toReal * ((∂μ/∂ν) a).toReal * (1 - (κ' a .univ).toReal) := by
-      refine le_add_derivAtTop' hf_cvx h_deriv_top ENNReal.toReal_nonneg ENNReal.toReal_nonneg ?_
-      calc (κ' a .univ).toReal
-      _ ≤ (κ a .univ).toReal := by
-          gcongr
-          · exact measure_ne_top _ _
-          · exact κ.withDensity_rnDeriv_le η a .univ
-      _ = 1 := by simp
-  _ = f (((∂μ/∂ν) a).toReal * (κ' a .univ).toReal)
-        + (derivAtTop f).toReal * ((∂μ/∂ν) a).toReal * (κ.singularPart η a .univ).toReal := by
+  _ = f (((∂μ/∂ν) a).toReal * (κ a .univ).toReal) := by simp
+  _ = f (((∂μ/∂ν) a).toReal * (κ' a .univ).toReal
+        + ((∂μ/∂ν) a).toReal * (κ.singularPart η a .univ).toReal) := by
+      conv_lhs => rw [← κ.rnDeriv_add_singularPart η]
+      rw [← mul_add, ← ENNReal.toReal_add (measure_ne_top _ _) (measure_ne_top _ _)]
       congr
-      norm_cast
-      unfold_let κ'
-      rw [sub_eq_iff_eq_add, ← ENNReal.one_toReal, ← measure_univ (μ := κ a)]
-      conv_lhs => rw [← κ.rnDeriv_add_singularPart η, add_comm]
-      simp only [Kernel.coe_add, Pi.add_apply, Measure.coe_add]
-      rw [ENNReal.toReal_add]
-      · exact measure_ne_top _ _
-      · exact measure_ne_top _ _
+  _ ≤ f (((∂μ/∂ν) a).toReal * (κ' a .univ).toReal)
+        + (derivAtTop f).toReal * ((∂μ/∂ν) a).toReal * (κ.singularPart η a .univ).toReal := by
+      refine mul_assoc (EReal.toReal _) _ _ ▸ le_add_derivAtTop'' hf_cvx h_deriv_top ?_ ?_
+        <;> exact mul_nonneg ENNReal.toReal_nonneg ENNReal.toReal_nonneg
 
 lemma integrable_f_rnDeriv_of_integrable_compProd' [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
