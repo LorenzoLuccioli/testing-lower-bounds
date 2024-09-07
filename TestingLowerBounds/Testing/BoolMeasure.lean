@@ -14,19 +14,7 @@ namespace Bool
 --rename this and put it in a better place
 lemma cases_set_bool (s : Set Bool) :
     s = ∅ ∨ s = {true} ∨ s = {false} ∨ s = {true, false} := by
-  by_cases h1 : true ∈ s <;> by_cases h2 : false ∈ s
-  · refine Or.inr (Or.inr (Or.inr ?_))
-    ext x
-    induction x <;> simp [h1, h2]
-  · refine Or.inr (Or.inl ?_)
-    ext x
-    induction x <;> simp [h1, h2]
-  · refine Or.inr (Or.inr (Or.inl ?_))
-    ext x
-    induction x <;> simp [h1, h2]
-  · left
-    ext x
-    induction x <;> simp [h1, h2]
+  by_cases h1 : true ∈ s <;> by_cases h2 : false ∈ s <;> simp [Set.ext_iff, h1, h2]
 
 @[ext]
 lemma _root_.MeasureTheory.Measure.measure_bool_ext {π₁ π₂ : Measure Bool}
@@ -52,7 +40,8 @@ lemma iSup_bool {α : Type*} [CompleteLinearOrder α] (s : Bool → α) :
   simp [le_total]
 
 section BoolMeasure
---maybe it could be useful to have a notation for the construction of a measure on bool from the two values, for example:
+
+/-- A measure on `Bool` constructed from the two values it takes on `false` and `true`. -/
 noncomputable
 def boolMeasure (a b : ℝ≥0∞) : Measure Bool := a • Measure.dirac false + b • Measure.dirac true
 

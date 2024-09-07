@@ -28,7 +28,7 @@ lemma snd_compProd_prodMkLeft
   · exact measurable_snd hs
 
 lemma map_comp (κ : Kernel α β) (η : Kernel β γ) {f : γ → δ} (hf : Measurable f) :
-    (η ∘ₖ κ).map f hf = (η.map f hf) ∘ₖ κ := by
+    (η ∘ₖ κ).map f = (η.map f) ∘ₖ κ := by
   ext a s hs
   rw [map_apply' _ hf _ hs, comp_apply', comp_apply' _ _ _ hs]
   · simp_rw [map_apply' _ hf _ hs]

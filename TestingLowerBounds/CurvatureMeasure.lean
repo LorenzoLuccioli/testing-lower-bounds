@@ -3,15 +3,13 @@ Copyright (c) 2024 Lorenzo Luccioli. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
+import Mathlib.MeasureTheory.Constructions.Polish.Basic
+import Mathlib.MeasureTheory.Integral.FundThmCalculus
 import TestingLowerBounds.ForMathlib.ByParts
 import TestingLowerBounds.ForMathlib.LeftRightDeriv
-import Mathlib.MeasureTheory.Integral.FundThmCalculus
-import Mathlib.Probability.Notation
--- TODO: remove this import after the next mathlib bump, now it is only needed for `ConvexOn.add_const`, but this lemma has recently been moved to `Mathlib.Analysis.Convex.Function`, which is already imported here.
-import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 
 
-open MeasureTheory Set StieltjesFunction ProbabilityTheory
+open MeasureTheory Set StieltjesFunction
 
 variable {𝒳 : Type*} {m𝒳 : MeasurableSpace 𝒳} {μ ν : Measure 𝒳} {f g : ℝ → ℝ} {β γ x t : ℝ}
 
@@ -31,14 +29,14 @@ lemma measure_zero : StieltjesFunction.measure 0 = 0 :=
 --PR this to mathlib, just after `StieltjesFunction.measure_Iic`
 lemma measure_Iio {l : ℝ} (hf : Tendsto f atBot (𝓝 l)) (x : ℝ) :
     f.measure (Iio x) = ofReal (leftLim f x - l) := by
-  rw [← Iic_diff_right, measure_diff _ (measurableSet_singleton x), measure_singleton,
+  rw [← Iic_diff_right, measure_diff _ (nullMeasurableSet_singleton x), measure_singleton,
     f.measure_Iic hf, ← ofReal_sub _ (sub_nonneg.mpr <| Monotone.leftLim_le f.mono' (le_refl _))]
     <;> simp
 
 --PR this to mathlib, just after `StieltjesFunction.measure_Ici`
 lemma measure_Ioi {l : ℝ} (hf : Tendsto f atTop (𝓝 l)) (x : ℝ) :
     f.measure (Ioi x) = ofReal (l - f x) := by
-  rw [← Ici_diff_left, measure_diff _ (measurableSet_singleton x), measure_singleton,
+  rw [← Ici_diff_left, measure_diff _ (nullMeasurableSet_singleton x), measure_singleton,
     f.measure_Ici hf, ← ofReal_sub _ (sub_nonneg.mpr <| Monotone.leftLim_le f.mono' (le_refl _))]
     <;> simp
 
@@ -144,7 +142,7 @@ lemma curvatureMeasure_add_linear (a : ℝ) :
 and the curvature measure. -/
 theorem convex_taylor (hf : ConvexOn ℝ univ f) (hf_cont : Continuous f) {a b : ℝ} :
     f b - f a - (rightDeriv f a) * (b - a)  = ∫ x in a..b, b - x ∂(curvatureMeasure f) := by
-  have h_int : IntervalIntegrable (rightDeriv f) ℙ a b := hf.rightDeriv_mono.intervalIntegrable
+  have h_int : IntervalIntegrable (rightDeriv f) volume a b := hf.rightDeriv_mono.intervalIntegrable
   rw [← intervalIntegral.integral_eq_sub_of_hasDeriv_right hf_cont.continuousOn
     (fun x _ ↦ hf.hadDerivWithinAt_rightDeriv x) h_int]
   simp_rw [← neg_sub _ b, intervalIntegral.integral_neg, curvatureMeasure_of_convexOn hf,

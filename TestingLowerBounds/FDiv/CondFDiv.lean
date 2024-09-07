@@ -3,9 +3,10 @@ Copyright (c) 2024 Rémy Degenne. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
-import TestingLowerBounds.FDiv.CompProd
-import TestingLowerBounds.ForMathlib.Integrable_of_empty
 import Mathlib.MeasureTheory.Order.Group.Lattice
+import TestingLowerBounds.FDiv.CompProd
+import TestingLowerBounds.ForMathlib.CountableOrCountablyGenerated
+import TestingLowerBounds.ForMathlib.Integrable_of_empty
 /-!
 
 # Conditional f-divergence
@@ -403,7 +404,7 @@ lemma condFDiv_kernel_snd'_integrable_iff [CountableOrCountablyGenerated (α × 
       refine integral_mono_ae ha_int2.abs (integrable_add_const_iff.mpr ha_int2') ?_
       filter_upwards [ha_le] with a hb_le using by linarith
     apply Integrable.congr (f := fun a ↦ ∫ b, (fDiv f (κ (a, b)) (η (a, b))).toReal ∂ξ a
-        + ((ξ a) .univ).toReal * |(derivAtTop f).toReal|)
+      + ((ξ a) .univ).toReal * |(derivAtTop f).toReal|)
     swap
     · filter_upwards [h_int2'] with a ha_int2'
       rw [integral_add ha_int2' (integrable_const _), integral_const, smul_eq_mul]
