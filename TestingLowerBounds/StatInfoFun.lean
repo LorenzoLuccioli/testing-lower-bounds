@@ -6,7 +6,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 import Mathlib.Algebra.Lie.OfAssociative
 import Mathlib.MeasureTheory.Measure.Regular
 import TestingLowerBounds.DerivAtTop
-import LeanCopilot
+-- import LeanCopilot
 
 open MeasureTheory Set Filter Topology StieltjesFunction
 

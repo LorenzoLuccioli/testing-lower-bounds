@@ -1,5 +1,5 @@
 import Mathlib.MeasureTheory.Constructions.BorelSpace.Real
-import LeanCopilot
+-- import LeanCopilot
 
 open scoped ENNReal NNReal Topology
 open Filter

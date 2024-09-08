@@ -5,7 +5,7 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import TestingLowerBounds.ForMathlib.MaxMinEqAbs
 import TestingLowerBounds.Testing.TwoHypKernel
-import LeanCopilot
+-- import LeanCopilot
 
 /-!
 # Simple Bayesian binary hypothesis testing

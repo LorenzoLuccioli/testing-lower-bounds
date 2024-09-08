@@ -11,8 +11,8 @@ package «testing_lower_bounds» where
   ]
   -- add any additional package configuration options here
   moreLinkArgs := #[
-      "-L./.lake/packages/LeanCopilot/.lake/build/lib",
-      "-lctranslate2"
+      -- "-L./.lake/packages/LeanCopilot/.lake/build/lib",
+      -- "-lctranslate2"
     ]
 
 require mathlib from git
@@ -22,7 +22,7 @@ require mathlib from git
 lean_lib TestingLowerBounds where
   -- add any library configuration options here
 
-require LeanCopilot from git "https://github.com/lean-dojo/LeanCopilot.git" @ "v1.4.1"
+-- require LeanCopilot from git "https://github.com/lean-dojo/LeanCopilot.git" @ "v1.6.0"
 
 require checkdecls from git "https://github.com/PatrickMassot/checkdecls.git"
 
