@@ -794,10 +794,10 @@ lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
     curvatureMeasure_add_const, curvatureMeasure_add_linear, curvatureMeasure_add_const]
   · exact (hf_cvx.add_const _).add (const_mul_id (-rightDeriv f 1)) |>.add_const _
   · exact ((hf_cont.add continuous_const).add (continuous_mul_left _)).add continuous_const
-  · have hf_diff x := differentiableWithinAt_Ioi hf_cvx x
-    rw [rightDeriv_add_const (by fun_prop), rightDeriv_add_linear (by fun_prop),
-      rightDeriv_add_const hf_diff]
-    simp
+  · have hf_diff := differentiableWithinAt_Ioi'
+      (hf_cvx.subset (fun _ _ ↦ trivial) (convex_Ici 0)) zero_lt_one
+    rw [rightDeriv_add_const_apply, rightDeriv_add_linear_apply, rightDeriv_add_const_apply,
+      add_neg_cancel] <;> fun_prop
 
 lemma integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
