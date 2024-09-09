@@ -796,7 +796,7 @@ lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
   · exact ((hf_cont.add continuous_const).add (continuous_mul_left _)).add continuous_const
   · have hf_diff := differentiableWithinAt_Ioi'
       (hf_cvx.subset (fun _ _ ↦ trivial) (convex_Ici 0)) zero_lt_one
-    rw [rightDeriv_add_const_apply, rightDeriv_add_linear_apply, rightDeriv_add_const_apply,
+    rw [rightDeriv_add_const_apply, rightDeriv_add_linear_apply, rightDeriv_add_const_apply hf_diff,
       add_neg_cancel] <;> fun_prop
 
 lemma integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
@@ -858,18 +858,18 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
       + f 1 * ν univ + rightDeriv f 1 * (μ univ - ν univ) := by
   rw [fDiv_eq_fDiv_centeredFunction (hf_cvx.subset (fun _ _ ↦ trivial) (convex_Ici 0))]
   congr
-  · have h : ConvexOn ℝ univ (fun x ↦ f x - f 1 - rightDeriv f 1 * (x - 1)) := by
-      simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul]
-      exact (hf_cvx.add_const _).add ((ConvexOn.const_mul_id _).add (convexOn_const _ convex_univ))
-    rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
-      h (by continuity) (by simp) _ _ h_ac]
+  · rw [fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous'
+      _ (by continuity) (by simp) _ _ h_ac]
     · simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul, ← add_assoc,
         curvatureMeasure_add_const, curvatureMeasure_add_linear, curvatureMeasure_add_const]
-    · have hf_diff x := differentiableWithinAt_Ioi hf_cvx x
+    · simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul]
+      exact (hf_cvx.add_const _).add ((ConvexOn.const_mul_id _).add (convexOn_const _ convex_univ))
+    · have hf_diff := differentiableWithinAt_Ioi'
+        (hf_cvx.subset (fun _ _ ↦ trivial) (convex_Ici 0)) zero_lt_one
       simp_rw [mul_sub, sub_eq_add_neg, neg_add, neg_neg, ← neg_mul, ← add_assoc]
-      rw [rightDeriv_add_const (by fun_prop), rightDeriv_add_linear (by fun_prop),
-        rightDeriv_add_const hf_diff]
-      simp
+      rw [rightDeriv_add_const_apply, rightDeriv_add_linear_apply,
+        rightDeriv_add_const_apply hf_diff, add_neg_cancel]
+      <;> fun_prop
     · exact (h_int.sub (integrable_const _)).sub
         ((Measure.integrable_toReal_rnDeriv.sub (integrable_const 1)).const_mul _)
   all_goals exact ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)
