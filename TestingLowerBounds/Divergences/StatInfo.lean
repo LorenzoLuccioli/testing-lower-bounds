@@ -1124,3 +1124,14 @@ lemma fDiv_comp_le_compProd_right' [IsFiniteMeasure μ]
 end DataProcessingInequality
 
 end ProbabilityTheory
+
+/- In this file, the convexity of f on the whole real line (as opposed to convexity on `Ico 0`)
+is needed basically for 2 things:
+1. the lemma `convex_taylor`.
+2. the definition of curvature measure (since it is needed for the definition of stieltjes measure)
+  and the relative lemma `curvatureMeasure_of_convexOn`.
+
+For 1. it may be possible to directly generalize the lemma to the case of convexity on an interval (or at least on `Ici 0`), by first generalizing it to a function that is convex on the interval and has right and left derivatives finite at the endpoints, then it should be possibe to generalize this without the finite derivatives, by using the monotone convergence theorem, taking a slightly smaller interval and then taking the limit, however this would require some acrobatics about the integrability condition.
+
+For 2. it is more complicated, it should be possible to generalize the definition of stieltjes measure to the case where the function is convex on some interval (this would deped also on the interval), but then there is the whole API to be generalized, it may be a lot of work.
+-/
