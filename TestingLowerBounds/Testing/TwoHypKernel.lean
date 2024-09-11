@@ -240,7 +240,8 @@ lemma bayesInv_twoHypKernel (μ ν : Measure 𝒳) [IsFiniteMeasure μ] [IsFinit
     rw [Measure.bind_apply hA (by exact fun _ _ ↦ hB), Bool.lintegral_bool]
     simp
 
-lemma bayesRiskPrior_eq_of_hasGenBayesEstimator_binary (E : estimationProblem Bool Bool Bool)
+lemma bayesRiskPrior_eq_of_hasGenBayesEstimator_binary {𝒴 𝒵 : Type*}
+    [MeasurableSpace 𝒴] [MeasurableSpace 𝒵] (E : estimationProblem Bool 𝒴 𝒵)
     (P : Kernel Bool 𝒳) [IsFiniteKernel P] (π : Measure Bool) [IsFiniteMeasure π]
     [h : HasGenBayesEstimator E P π] :
     bayesRiskPrior E P π
