@@ -522,7 +522,7 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
   push_cast
   rw [lintegral_statInfoFun_one_zero hf_cvx hf_cont, h2, EReal.coe_toENNReal]
   swap
-  · rw [EReal.sub_nonneg (EReal.coe_ne_top _) (EReal.coe_ne_bot _)]
+  · rw [EReal.sub_nonneg (Or.inr <| EReal.coe_ne_top _) (Or.inr <| EReal.coe_ne_bot _)]
     exact rightDeriv_le_derivAtTop hf_cvx' zero_lt_one
   simp_rw [sub_eq_add_neg, ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top ν _),
     ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top μ _),

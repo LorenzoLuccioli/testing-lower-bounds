@@ -295,13 +295,12 @@ lemma toReal_ne_zero_iff {x : EReal} : x.toReal ≠ 0 ↔ x ≠ 0 ∧ x ≠ ⊤ 
 lemma toReal_eq_zero_iff {x : EReal} : x.toReal = 0 ↔ x = 0 ∨ x = ⊤ ∨ x = ⊥ := by
   induction x <;> norm_num
 
-lemma sub_nonneg {x y : EReal} (hy : y ≠ ⊤) (hy' : y ≠ ⊥) : 0 ≤ x - y ↔ y ≤ x := by
-  lift y to ℝ using ⟨hy, hy'⟩
-  induction x <;> simp [← EReal.coe_sub]
+lemma sub_nonneg {x y : EReal} (h_top : x ≠ ⊤ ∨ y ≠ ⊤) (h_bot : x ≠ ⊥ ∨ y ≠ ⊥) :
+    0 ≤ x - y ↔ y ≤ x := by
+  induction x <;> induction y <;> simp_all [← EReal.coe_sub]
 
-lemma sub_nonpos {x y : EReal} (hy : y ≠ ⊤) (hy' : y ≠ ⊥) : x - y ≤ 0 ↔ x ≤ y := by
-  lift y to ℝ using ⟨hy, hy'⟩
-  induction x <;> simp [← EReal.coe_sub]
+lemma sub_nonpos {x y : EReal} : x - y ≤ 0 ↔ x ≤ y := by
+  induction x <;> induction y <;> simp [← EReal.coe_sub]
 
 @[simp]
 lemma nsmul_eq_mul {n : ℕ} {x : EReal} : n • x = n * x := by
@@ -554,7 +553,7 @@ lemma toENNReal_sub {x y : EReal} (hy : 0 ≤ y) :
     simp only [ne_eq, coe_ne_top, not_false_eq_true, toENNReal_of_ne_top, toReal_coe]
     by_cases hxy : x ≤ y
     · rw [toENNReal_of_nonpos]
-      swap; · exact (sub_nonpos (coe_ne_top y) (coe_ne_bot y)).mpr <| EReal.coe_le_coe_iff.mpr hxy
+      swap; · exact sub_nonpos.mpr <| EReal.coe_le_coe_iff.mpr hxy
       simp_all
     · rw [toENNReal_of_ne_top, ← EReal.coe_sub, toReal_coe,
         ENNReal.ofReal_sub x (EReal.coe_nonneg.mp hy)]
