@@ -251,8 +251,7 @@ lemma bayesRiskPrior_eq_of_hasGenBayesEstimator_binary {𝒴 𝒵 : Type*}
   have h1 := bayesInv_twoHypKernel (P false) (P true) π
   have h2 : P = twoHypKernel (P false) (P true) := Kernel_bool_eq_twoHypKernel P
   have h3 : (P†π) = twoHypKernel (P false) (P true)†π := by congr
-  nth_rw 1 [h2]
-  nth_rw 4 [h2]
+  nth_rw 1 3 [h2]
   simp_rw [h3]
   apply lintegral_congr_ae
   filter_upwards [h1, twoHypKernelInv_apply_false (P false) (P true) π,
