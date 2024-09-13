@@ -71,7 +71,7 @@ lemma Measure.fst_compProd (μ : Measure α) [SFinite μ] (κ : Kernel α β) [I
   ext s
   rw [Measure.compProd, Measure.fst, ← Kernel.fst_apply, Kernel.fst_compProd, Kernel.const_apply]
 
---since these results are in the ProbabilityTheory namespace, we cannot use the dot notation, we should consider moving them to the MeasureTheory namespace
+-- Since these results are in the ProbabilityTheory namespace, we cannot use the dot notation. But they don't even mention probability measures, should we consider moving them to the MeasureTheory namespace?
 lemma Measure.snd_compProd (μ : Measure α) [SFinite μ] (κ : Kernel α β) [IsSFiniteKernel κ] :
     (μ ⊗ₘ κ).snd = κ ∘ₘ μ := (Measure.comp_eq_snd_compProd μ κ).symm
 

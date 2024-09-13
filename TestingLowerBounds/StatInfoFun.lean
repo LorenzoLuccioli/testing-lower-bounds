@@ -351,7 +351,3 @@ lemma integrable_statInfoFun {μ : Measure ℝ} [IsLocallyFiniteMeasure μ] (β 
 end statInfoFun_γ
 
 end ProbabilityTheory
--- strange error:
---Error while replacing abbreviation: Error: TextEditor#edit not possible on closed editors
---TODO: when finished with these proof remember to update the blueprint and also add the proofs to the blueprint
---todo write StieltjesFunction.measure_Ioi
