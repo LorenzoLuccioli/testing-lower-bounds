@@ -124,6 +124,8 @@ lemma rightLim_rightLim_eq {α β : Type*} [LinearOrder α] [TopologicalSpace β
 
   sorry
 
+--we need a lemma saying that taking the right limit twice is the same as taking it once
+--maybe the fact that the right limit is right continuous can help, but we need to prove it before, it should be true, I hope also for functions in EReal, see https://math.stackexchange.com/questions/1651427/is-the-right-limit-function-always-right-continuous for a proof for real functions
 -- /-- If a function `f : ℝ → ℝ` is monotone, then the function mapping `x` to the right limit of `f`
 -- at `x` is a Stieltjes function, i.e., it is monotone and right-continuous. -/
 -- noncomputable def _root_.Monotone.stieltjesFunction {f : ℝ → EReal} (hf : Monotone f) :
@@ -264,7 +266,7 @@ theorem length_subadditive_Icc_Ioo {a b : ℝ} {c d : ℕ → ℝ} (ss : Icc a b
   · rintro x ⟨h₁, h₂⟩
     exact (cv ⟨h₁, le_trans h₂ (le_of_lt cb)⟩).resolve_left (mt And.left (not_lt_of_le h₂))
 
---this really needs to be proven, because the definition of Stieltjes measure depends on it
+-- this really needs to be proven, because the definition of Stieltjes measure depends on it
 -- @[simp]
 -- theorem outer_Ioc (a b : ℝ) : f.outer (Ioc a b) = (f b - f a).toENNReal := by
 --   /- It suffices to show that, if `(a, b]` is covered by sets `s i`, then `f b - f a` is bounded
