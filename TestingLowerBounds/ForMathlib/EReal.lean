@@ -203,6 +203,11 @@ lemma add_sub_cancel (x : EReal) (y : ℝ) : x + y - y = x := by
 lemma add_sub_cancel' (x : EReal) (y : ℝ) : y + x - y = x := by
   rw [add_comm, EReal.add_sub_cancel]
 
+lemma sub_add_cancel (x : EReal) {y : EReal} (h_top : y ≠ ⊤) (h_bot : y ≠ ⊥) : x - y + y = x := by
+  lift y to ℝ using ⟨h_top, h_bot⟩
+  induction x <;> norm_cast
+  ring
+
 @[simp]
 lemma sub_self {x : EReal} (h_top : x ≠ ⊤) (h_bot : x ≠ ⊥) : x - x = 0 := by
   induction x <;> simp_all [← coe_sub]
@@ -542,6 +547,10 @@ lemma toENNReal_add {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
   norm_cast
   simp_rw [real_coe_toENNReal]
   simp_all [ENNReal.ofReal_add]
+
+lemma toENNReal_add_le {x y : EReal} : (x + y).toENNReal ≤ x.toENNReal + y.toENNReal := by
+  induction x <;> induction y <;> try {· simp}
+  exact ENNReal.ofReal_add_le
 
 lemma toENNReal_sub {x y : EReal} (hy : 0 ≤ y) :
     (x - y).toENNReal = x.toENNReal - y.toENNReal := by
