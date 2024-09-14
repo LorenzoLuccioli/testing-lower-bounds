@@ -197,11 +197,8 @@ lemma add_mul_coe_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
   exact EReal.coe_mul_add_of_nonneg hx_nonneg y z
 
 lemma add_sub_cancel (x : EReal) (y : ℝ) : x + y - y = x := by
-  induction x
-  · simp
-  · norm_cast
-    ring
-  · simp
+  induction x <;> norm_cast
+  ring
 
 lemma add_sub_cancel' (x : EReal) (y : ℝ) : y + x - y = x := by
   rw [add_comm, EReal.add_sub_cancel]
