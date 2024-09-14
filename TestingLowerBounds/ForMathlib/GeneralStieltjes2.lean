@@ -286,12 +286,14 @@ theorem length_subadditive_Icc_Ioo {a b : ℝ} {c d : ℕ → ℝ} (ss : Icc a b
 
 
 
---   have h_cont (x y : ℝ) (h : f x ≠ ⊤ ∨ f y ≠ ⊤) (h' : f x ≠ ⊥ ∨ f y ≠ ⊥) :
+--   have h_cont (x y : ℝ) (h' : f x ≠ ⊥ ∨ f y ≠ ⊥) :
 --       ContinuousWithinAt (fun r => f r - f y) (Ioi x) x := by
+--     by_cases h_top : f y = ⊤
+--     · simp [h_top, continuousWithinAt_const]
 --     simp_rw [sub_eq_add_neg]
 --     change ContinuousWithinAt ((fun z ↦ z.1 + z.2) ∘ fun r ↦ (f r, -f y)) (Ioi x) x
 --     refine ContinuousAt.comp_continuousWithinAt ?_ ?_
---     · exact EReal.continuousAt_add (by simp [h]) (by simp [h'])
+--     · exact EReal.continuousAt_add (by simp [h_top]) (by simp [h'])
 --     · exact (f.right_continuous x).mono Ioi_subset_Ici_self |>.prod continuousWithinAt_const
 
 --   refine le_antisymm (f.length_Ioc _ _ ▸ outer_le_length _ _)
@@ -316,9 +318,10 @@ theorem length_subadditive_Icc_Ioo {a b : ℝ} {c d : ℕ → ℝ} (ss : Icc a b
 --       sorry
 --     -- divide the case where f p = ⊥ or the one where f q' = ⊥? I think I need to do it before this have, it's not true that it is continuous if for example f q' = ⊥
 --     have : ContinuousWithinAt (fun r => (f r - f p).toENNReal) (Ioi q') q' := by
---       by_cases h_top : f p = ⊤
---       · simp [h_top, continuousWithinAt_const]
---       refine ContinuousWithinAt.ereal_toENNReal (h_cont _ _ (Or.inr h_top) ?_)
+--       -- by_cases h_top : f p = ⊤ -- this is probably not necessary
+--       -- · simp [h_top, continuousWithinAt_const]
+--       refine ContinuousWithinAt.ereal_toENNReal (h_cont _ _ ?_)
+
 
 --       sorry
 --       -- apply ENNReal.continuous_ofReal.continuousAt.comp_continuousWithinAt
