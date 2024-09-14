@@ -583,6 +583,33 @@ lemma toENNReal_mul' {x y : EReal} (hy : 0 ≤ y) :
     (x * y).toENNReal = x.toENNReal * y.toENNReal := by
   rw [mul_comm, toENNReal_mul hy, mul_comm]
 
+lemma continuous_toENNReal : Continuous EReal.toENNReal := by
+  sorry
+
+@[fun_prop]
+lemma _root_.Continous.ereal_toENNReal {α : Type*} [TopologicalSpace α] {f : α → EReal}
+    (hf : Continuous f) :
+    Continuous fun x => (f x).toENNReal :=
+  continuous_toENNReal.comp hf
+
+@[fun_prop]
+lemma _root_.ContinuousOn.ereal_toENNReal {α : Type*} [TopologicalSpace α] {s : Set α}
+    {f : α → EReal} (hf : ContinuousOn f s) :
+    ContinuousOn (fun x => (f x).toENNReal) s :=
+  continuous_toENNReal.comp_continuousOn hf
+
+@[fun_prop]
+lemma _root_.ContinuousWithinAt.ereal_toENNReal {α : Type*} [TopologicalSpace α] {f : α → EReal}
+    {s : Set α} {x : α} (hf : ContinuousWithinAt f s x) :
+    ContinuousWithinAt (fun x => (f x).toENNReal) s x :=
+  continuous_toENNReal.continuousAt.comp_continuousWithinAt hf
+
+@[fun_prop]
+lemma _root_.ContinuousAt.ereal_toENNReal {α : Type*} [TopologicalSpace α] {f : α → EReal}
+    {x : α} (hf : ContinuousAt f x) :
+    ContinuousAt (fun x => (f x).toENNReal) x :=
+  continuous_toENNReal.continuousAt.comp hf
+
 end EReal
 
 namespace ENNReal
