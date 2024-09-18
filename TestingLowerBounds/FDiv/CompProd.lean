@@ -512,16 +512,19 @@ lemma le_fDiv_compProd [CountableOrCountablyGenerated α β] (μ ν : Measure α
         congr
         fun_prop
 
-lemma fDiv_fst_le [Nonempty β] [StandardBorelSpace β]
+lemma fDiv_fst_le [StandardBorelSpace β]
     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf : StronglyMeasurable f)
     (hf_cvx : ConvexOn ℝ (Ici 0) f) (hf_cont : ContinuousOn f (Ici 0)) :
     fDiv f μ.fst ν.fst ≤ fDiv f μ ν := by
+  by_cases h_empty : IsEmpty β
+  · simp [Measure.eq_zero_of_isEmpty]
+  have : Nonempty β := by exact not_isEmpty_iff.mp h_empty
   rw [← μ.disintegrate μ.condKernel, ← ν.disintegrate ν.condKernel, Measure.fst_compProd,
     Measure.fst_compProd]
   exact le_fDiv_compProd μ.fst ν.fst μ.condKernel ν.condKernel hf hf_cvx hf_cont
 
-lemma fDiv_snd_le [Nonempty α] [StandardBorelSpace α]
+lemma fDiv_snd_le [StandardBorelSpace α]
     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf : StronglyMeasurable f)
     (hf_cvx : ConvexOn ℝ (Ici 0) f) (hf_cont : ContinuousOn f (Ici 0)) :
@@ -530,7 +533,7 @@ lemma fDiv_snd_le [Nonempty α] [StandardBorelSpace α]
   refine (fDiv_fst_le _ _ hf hf_cvx hf_cont).trans_eq ?_
   exact fDiv_map_measurableEmbedding MeasurableEquiv.prodComm.measurableEmbedding
 
-lemma fDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α]
+lemma fDiv_comp_le_compProd [StandardBorelSpace α]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     (hf : StronglyMeasurable f)
@@ -540,7 +543,7 @@ lemma fDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α]
   exact fDiv_snd_le _ _ hf hf_cvx hf_cont
 
 /--The **Data Processing Inequality** for the f-divergence. -/
-lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] [CountableOrCountablyGenerated α β]
+lemma fDiv_comp_right_le [StandardBorelSpace α] [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ : Kernel α β) [IsMarkovKernel κ]
     (hf : StronglyMeasurable f)
