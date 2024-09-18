@@ -340,7 +340,6 @@ lemma fDiv_ne_top_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
     rw [rightDeriv_add_const_apply, rightDeriv_add_linear_apply, rightDeriv_add_const_apply hf_diff,
       add_neg_cancel] <;> fun_prop
 
-
 lemma integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous
     [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
