@@ -245,7 +245,7 @@ lemma mul_add_coe_of_nonneg (x : EReal) {y z : ℝ} (hy : 0 ≤ y) (hz : 0 ≤ z
   lift x to ℝ using ⟨hx_top, hx_bot⟩
   norm_cast
   rw [mul_add]
-
+-- PRed, see #17087
 lemma coe_add_mul_of_nonneg (x : EReal) {y z : ℝ} (hy : 0 ≤ y) (hz : 0 ≤ z) :
     (y + z) * x =  y * x + z * x := by
   simp_rw [mul_comm _ x]
@@ -291,6 +291,7 @@ lemma nsmul_eq_mul (n : ℕ) (x : EReal) : n • x = n * x := by
     rw [succ_nsmul, ih, Nat.cast_succ]
     convert (EReal.coe_add_mul_of_nonneg x _ _).symm <;> simp
 
+-- PRed, see #17097
 lemma lowerSemicontinuous_add : LowerSemicontinuous fun (p : EReal × EReal) ↦ p.1 + p.2 := by
   intro x
   by_cases hx1_bot : x.1 = ⊥
@@ -299,21 +300,25 @@ lemma lowerSemicontinuous_add : LowerSemicontinuous fun (p : EReal × EReal) ↦
   by_cases hx2_bot : x.2 = ⊥
   · intro y
     simp [hx2_bot]
-  refine ContinuousAt.lowerSemicontinuousAt ?_
-  exact EReal.continuousAt_add (Or.inr hx2_bot) (Or.inl hx1_bot)
-
+  exact EReal.continuousAt_add (Or.inr hx2_bot) (Or.inl hx1_bot) |>.lowerSemicontinuousAt
+-- PRed, see #17097
 instance : MeasurableAdd₂ EReal := ⟨EReal.lowerSemicontinuous_add.measurable⟩
+
+--in the PR these I put the fact that ContinuousNeg implies MeasurableNeg in the right place as an instance generalizing an existing one, so there should be no need to prove these things explicitly, see PR #17082
+instance : MeasurableNeg EReal := by
+  refine ⟨?_⟩
+  fun_prop
 
 section MeasurableMul
 
 variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ}
-
+-- PRed, see #17097
 theorem measurable_from_prod_countable'' [Countable β] [MeasurableSingletonClass β]
-    {f : β × α → γ} (hf : ∀ y, Measurable fun x => f (y, x)) :
+    {f : β × α → γ} (hf : ∀ x, Measurable fun y => f (x, y)) :
     Measurable f := by
   change Measurable ((fun (p : α × β) ↦ f (p.2, p.1)) ∘ Prod.swap)
   exact (measurable_from_prod_countable hf).comp measurable_swap
-
+-- PRed, see #17097
 theorem measurable_of_measurable_real_prod {f : EReal × β → γ}
     (h_real : Measurable fun p : ℝ × β ↦ f (p.1, p.2))
     (h_bot : Measurable fun x ↦ f (⊥, x)) (h_top : Measurable fun x ↦ f (⊤, x)) :
@@ -346,10 +351,10 @@ theorem measurable_of_measurable_real_prod {f : EReal × β → γ}
     | inr h => rwa [h]
   · let e : ({⊥, ⊤}ᶜ ×ˢ univ : Set (EReal × β)) ≃ᵐ ℝ × β :=
       (MeasurableEquiv.Set.prod ({⊥, ⊤}ᶜ : Set EReal) (univ : Set β)).trans
-        (MeasurableEquiv.prodCongr MeasurableEquiv.erealEquivReal (MeasurableEquiv.Set.univ β))
+        (MeasurableEquiv.erealEquivReal.prodCongr (MeasurableEquiv.Set.univ β))
     rw [← MeasurableEquiv.measurable_comp_iff e.symm]
     exact h_real
-
+-- PRed, see #17097
 theorem measurable_of_measurable_real_real {f : EReal × EReal → β}
     (h_real : Measurable fun p : ℝ × ℝ ↦ f (p.1, p.2))
     (h_bot_left : Measurable fun r : ℝ ↦ f (⊥, r))
@@ -362,36 +367,28 @@ theorem measurable_of_measurable_real_real {f : EReal × EReal → β}
     exact h_real.comp measurable_swap
   · exact measurable_of_measurable_real h_bot_left
   · exact measurable_of_measurable_real h_top_left
-
+-- PRed, see #17097
 private lemma measurable_const_mul (c : EReal) : Measurable fun (x : EReal) ↦ c * x := by
   refine measurable_of_measurable_real ?_
+  have h1 : (fun (p : ℝ) ↦ (⊥ : EReal) * p)
+      = fun p ↦ if p = 0 then (0 : EReal) else (if p < 0 then ⊤ else ⊥) := by
+    ext p
+    split_ifs with h1 h2
+    · simp [h1]
+    · rw [bot_mul_coe_of_neg h2]
+    · rw [bot_mul_coe_of_pos]
+      exact lt_of_le_of_ne (not_lt.mp h2) (Ne.symm h1)
+  have h2 : Measurable fun (p : ℝ) ↦ if p = 0 then (0 : EReal) else if p < 0 then ⊤ else ⊥ := by
+    refine .piecewise (measurableSet_singleton _) ?_ (.piecewise measurableSet_Iio ?_ ?_)
+      <;> exact measurable_const
   induction c with
-  | h_bot =>
-    have : (fun (p : ℝ) ↦ (⊥ : EReal) * p)
-        = fun p ↦ if p = 0 then (0 : EReal) else (if p < 0 then ⊤ else ⊥) := by
-      ext p
-      split_ifs with h1 h2
-      · simp [h1]
-      · rw [bot_mul_coe_of_neg h2]
-      · rw [bot_mul_coe_of_pos]
-        exact lt_of_le_of_ne (not_lt.mp h2) (Ne.symm h1)
-    rw [this]
-    refine Measurable.piecewise (measurableSet_singleton _) measurable_const ?_
-    exact Measurable.piecewise measurableSet_Iio measurable_const measurable_const
+  | h_bot => rwa [h1]
   | h_real c => exact (measurable_id.const_mul _).coe_real_ereal
   | h_top =>
-    have : (fun (p : ℝ) ↦ (⊤ : EReal) * p)
-        = fun p ↦ if p = 0 then (0 : EReal) else (if p < 0 then ⊥ else ⊤) := by
-      ext p
-      split_ifs with h1 h2
-      · simp [h1]
-      · rw [top_mul_coe_of_neg h2]
-      · rw [top_mul_coe_of_pos]
-        exact lt_of_le_of_ne (not_lt.mp h2) (Ne.symm h1)
-    rw [this]
-    refine Measurable.piecewise (measurableSet_singleton _) measurable_const ?_
-    exact Measurable.piecewise measurableSet_Iio measurable_const measurable_const
-
+    simp_rw [← neg_bot, neg_mul]
+    apply Measurable.neg
+    rwa [h1]
+-- PRed, see #17097
 instance : MeasurableMul₂ EReal := by
   refine ⟨measurable_of_measurable_real_real ?_ ?_ ?_ ?_ ?_⟩
   · exact (measurable_fst.mul measurable_snd).coe_real_ereal
@@ -403,7 +400,7 @@ instance : MeasurableMul₂ EReal := by
     exact (measurable_const_mul _).comp measurable_coe_real_ereal
 
 end MeasurableMul
-
+-- PRed, see #17100
 theorem nhdsWithin_top : 𝓝[≠] (⊤ : EReal) = (atTop).map Real.toEReal := by
   apply (nhdsWithin_hasBasis nhds_top_basis_Ici _).ext (atTop_basis.map Real.toEReal)
   · simp only [EReal.image_coe_Ici, true_and]
@@ -417,6 +414,7 @@ theorem nhdsWithin_top : 𝓝[≠] (⊤ : EReal) = (atTop).map Real.toEReal := b
     refine fun x ↦ ⟨x, ⟨EReal.coe_lt_top x, fun x ⟨(h1 : _ ≤ x), h2⟩ ↦ ?_⟩⟩
     simp [h1, Ne.lt_top' fun a ↦ h2 a.symm]
 
+-- PRed, see #17100
 lemma nhdsWithin_bot : 𝓝[≠] (⊥ : EReal) = (atBot).map Real.toEReal := by
   apply (nhdsWithin_hasBasis nhds_bot_basis_Iic _).ext (atBot_basis.map Real.toEReal)
   · simp only [EReal.image_coe_Iic, Set.subset_compl_singleton_iff, Set.mem_Ioc, lt_self_iff_false,
@@ -431,10 +429,12 @@ lemma nhdsWithin_bot : 𝓝[≠] (⊥ : EReal) = (atBot).map Real.toEReal := by
     refine fun x ↦ ⟨x, ⟨EReal.bot_lt_coe x, fun x ⟨(h1 : x ≤ _), h2⟩ ↦ ?_⟩⟩
     simp [h1, Ne.bot_lt' fun a ↦ h2 a.symm]
 
+-- PRed, see #17100
 theorem tendsto_toReal_atTop : Tendsto EReal.toReal (𝓝[≠] ⊤) atTop := by
   rw [nhdsWithin_top, tendsto_map'_iff]
   exact tendsto_id
 
+-- PRed, see #17100
 theorem tendsto_toReal_atBot : Tendsto EReal.toReal (𝓝[≠] ⊥) atBot := by
   rw [nhdsWithin_bot, tendsto_map'_iff]
   exact tendsto_id
