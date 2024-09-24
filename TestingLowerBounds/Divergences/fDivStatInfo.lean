@@ -439,7 +439,7 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous [IsFiniteMeasur
     rw [fDiv_of_absolutelyContinuous h_ac, if_neg h_int]
     convert (EReal.top_add_of_ne_bot ?_).symm
     swap
-    · simp [sub_eq_add_neg, measure_ne_top, EReal.add_ne_top, EReal.add_ne_bot, EReal.mul_ne_bot]
+    · simp [sub_eq_add_neg, measure_ne_top, EReal.add_ne_top, EReal.mul_ne_bot]
     convert EReal.top_add_of_ne_bot ?_
     swap; · simp [measure_ne_top, EReal.mul_ne_bot]
     simp_rw [EReal.coe_ennreal_eq_top_iff]

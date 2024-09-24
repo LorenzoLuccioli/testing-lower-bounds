@@ -281,7 +281,8 @@ lemma fDiv_sub_const (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure 
   have : f = fun x ↦ (f x - c) + c := by ext; simp
   conv_rhs => rw [this]
   rw [fDiv_add_const]
-  · rw [← EReal.coe_ennreal_toReal (measure_ne_top ν _), ← EReal.coe_mul, EReal.add_sub_cancel]
+  · rw [← EReal.coe_ennreal_toReal (measure_ne_top ν _), ← EReal.coe_mul,
+      EReal.add_sub_cancel_right]
   · exact hf_cvx.sub (concaveOn_const _ (convex_Ici 0))
 
 lemma fDiv_linear {c : ℝ} [IsFiniteMeasure μ] [IsFiniteMeasure ν] :
