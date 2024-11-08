@@ -134,6 +134,14 @@ lemma add_ne_bot_iff {x y : EReal} : x + y ≠ ⊥ ↔ x ≠ ⊥ ∧ y ≠ ⊥ :
 -- lemma add_ne_bot {x y : EReal} (hx : x ≠ ⊥) (hy : y ≠ ⊥) : x + y ≠ ⊥ :=
 --   add_ne_bot_iff.mpr ⟨hx, hy⟩
 
+@[simp]
+lemma toReal_eq_toReal {x y : EReal} (hx_top : x ≠ ⊤) (hx_bot : x ≠ ⊥)
+    (hy_top : y ≠ ⊤) (hy_bot : y ≠ ⊥) :
+    x.toReal = y.toReal ↔ x = y := by
+  lift x to ℝ using ⟨hx_top, hx_bot⟩
+  lift y to ℝ using ⟨hy_top, hy_bot⟩
+  simp
+
 -- PRed, see #17087
 lemma coe_mul_add_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
     x * (y + z) = x * y + x * z := by
