@@ -481,6 +481,9 @@ theorem toENNReal_eq_zero_iff {x : EReal} : x.toENNReal = 0 ↔ x ≤ 0 := by
 theorem toENNReal_ne_zero_iff {x : EReal} : x.toENNReal ≠ 0 ↔ 0 < x := by
   simp [toENNReal_eq_zero_iff.not]
 
+lemma toENNReal_eq_toENNReal {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
+    x.toENNReal = y.toENNReal ↔ x = y := by
+  induction x <;> induction y <;> simp_all
 @[simp]
 theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
   rw [toENNReal]
