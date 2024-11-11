@@ -199,10 +199,10 @@ lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_le [IsFiniteMeasure μ] [IsFinit
     fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
       + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
         + γ * (ν univ).toReal - β * (μ univ).toReal) := by
-  rw [← ENNReal.toReal_toEReal_of_ne_top statInfo_ne_top, toReal_statInfo_eq_integral_abs]
+  rw [← EReal.coe_ennreal_toReal statInfo_ne_top, toReal_statInfo_eq_integral_abs]
   simp only [Bool.boolMeasure_apply_false, ENNReal.toReal_mul, hβ, ENNReal.toReal_ofReal,
     Bool.boolMeasure_apply_true, hγ, EReal.coe_mul, EReal.coe_add, EReal.coe_neg,
-    ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)]
+    EReal.coe_ennreal_toReal (measure_ne_top _ _)]
   rw [show 2⁻¹ = ((2⁻¹ : ℝ) : EReal) from rfl, ← EReal.coe_mul_add_of_nonneg (by positivity),
     fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_le hβ hγβ]
   simp_rw [sub_eq_add_neg, ← add_assoc]
@@ -215,10 +215,10 @@ lemma fDiv_statInfoFun_eq_StatInfo_of_nonneg_of_gt [IsFiniteMeasure μ] [IsFinit
     fDiv (statInfoFun β γ) μ ν = statInfo μ ν (Bool.boolMeasure (.ofReal β) (.ofReal γ))
       + 2⁻¹ * (|β * (μ univ).toReal - γ * (ν univ).toReal|
         + β * (μ univ).toReal - γ * (ν univ).toReal) := by
-  rw [← ENNReal.toReal_toEReal_of_ne_top statInfo_ne_top, toReal_statInfo_eq_integral_abs]
+  rw [← EReal.coe_ennreal_toReal statInfo_ne_top, toReal_statInfo_eq_integral_abs]
   simp only [Bool.boolMeasure_apply_false, ENNReal.toReal_mul, hβ, ENNReal.toReal_ofReal,
     Bool.boolMeasure_apply_true, hγ, EReal.coe_mul, EReal.coe_add, EReal.coe_neg,
-    ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)]
+    EReal.coe_ennreal_toReal (measure_ne_top _ _)]
   rw [show 2⁻¹ = ((2⁻¹ : ℝ) : EReal) from rfl, ← EReal.coe_mul_add_of_nonneg (by positivity),
     fDiv_statInfoFun_eq_integral_abs_of_nonneg_of_gt hβ hγβ]
   simp_rw [sub_eq_add_neg, ← add_assoc]
@@ -413,7 +413,7 @@ lemma fDiv_eq_integral_fDiv_statInfoFun_of_absolutelyContinuous
       <;> fun_prop
     · exact (h_int.sub (integrable_const _)).sub
         ((Measure.integrable_toReal_rnDeriv.sub (integrable_const 1)).const_mul _)
-  all_goals exact ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)
+  all_goals exact EReal.coe_ennreal_toReal (measure_ne_top _ _)
 
 lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous [IsFiniteMeasure μ]
     [IsFiniteMeasure ν] (hf_cvx : ConvexOn ℝ univ f) (hf_cont : Continuous f) (h_ac : μ ≪ ν) :
@@ -427,7 +427,7 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_absolutelyContinuous [IsFiniteMeasur
     · exact (fDiv_statInfoFun_stronglyMeasurable μ ν).measurable.comp (f := fun x ↦ (1, x))
         (by fun_prop) |>.ereal_toReal.aestronglyMeasurable
     simp_rw [← EReal.toENNReal_of_ne_top fDiv_statInfoFun_ne_top]
-    rw [ENNReal.toReal_toEReal_of_ne_top]
+    rw [EReal.coe_ennreal_toReal]
     rw [integrable_f_rnDeriv_iff_integrable_fDiv_statInfoFun_of_absolutelyContinuous hf_cvx
       hf_cont h_ac] at h_int
     refine (integrable_toReal_iff ?_ ?_).mp ?_
@@ -523,8 +523,8 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun_of_mutuallySingular [IsFiniteMeasure μ
   swap
   · rw [EReal.sub_nonneg (Or.inr <| EReal.coe_ne_top _) (Or.inr <| EReal.coe_ne_bot _)]
     exact rightDeriv_le_derivAtTop hf_cvx' zero_lt_one
-  simp_rw [sub_eq_add_neg, ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top ν _),
-    ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top μ _),
+  simp_rw [sub_eq_add_neg, ← EReal.coe_ennreal_toReal (measure_ne_top ν _),
+    ← EReal.coe_ennreal_toReal (measure_ne_top μ _),
     EReal.add_mul_coe_of_nonneg ENNReal.toReal_nonneg, ← EReal.coe_neg (ν univ).toReal,
     ← EReal.coe_add, ← EReal.coe_mul _ (_ + _), mul_add, EReal.coe_add, neg_mul, ← EReal.coe_mul,
     mul_neg, EReal.coe_neg, add_assoc]
@@ -571,7 +571,7 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun [IsFiniteMeasure μ] [IsFiniteMeasure �
         ← EReal.toENNReal_mul (EReal.coe_nonneg.mpr <| statInfoFun_nonneg 1 x 0)]
       refine EReal.toENNReal_le_toENNReal <| (EReal.sub_nonneg ?_ ?_).mp (h_nonneg x)
         <;> simp [EReal.mul_ne_top, EReal.mul_ne_bot, measure_ne_top ν univ]
-    rw [ENNReal.toReal_toEReal_of_ne_top (measure_ne_top ν _), ← EReal.coe_ennreal_mul,
+    rw [EReal.coe_ennreal_toReal (measure_ne_top ν _), ← EReal.coe_ennreal_mul,
       ← ENNReal.toEReal_sub h_ne_top]
     swap
     · exact lintegral_mul_const' _ _ (measure_ne_top ν _) ▸ lintegral_mono h_le
@@ -586,7 +586,7 @@ lemma fDiv_eq_lintegral_fDiv_statInfoFun [IsFiniteMeasure μ] [IsFiniteMeasure �
   simp_rw [h1, lintegral_statInfoFun_one_zero hf_cvx hf_cont, sub_eq_add_neg, add_assoc]
   congr 1
   simp_rw [add_comm (- (((f 0).toEReal + _) * _)), add_comm (∫⁻ _, _ ∂_).toEReal _, ← add_assoc,
-    ← ENNReal.toReal_toEReal_of_ne_top (measure_ne_top _ _)]
+    ← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
   norm_cast
   ring_nf
   simp_rw [sub_eq_add_neg, mul_assoc, ← mul_neg, ← mul_add]

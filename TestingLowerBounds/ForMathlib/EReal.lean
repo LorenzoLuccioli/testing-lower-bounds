@@ -645,8 +645,4 @@ theorem min_mul : min a b * c = min (a * c) (b * c) := mul_right_mono.map_min
 
 theorem mul_min : a * min b c = min (a * b) (a * c) := mul_left_mono.map_min
 
-@[simp]
-lemma toReal_toEReal_of_ne_top (hx : x ≠ ⊤) : x.toReal.toEReal = x.toEReal := by
-  cases x <;> tauto
-
 end ENNReal
