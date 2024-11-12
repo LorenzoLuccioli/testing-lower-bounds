@@ -566,9 +566,9 @@ lemma toENNReal_sub {x y : EReal} (hy : 0 ≤ y) :
     · rw [toENNReal_of_nonpos]
       swap; · exact sub_nonpos.mpr <| EReal.coe_le_coe_iff.mpr hxy
       simp_all
-    · rw [toENNReal_of_ne_top, ← EReal.coe_sub, toReal_coe,
+    · rw [toENNReal_of_ne_top, ← coe_sub, toReal_coe,
         ENNReal.ofReal_sub x (EReal.coe_nonneg.mp hy)]
-      exact Ne.symm (ne_of_beq_false rfl)
+      exact (ne_of_beq_false rfl).symm
   · rw [ENNReal.sub_eq_top_iff.mpr (by simp), top_sub_of_ne_top (coe_ne_top _), toENNReal_top]
 -- PRed, see #18885
 lemma toENNReal_mul {x y : EReal} (hx : 0 ≤ x) :
@@ -643,11 +643,10 @@ lemma toEReal_sub (hy_top : y ≠ ⊤) (h_le : y ≤ x) : (x - y).toEReal = x.to
     norm_cast
   have h_top : x - y ≠ ⊤ := by
     simp only [ne_eq, sub_eq_top_iff, hx_top, hy_top, not_false_eq_true, and_true]
-  nth_rw 2 [← ENNReal.ofReal_toReal_eq_iff.mpr hy_top, ← ENNReal.ofReal_toReal_eq_iff.mpr hx_top]
-  rw [← ENNReal.ofReal_toReal_eq_iff.mpr h_top]
+  nth_rw 2 [← ofReal_toReal_eq_iff.mpr hy_top, ← ofReal_toReal_eq_iff.mpr hx_top]
+  rw [← ofReal_toReal_eq_iff.mpr h_top]
   simp only [EReal.coe_ennreal_ofReal, ge_iff_le, toReal_nonneg, max_eq_left]
-  rw [toReal_sub_of_le h_le hx_top]
-  exact EReal.coe_sub _ _
+  exact toReal_sub_of_le h_le hx_top ▸ EReal.coe_sub _ _
 
 -- PRed, see #18926, the version in the PR is more general
 theorem min_mul : min a b * c = min (a * c) (b * c) := mul_right_mono.map_min
