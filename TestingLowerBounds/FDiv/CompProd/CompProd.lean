@@ -207,11 +207,6 @@ lemma le_fDiv_compProd [CountableOrCountablyGenerated α β] (μ ν : Measure α
         gcongr
         norm_cast
         exact integral_f_rnDeriv_le_integral_add μ ν κ η hf hf_cvx hf_cont h_int (fun h ↦ (h3 h).2)
-  _ = ∫ x, f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ η) x).toReal ∂(ν ⊗ₘ η)
-      + (derivAtTop f).toReal * (((ν.withDensity (∂μ/∂ν)) ⊗ₘ κ).singularPart (ν ⊗ₘ η) .univ).toReal
-      + derivAtTop f * μ.singularPart ν .univ := by
-        simp_rw [Kernel.singularPart_eq_singularPart_measure]
-        rw [integral_rnDeriv_mul_singularPart _ _ _ _ .univ, Set.univ_prod_univ]
   _ = ∫ p, f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ η) p).toReal ∂ν ⊗ₘ η
       + derivAtTop f * (μ ⊗ₘ κ).singularPart (ν ⊗ₘ η) .univ := by
         rw [add_assoc]
@@ -220,44 +215,37 @@ lemma le_fDiv_compProd [CountableOrCountablyGenerated α β] (μ ν : Measure α
         · simp only [h_top, EReal.toReal_top, EReal.coe_zero, zero_mul, zero_add]
           rw [Measure.singularPart_eq_zero_of_ac (h3 h_top).1, Measure.singularPart_eq_zero_of_ac]
           · simp
-          · rw [Measure.absolutelyContinuous_compProd_iff]
-            exact h3 h_top
+          · exact Measure.absolutelyContinuous_compProd_iff.mpr <| h3 h_top
         lift (derivAtTop f) to ℝ using ⟨h_top, hf_cvx.derivAtTop_ne_bot⟩ with df
         simp only [EReal.toReal_coe]
         rw [← EReal.coe_ennreal_toReal (measure_ne_top _ _),
-          ← EReal.coe_ennreal_toReal (measure_ne_top _ _)]
-        conv_rhs => rw [μ.haveLebesgueDecomposition_add ν]
-        rw [Measure.compProd_add_left, add_comm, Measure.singularPart_add]
+          ← EReal.coe_ennreal_toReal (measure_ne_top _ _), singularPart_compProd' μ]
         simp only [Measure.coe_add, Pi.add_apply]
         rw [ENNReal.toReal_add (measure_ne_top _ _) (measure_ne_top _ _)]
         simp only [EReal.coe_add]
         norm_cast
-        rw [mul_add]
+        rw [mul_add, add_comm]
         congr
-        rw [singularPart_compProd]
-        simp only [Measure.coe_add, Pi.add_apply]
-        simp_rw [Measure.compProd_apply .univ]
-        simp only [Measure.singularPart_singularPart, Set.preimage_univ]
-        rw [← lintegral_add_right]
-        · rw [← lintegral_one]
-          congr with a
-          have h : κ a .univ = 1 := by simp
-          rw [← κ.rnDeriv_add_singularPart η] at h
-          simp only [Kernel.coe_add, Pi.add_apply, Measure.add_toOuterMeasure,
-            OuterMeasure.coe_add] at h
-          exact h.symm
-        · exact Kernel.measurable_coe _ .univ
+        · exact Measure.compProd_apply_univ.symm
+        have : ν.withDensity (∂μ/∂ν) = ν.withDensity fun a ↦ ↑((∂μ/∂ν) a).toNNReal := by
+          apply withDensity_congr_ae
+          filter_upwards [μ.rnDeriv_ne_top ν] with a ha using (ENNReal.coe_toNNReal ha).symm
+        rw [compProd_univ_toReal, this, integral_withDensity_eq_integral_smul]
+        congr
+        fun_prop
 
-lemma fDiv_fst_le [Nonempty β] [StandardBorelSpace β]
+lemma fDiv_fst_le [StandardBorelSpace β]
     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf : StronglyMeasurable f)
     (hf_cvx : ConvexOn ℝ (Ici 0) f) (hf_cont : ContinuousOn f (Ici 0)) :
     fDiv f μ.fst ν.fst ≤ fDiv f μ ν := by
+  by_cases h_empty : IsEmpty β; · simp [Measure.eq_zero_of_isEmpty]
+  have : Nonempty β := not_isEmpty_iff.mp h_empty
   rw [← μ.disintegrate μ.condKernel, ← ν.disintegrate ν.condKernel, Measure.fst_compProd,
     Measure.fst_compProd]
   exact le_fDiv_compProd μ.fst ν.fst μ.condKernel ν.condKernel hf hf_cvx hf_cont
 
-lemma fDiv_snd_le [Nonempty α] [StandardBorelSpace α]
+lemma fDiv_snd_le [StandardBorelSpace α]
     (μ ν : Measure (α × β)) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (hf : StronglyMeasurable f)
     (hf_cvx : ConvexOn ℝ (Ici 0) f) (hf_cont : ContinuousOn f (Ici 0)) :
@@ -266,7 +254,7 @@ lemma fDiv_snd_le [Nonempty α] [StandardBorelSpace α]
   refine (fDiv_fst_le _ _ hf hf_cvx hf_cont).trans_eq ?_
   exact fDiv_map_measurableEmbedding MeasurableEquiv.prodComm.measurableEmbedding
 
-lemma fDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α]
+lemma fDiv_comp_le_compProd [StandardBorelSpace α]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η]
     (hf : StronglyMeasurable f)
@@ -276,7 +264,7 @@ lemma fDiv_comp_le_compProd [Nonempty α] [StandardBorelSpace α]
   exact fDiv_snd_le _ _ hf hf_cvx hf_cont
 
 /--The **Data Processing Inequality** for the f-divergence. -/
-lemma fDiv_comp_right_le [Nonempty α] [StandardBorelSpace α] [CountableOrCountablyGenerated α β]
+lemma fDiv_comp_right_le [StandardBorelSpace α] [CountableOrCountablyGenerated α β]
     (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ : Kernel α β) [IsMarkovKernel κ]
     (hf : StronglyMeasurable f)
