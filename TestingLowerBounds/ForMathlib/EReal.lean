@@ -495,6 +495,11 @@ theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := 
   rw [if_neg h_top]
   simp only [coe_ennreal_ofReal, ge_iff_le, hx, toReal_nonneg, max_eq_left]
   exact coe_toReal h_top fun _ ↦ by simp_all only [le_bot_iff, zero_ne_bot]
+-- PRed, see #18885
+lemma coe_toENNReal_eq_max {x : EReal} : x.toENNReal = max 0 x := by
+  rcases le_total 0 x with (hx | hx)
+  · rw [coe_toENNReal hx, max_eq_right hx]
+  · rw [toENNReal_of_nonpos hx, max_eq_left hx, coe_ennreal_zero]
 
 -- PRed, see #18885
 @[simp]
