@@ -5,9 +5,8 @@ Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import Mathlib.MeasureTheory.Order.Group.Lattice
 import Mathlib.Probability.Kernel.Integral
-import TestingLowerBounds.FDiv.CompProd
+import TestingLowerBounds.FDiv.CompProd.CompProd
 import TestingLowerBounds.ForMathlib.CountableOrCountablyGenerated
-import TestingLowerBounds.ForMathlib.Integrable_of_empty
 
 /-!
 
@@ -189,7 +188,7 @@ lemma condFDiv_self (κ : Kernel α β) (μ : Measure α) (hf_one : f 1 = 0) [Is
 @[simp]
 lemma condFDiv_zero_left [IsFiniteMeasure μ] [IsFiniteKernel η] :
     condFDiv f 0 η μ = f 0 * ∫ a, ((η a) .univ).toReal ∂μ := by
-  rw [condFDiv_eq' _ _] <;> simp_rw [Kernel.zero_apply, fDiv_zero_measure]
+  rw [condFDiv_eq' _ _] <;> simp_rw [Kernel.zero_apply, fDiv_zero_measure_left]
   · simp_rw [EReal.toReal_mul, EReal.toReal_coe, EReal.toReal_coe_ennreal]
     norm_cast
     exact integral_mul_left (f 0) _
@@ -317,7 +316,7 @@ theorem fDiv_compProd_left (μ : Measure α) [IsFiniteMeasure μ]
   · simp only [h_deriv, EReal.toReal_top, EReal.coe_zero, zero_mul]
     suffices (μ ⊗ₘ κ).singularPart (μ ⊗ₘ η) = 0 by
       simp [this]
-    rw [Measure.singularPart_eq_zero, Kernel.Measure.absolutelyContinuous_compProd_right_iff]
+    rw [Measure.singularPart_eq_zero, Measure.absolutelyContinuous_compProd_right_iff]
     exact h3 h_deriv
   · congr 1
     rw [EReal.coe_toReal h_deriv h_cvx.derivAtTop_ne_bot, integral_singularPart _ _ _ .univ,

@@ -24,8 +24,23 @@ variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β
 
 section SingularPart
 
-lemma singularPart_compProd'' [CountableOrCountablyGenerated α β]
-    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma singularPart_compProd_left (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ : Kernel α β) [IsFiniteKernel κ] :
+    (μ ⊗ₘ κ).singularPart (ν ⊗ₘ κ) = μ.singularPart ν ⊗ₘ κ := by
+  conv_lhs => rw [μ.haveLebesgueDecomposition_add ν, Measure.compProd_add_left,
+    Measure.singularPart_add]
+  have : (ν.withDensity (∂μ/∂ν) ⊗ₘ κ).singularPart (ν ⊗ₘ κ) = 0 := by
+    refine Measure.singularPart_eq_zero_of_ac (Measure.absolutelyContinuous_compProd ?_ ?_)
+    · exact withDensity_absolutelyContinuous _ _
+    · exact ae_of_all _ fun _ ↦ by rfl
+  rw [this, add_zero]
+  rw [Measure.singularPart_eq_self]
+  refine Measure.mutuallySingular_compProd_left ?_ κ κ
+  exact Measure.mutuallySingular_singularPart _ _
+
+variable [CountableOrCountablyGenerated α β]
+
+lemma singularPart_compProd'' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     (μ ⊗ₘ κ).singularPart (ν ⊗ₘ η)
       = μ.singularPart ν ⊗ₘ η.withDensity (κ.rnDeriv η) + μ.singularPart ν ⊗ₘ κ.singularPart η
@@ -40,17 +55,16 @@ lemma singularPart_compProd'' [CountableOrCountablyGenerated α β]
   rw [this, add_zero, ← add_assoc]
   congr
   · rw [Measure.singularPart_eq_self]
-    exact Kernel.Measure.mutuallySingular_compProd_left (μ.mutuallySingular_singularPart ν)
+    exact Measure.mutuallySingular_compProd_left (μ.mutuallySingular_singularPart ν)
       (η.withDensity (κ.rnDeriv η)) η
   · rw [Measure.singularPart_eq_self]
-    exact Kernel.Measure.mutuallySingular_compProd_left (μ.mutuallySingular_singularPart ν)
+    exact Measure.mutuallySingular_compProd_left (μ.mutuallySingular_singularPart ν)
       (κ.singularPart η) η
   · rw [Measure.singularPart_eq_self]
-    exact Kernel.Measure.mutuallySingular_compProd_right (ν.withDensity (∂μ/∂ν)) ν
+    exact Measure.mutuallySingular_compProd_right (ν.withDensity (∂μ/∂ν)) ν
       (.of_forall <| κ.mutuallySingular_singularPart _)
 
-lemma singularPart_compProd [CountableOrCountablyGenerated α β]
-    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma singularPart_compProd (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     (μ ⊗ₘ κ).singularPart (ν ⊗ₘ η)
       = μ.singularPart ν ⊗ₘ η.withDensity (κ.rnDeriv η) + μ ⊗ₘ κ.singularPart η := by
@@ -61,8 +75,7 @@ lemma singularPart_compProd [CountableOrCountablyGenerated α β]
   rw [this]
   abel
 
-lemma singularPart_compProd' [CountableOrCountablyGenerated α β]
-    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+lemma singularPart_compProd' (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     (μ ⊗ₘ κ).singularPart (ν ⊗ₘ η)
       = μ.singularPart ν ⊗ₘ κ + ν.withDensity (∂μ/∂ν) ⊗ₘ κ.singularPart η := by
@@ -72,14 +85,7 @@ lemma singularPart_compProd' [CountableOrCountablyGenerated α β]
     rw [← Measure.compProd_add_right, (κ.rnDeriv_add_singularPart η)]
   rw [this]
 
-lemma singularPart_compProd_left [CountableOrCountablyGenerated α β]
-    (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (κ : Kernel α β) [IsFiniteKernel κ] :
-    (μ ⊗ₘ κ).singularPart (ν ⊗ₘ κ) = μ.singularPart ν ⊗ₘ κ := by
-  rw [singularPart_compProd', κ.singularPart_self, Measure.compProd_zero_right, add_zero]
-
-lemma singularPart_compProd_right [CountableOrCountablyGenerated α β]
-    (μ : Measure α) [IsFiniteMeasure μ]
+lemma singularPart_compProd_right (μ : Measure α) [IsFiniteMeasure μ]
     (κ η : Kernel α β) [IsFiniteKernel κ] [IsFiniteKernel η] :
     (μ ⊗ₘ κ).singularPart (μ ⊗ₘ η) = μ ⊗ₘ κ.singularPart η := by
   rw [singularPart_compProd, Measure.singularPart_self, Measure.compProd_zero_left, zero_add]
@@ -211,6 +217,63 @@ lemma integrable_f_rnDeriv_compProd_iff' [IsFiniteMeasure μ] [IsFiniteMeasure �
   simp only [Set.mem_univ, Set.indicator_of_mem, Pi.one_apply]
   exact Integrable.integral_compProd' (f := fun _ ↦ 1) (integrable_const _)
 
+lemma integrable_f_rnDeriv_compProd_iff'_of_ac [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [IsFiniteKernel κ] [IsFiniteKernel η] (h_ac : μ ⊗ₘ κ ≪ μ ⊗ₘ η)
+    (hf : StronglyMeasurable f) (h_cvx : ConvexOn ℝ (Set.Ici 0) f) :
+    Integrable (fun x ↦ f ((μ ⊗ₘ κ).rnDeriv (ν ⊗ₘ η) x).toReal) (ν ⊗ₘ η)
+      ↔ (∀ᵐ a ∂ν,
+        Integrable (fun x ↦ f (μ.rnDeriv ν a * ((μ ⊗ₘ κ).rnDeriv (μ ⊗ₘ η)) (a, x)).toReal) (η a))
+      ∧ Integrable (fun a ↦
+        ∫ b, f (μ.rnDeriv ν a * ((μ ⊗ₘ κ).rnDeriv (μ ⊗ₘ η)) (a, b)).toReal ∂(η a)) ν := by
+  rw [integrable_f_rnDeriv_compProd_iff' hf h_cvx]
+  congr! 1
+  · refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
+    all_goals
+    · filter_upwards [Kernel.rnDeriv_compProd' h_ac ν, h] with a ha h
+      refine (integrable_congr ?_).mp h
+      filter_upwards [ha] with b hb
+      rw [hb]
+  · refine integrable_congr ?_
+    filter_upwards [Kernel.rnDeriv_compProd' h_ac ν] with a ha
+    refine integral_congr_ae ?_
+    filter_upwards [ha] with b hb
+    rw [hb]
+
+lemma f_compProd_congr_left (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ : Kernel α β) [IsFiniteKernel κ] :
+    ∀ᵐ a ∂ν, (fun b ↦ f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ κ) (a, b)).toReal)
+      =ᵐ[κ a] fun _ ↦ f ((∂μ/∂ν) a).toReal := by
+  have h_eq_compProd := Kernel.rnDeriv_measure_compProd_left' μ ν κ
+  filter_upwards [h_eq_compProd] with a ha
+  filter_upwards [ha] with b hb
+  rw [hb]
+
+lemma integral_f_compProd_left_congr (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    (κ : Kernel α β) [IsFiniteKernel κ]  :
+    (fun a ↦ ∫ b, f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ κ) (a, b)).toReal ∂(κ a))
+      =ᵐ[ν] fun a ↦ (κ a .univ).toReal * f ((∂μ/∂ν) a).toReal := by
+  filter_upwards [f_compProd_congr_left μ ν κ] with a ha
+  rw [integral_congr_ae ha]
+  simp
+
+lemma integrable_f_rnDeriv_compProd_left_iff' [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [IsFiniteKernel κ] (hf : StronglyMeasurable f) (h_cvx : ConvexOn ℝ (Set.Ici 0) f) :
+    Integrable (fun x ↦ f ((μ ⊗ₘ κ).rnDeriv (ν ⊗ₘ κ) x).toReal) (ν ⊗ₘ κ)
+      ↔ Integrable (fun a ↦ (κ a .univ).toReal * f ((∂μ/∂ν) a).toReal) ν := by
+  rw [integrable_f_rnDeriv_compProd_iff' hf h_cvx,
+    integrable_congr (integral_f_compProd_left_congr μ ν κ)]
+  refine ⟨fun h ↦ h.2, fun h ↦ ⟨?_, h⟩⟩
+  filter_upwards [f_compProd_congr_left (f := f) μ ν κ] with x hx
+  rw [integrable_congr hx]
+  exact integrable_const _
+
+lemma integrable_f_rnDeriv_compProd_left_iff [IsFiniteMeasure μ] [IsFiniteMeasure ν]
+    [IsMarkovKernel κ] (hf : StronglyMeasurable f) (h_cvx : ConvexOn ℝ (Set.Ici 0) f) :
+    Integrable (fun x ↦ f ((μ ⊗ₘ κ).rnDeriv (ν ⊗ₘ κ) x).toReal) (ν ⊗ₘ κ)
+      ↔ Integrable (fun a ↦ f ((∂μ/∂ν) a).toReal) ν := by
+  rw [integrable_f_rnDeriv_compProd_left_iff' hf h_cvx]
+  simp
+
 variable [CountableOrCountablyGenerated α β]
 
 lemma f_compProd_congr (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -235,17 +298,6 @@ lemma integral_f_compProd_right_congr (μ : Measure α) [IsFiniteMeasure μ]
   filter_upwards [integral_f_compProd_congr μ μ κ η, μ.rnDeriv_self] with a ha h_eq_one
   rw [ha]
   simp_rw [h_eq_one, one_mul]
-
-lemma integral_f_compProd_left_congr (μ ν : Measure α) [IsFiniteMeasure μ] [IsFiniteMeasure ν]
-    (κ : Kernel α β) [IsFiniteKernel κ]  :
-    (fun a ↦ ∫ b, f ((∂μ ⊗ₘ κ/∂ν ⊗ₘ κ) (a, b)).toReal ∂(κ a))
-      =ᵐ[ν] fun a ↦ (κ a .univ).toReal * f ((∂μ/∂ν) a).toReal := by
-  filter_upwards [integral_f_compProd_congr (f := f) μ ν κ κ] with a ha
-  have h_one := (κ a).rnDeriv_self
-  rw [ha, ← smul_eq_mul,  ← integral_const]
-  refine integral_congr_ae ?_
-  filter_upwards [h_one] with b hb
-  simp [hb]
 
 lemma integrable_f_rnDeriv_of_integrable_compProd [IsFiniteMeasure μ] [IsFiniteKernel κ]
     [IsFiniteKernel η] (hf : StronglyMeasurable f)

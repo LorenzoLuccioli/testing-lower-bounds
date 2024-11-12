@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Rémy Degenne, Lorenzo Luccioli
 -/
 import Mathlib.Probability.Kernel.MeasureCompProd
-import TestingLowerBounds.ForMathlib.GiryMonad
 import TestingLowerBounds.Kernel.ParallelComp
 
 
@@ -95,7 +94,7 @@ lemma Measure.compProd_const {ν : Measure β} [SFinite μ] [SFinite ν] :
   simp_rw [Kernel.const_apply]
 
 @[simp]
-lemma Measure.comp_const {ν : Measure β} : (Kernel.const α ν) ∘ₘ μ = μ .univ • ν := μ.bind_const ν
+lemma Measure.comp_const {ν : Measure β} : (Kernel.const α ν) ∘ₘ μ = μ .univ • ν := μ.bind_const
 
 lemma Measure.compProd_apply_toReal [SFinite μ] [IsFiniteKernel κ]
     {s : Set (α × β)} (hs : MeasurableSet s) :
@@ -128,10 +127,10 @@ lemma Measure.snd_sum {ι : Type*} (μ : ι → Measure (α × β)) :
   · exact measurable_snd hs
 
 instance {μ : Measure (α × β)} [SFinite μ] : SFinite μ.fst :=
-  ⟨fun n ↦ (sFiniteSeq μ n).fst, inferInstance, by rw [← Measure.fst_sum, sum_sFiniteSeq μ]⟩
+  ⟨fun n ↦ (sfiniteSeq μ n).fst, inferInstance, by rw [← Measure.fst_sum, sum_sfiniteSeq μ]⟩
 
 instance {μ : Measure (α × β)} [SFinite μ] : SFinite μ.snd :=
-  ⟨fun n ↦ (sFiniteSeq μ n).snd, inferInstance, by rw [← Measure.snd_sum, sum_sFiniteSeq μ]⟩
+  ⟨fun n ↦ (sfiniteSeq μ n).snd, inferInstance, by rw [← Measure.snd_sum, sum_sfiniteSeq μ]⟩
 
 instance {μ : Measure α} [SFinite μ] {κ : Kernel α β} [IsSFiniteKernel κ] : SFinite (κ ∘ₘ μ) := by
   rw [Measure.comp_eq_snd_compProd]
@@ -172,6 +171,28 @@ lemma Measure.compProd_apply_univ [SFinite μ] [IsMarkovKernel κ] :
 
 lemma Measure.comp_apply_univ [IsMarkovKernel κ] : (κ ∘ₘ μ) .univ = μ .univ := by
   rw [Measure.bind_apply .univ κ.measurable]
+  simp
+
+@[simp]
+lemma Measure.fst_add {μ ν : Measure (α × β)} : (μ + ν).fst = μ.fst + ν.fst := by
+  ext s hs
+  simp_rw [Measure.coe_add, Pi.add_apply, Measure.fst_apply hs, Measure.coe_add, Pi.add_apply]
+
+@[simp]
+lemma Measure.snd_add {μ ν : Measure (α × β)} : (μ + ν).snd = μ.snd + ν.snd := by
+  ext s hs
+  simp_rw [Measure.coe_add, Pi.add_apply, Measure.snd_apply hs, Measure.coe_add, Pi.add_apply]
+
+lemma Measure.comp_add_right [SFinite μ] [SFinite ν] [IsSFiniteKernel κ] :
+    κ ∘ₘ (μ + ν) = κ ∘ₘ μ + κ ∘ₘ ν := by
+  simp_rw [comp_eq_snd_compProd]
+  rw [Measure.compProd_add_left]
+  simp
+
+lemma Measure.comp_add_left [SFinite μ] [IsSFiniteKernel κ] [IsSFiniteKernel η] :
+    (κ + η) ∘ₘ μ = κ ∘ₘ μ + η ∘ₘ μ := by
+  simp_rw [comp_eq_snd_compProd]
+  rw [Measure.compProd_add_right]
   simp
 
 lemma Measure.compProd_smul_left (a : ℝ≥0∞) [SFinite μ] [IsSFiniteKernel κ] :

@@ -14,25 +14,14 @@ open Real MeasureTheory Filter Set
 
 open scoped ENNReal MeasureTheory
 
-lemma MeasureTheory.integrable_of_le_of_le {α : Type*} {mα : MeasurableSpace α} {μ : Measure α}
-    {f g₁ g₂ : α → ℝ} (hf : AEStronglyMeasurable f μ)
-    (h_le₁ : g₁ ≤ᵐ[μ] f) (h_le₂ : f ≤ᵐ[μ] g₂)
-    (h_int₁ : Integrable g₁ μ) (h_int₂ : Integrable g₂ μ) :
-    Integrable f μ := by
-  have : ∀ᵐ x ∂μ, ‖f x‖ ≤ max ‖g₁ x‖ ‖g₂ x‖ := by
-    filter_upwards [h_le₁, h_le₂] with x hx1 hx2
-    simp only [norm_eq_abs]
-    exact abs_le_max_abs_abs hx1 hx2
-  have h_le_add : ∀ᵐ x ∂μ, ‖f x‖ ≤ ‖‖g₁ x‖ + ‖g₂ x‖‖ := by
-    filter_upwards [this] with x hx
-    refine hx.trans ?_
-    conv_rhs => rw [norm_of_nonneg (by positivity)]
-    exact max_le_add_of_nonneg (norm_nonneg _) (norm_nonneg _)
-  exact Integrable.mono (h_int₁.norm.add h_int₂.norm) hf h_le_add
-
 namespace MeasureTheory.Measure
 
 variable {α β : Type*} {m mα : MeasurableSpace α} {mβ : MeasurableSpace β} {μ ν : Measure α}
+
+lemma withDensity_mono_measure (h : μ ≤ ν) {f : α → ℝ≥0∞} : μ.withDensity f ≤ ν.withDensity f := by
+  refine Measure.le_intro fun s hs _ ↦ ?_
+  rw [withDensity_apply _ hs, withDensity_apply _ hs]
+  exact lintegral_mono_fn' (fun _ ↦ le_rfl) (Measure.restrict_mono subset_rfl h)
 
 lemma rnDeriv_add_self_right (ν μ : Measure α) [SigmaFinite μ] [SigmaFinite ν] :
     ν.rnDeriv (μ + ν) =ᵐ[ν] fun x ↦ (μ.rnDeriv ν x + 1)⁻¹ := by
@@ -200,20 +189,59 @@ lemma rnDeriv_eq_zero_ae_of_singularPartSet (μ ν ξ : Measure α) [SigmaFinite
 
 section Trim
 
+lemma toReal_rnDeriv_map [IsFiniteMeasure μ] [SigmaFinite ν] (hμν : μ ≪ ν)
+    {g : α → β} (hg : Measurable g) [SigmaFinite (ν.trim hg.comap_le)] [SigmaFinite (ν.map g)] :
+    (fun a ↦ ((μ.map g).rnDeriv (ν.map g) (g a)).toReal)
+      =ᵐ[ν] ν[(fun a ↦ (μ.rnDeriv ν a).toReal) | mβ.comap g] := by
+  refine ae_eq_condexp_of_forall_setIntegral_eq _ ?_ ?_ ?_ ?_
+  · exact Measure.integrable_toReal_rnDeriv
+  · rintro _ ⟨t, _, rfl⟩ _
+    refine Integrable.integrableOn ?_
+    change Integrable ((fun x ↦ ((μ.map g).rnDeriv (ν.map g) x).toReal) ∘ g) ν
+    rw [← integrable_map_measure (f := g)]
+    · exact Measure.integrable_toReal_rnDeriv
+    · exact (Measure.measurable_rnDeriv _ _).ennreal_toReal.aestronglyMeasurable
+    · exact hg.aemeasurable
+  · rintro _ ⟨t, ht, rfl⟩ _
+    calc ∫ x in g ⁻¹' t, ((μ.map g).rnDeriv (ν.map g) (g x)).toReal ∂ν
+      = ∫ y in t, ((μ.map g).rnDeriv (ν.map g) y).toReal ∂(ν.map g) := by
+          rw [setIntegral_map ht _ hg.aemeasurable]
+          exact (Measure.measurable_rnDeriv _ _).ennreal_toReal.aestronglyMeasurable
+    _ = ∫ x in g ⁻¹' t, (μ.rnDeriv ν x).toReal ∂ν := by
+          rw [Measure.setIntegral_toReal_rnDeriv (hμν.map hg),
+            Measure.setIntegral_toReal_rnDeriv hμν, Measure.map_apply hg ht]
+  · refine StronglyMeasurable.aeStronglyMeasurable' ?_
+    refine (@Measurable.ennreal_toReal _ (mβ.comap g) _ (fun s hs ↦ ?_)).stronglyMeasurable
+    exact ⟨_, Measure.measurable_rnDeriv _ _ hs, rfl⟩
+
+lemma toReal_rnDeriv_map' [IsFiniteMeasure μ] [SigmaFinite ν] (hμν : μ ≪ ν)
+    {g : α → β} (hg : Measurable g) [SigmaFinite (ν.trim hg.comap_le)] [SigmaFinite (ν.map g)] :
+    (fun a ↦ ((μ.map g).rnDeriv (ν.map g) (g a)).toReal)
+      =ᵐ[ν.trim hg.comap_le] ν[(fun a ↦ (μ.rnDeriv ν a).toReal) | mβ.comap g] := by
+  rw [ae_eq_trim_iff]
+  · exact toReal_rnDeriv_map hμν hg
+  · refine Measurable.stronglyMeasurable ?_
+    rintro s hs
+    refine ⟨(fun a ↦ ((map g μ).rnDeriv (map g ν) a).toReal) ⁻¹' s, ?_, ?_⟩
+    · exact (Measure.measurable_rnDeriv _ _).ennreal_toReal hs
+    · rw [← preimage_comp]
+      rfl
+  · exact stronglyMeasurable_condexp
+
+lemma trim_eq_map (μ : Measure α) (hm : m ≤ mα) : μ.trim hm = @Measure.map _ _ m _ id μ := by
+  refine @Measure.ext α m _ _ (fun s hs ↦ ?_)
+  rw [@map_apply _ _ _ m _ _ (measurable_id'' hm) _ hs, trim_measurableSet_eq hm hs, preimage_id]
+
 lemma toReal_rnDeriv_trim_of_ac (hm : m ≤ mα) [IsFiniteMeasure μ] [SigmaFinite ν]
-    [SigmaFinite (ν.trim hm)] (hμν : μ ≪ ν) :
+    [hsf : SigmaFinite (ν.trim hm)] (hμν : μ ≪ ν) :
     (fun x ↦ ((μ.trim hm).rnDeriv (ν.trim hm) x).toReal)
       =ᵐ[ν.trim hm] ν[fun x ↦ (μ.rnDeriv ν x).toReal | m] := by
-  have h_meas : StronglyMeasurable[m] fun x ↦ (rnDeriv (trim μ hm) (trim ν hm) x).toReal := by
-    refine Measurable.stronglyMeasurable ?_
-    exact @Measurable.ennreal_toReal _ m _ (Measure.measurable_rnDeriv _ _)
-  rw [ae_eq_trim_iff _ h_meas stronglyMeasurable_condexp]
-  refine ae_eq_condexp_of_forall_setIntegral_eq ?_ integrable_toReal_rnDeriv ?_ ?_
-    h_meas.aeStronglyMeasurable'
-  · exact fun s _ _ ↦ (integrable_of_integrable_trim hm integrable_toReal_rnDeriv).integrableOn
-  · intro s hs _
-    rw [integral_trim hm h_meas, setIntegral_toReal_rnDeriv hμν, ← restrict_trim _ _ hs,
-      setIntegral_toReal_rnDeriv (hμν.trim hm), trim_measurableSet_eq hm hs]
+  simp_rw [trim_eq_map _ hm]
+  have : SigmaFinite (ν.trim (measurable_id'' hm).comap_le) := by convert hsf; simp
+  have : SigmaFinite (@Measure.map _ _ m _ id ν) := by convert hsf; rw [trim_eq_map]
+  have h := toReal_rnDeriv_map' hμν (measurable_id'' hm)
+  simp_rw [MeasurableSpace.comap_id, id_def, trim_eq_map] at h
+  convert h <;> rw [MeasurableSpace.comap_id]
 
 lemma rnDeriv_trim_of_ac (hm : m ≤ mα) [IsFiniteMeasure μ] [SigmaFinite ν]
     [SigmaFinite (ν.trim hm)] (hμν : μ ≪ ν) :
@@ -258,6 +286,16 @@ lemma ae_rnDeriv_ne_zero_imp_of_ae [SigmaFinite μ] [SigmaFinite ν] {p : α →
     rwa [hx2] at hx1
   refine ae_rnDeriv_ne_zero_imp_of_ae_aux ?_ (withDensity_absolutelyContinuous _ _)
   exact (Measure.absolutelyContinuous_of_le (μ.withDensity_rnDeriv_le ν)) h
+
+lemma ae_eq_mul_rnDeriv_of_ae_eq {κ : α → Measure β} [SigmaFinite μ] [SigmaFinite ν]
+    {f g : α → β → ℝ≥0∞} (h : ∀ᵐ a ∂μ, f a =ᵐ[κ a] g a) :
+    ∀ᵐ a ∂ν, (fun b ↦ μ.rnDeriv ν a * f a b) =ᵐ[κ a] (fun b ↦ μ.rnDeriv ν a * g a b) := by
+  have h_imp := ae_rnDeriv_ne_zero_imp_of_ae h (ν := ν)
+  filter_upwards [h_imp] with a ha
+  by_cases h_zero : μ.rnDeriv ν a = 0
+  · simp [h_zero]
+  filter_upwards [ha h_zero] with h hb
+  rw [hb]
 
 lemma ae_integrable_mul_rnDeriv_of_ae_integrable {κ : α → Measure β} [SigmaFinite μ] [SigmaFinite ν]
     (g : α → β → ℝ) (h : ∀ᵐ a ∂μ, Integrable (fun x ↦ g a x) (κ a)) :
