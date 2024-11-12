@@ -133,7 +133,7 @@ lemma add_ne_bot_iff {x y : EReal} : x + y ≠ ⊥ ↔ x ≠ ⊥ ∧ y ≠ ⊥ :
 -- I did not PR this, it seems a bit redundant having add_ne_bot_iff as a simp lemma, now there are no occurrences of this in the project, it can be safely removed
 -- lemma add_ne_bot {x y : EReal} (hx : x ≠ ⊥) (hy : y ≠ ⊥) : x + y ≠ ⊥ :=
 --   add_ne_bot_iff.mpr ⟨hx, hy⟩
-
+-- PRed, see #17087
 @[simp]
 lemma toReal_eq_toReal {x y : EReal} (hx_top : x ≠ ⊤) (hx_bot : x ≠ ⊥)
     (hy_top : y ≠ ⊤) (hy_bot : y ≠ ⊥) :
@@ -142,7 +142,7 @@ lemma toReal_eq_toReal {x y : EReal} (hx_top : x ≠ ⊤) (hx_bot : x ≠ ⊥)
   lift y to ℝ using ⟨hy_top, hy_bot⟩
   simp
 
--- PRed, see #17087
+-- PRed, see #17087, renamed left_distrib_of_nonneg_of_ne_top and changed to use {x : EReal} and the hypothesis (x ≠ ⊤), will need some fixes
 lemma coe_mul_add_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
     x * (y + z) = x * y + x * z := by
   by_cases hx0 : x = 0
@@ -162,7 +162,7 @@ lemma coe_mul_add_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
     · simp only [top_add_coe, EReal.coe_mul_top_of_pos hx_pos]
       rw [← EReal.coe_mul, EReal.top_add_coe]
     · simp [EReal.coe_mul_top_of_pos hx_pos]
--- PRed, see #17087
+-- PRed, see #17087, same as above
 lemma add_mul_coe_of_nonneg {x : ℝ} (hx_nonneg : 0 ≤ x) (y z : EReal) :
     (y + z) * x = y * x + z * x := by
   simp_rw [mul_comm _ (x : EReal)]
@@ -189,7 +189,7 @@ lemma sub_self_le_zero {x : EReal} : x - x ≤ 0 := by
 -- PRed, see #17087
 lemma top_sub_of_ne_top {x : EReal} (hx : x ≠ ⊤) : ⊤ - x = ⊤ := by
   induction x <;> tauto
--- PRed, see #17087
+-- PRed, see #17087, deleted from the PR, subseded by EReal.left_distrib_of_nonneg
 lemma top_mul_add_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     ⊤ * (x + y) = ⊤ * x + ⊤ * y := by
   induction x, y using EReal.induction₂_symm with
@@ -216,11 +216,11 @@ lemma top_mul_add_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
   | zero_bot => simp
   | neg_bot => simp
   | bot_bot => simp
--- PRed, see #17087
+-- PRed, see #17087, deleted from the PR, subseded by EReal.right_distrib_of_nonneg
 lemma add_mul_top_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     (x + y) * ⊤ = x * ⊤ + y * ⊤ := by
   simp_rw [mul_comm _ ⊤, EReal.top_mul_add_of_nonneg hx hy]
--- PRed, see #17087
+-- PRed, see #17087, deleted from the PR, subseded by EReal.left_distrib_of_nonneg
 lemma bot_mul_add_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     ⊥ * (x + y) = ⊥ * x + ⊥ * y := by
   simp_rw [← neg_top, neg_mul]
@@ -229,11 +229,11 @@ lemma bot_mul_add_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     simp [hx, bot_lt_iff_ne_bot.mp <| bot_lt_zero.trans_le hx]
   · rw [mul_ne_bot]
     simp [hy, bot_lt_iff_ne_bot.mp <| bot_lt_zero.trans_le hy]
--- PRed, see #17087
+-- PRed, see #17087, deleted from the PR, subseded by EReal.right_distrib_of_nonneg
 lemma add_mul_bot_of_nonneg {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     (x + y) * ⊥ = x * ⊥ + y * ⊥ := by
   simp_rw [mul_comm _ ⊥, EReal.bot_mul_add_of_nonneg hx hy]
--- PRed, see #17087
+-- PRed, see #17087, deleted from the PR, subseded by EReal.left_distrib_of_nonneg
 lemma mul_add_coe_of_nonneg (x : EReal) {y z : ℝ} (hy : 0 ≤ y) (hz : 0 ≤ z) :
     x * (y + z) = x * y + x * z := by
   by_cases hx_top : x = ⊤
@@ -253,7 +253,7 @@ lemma mul_add_coe_of_nonneg (x : EReal) {y z : ℝ} (hy : 0 ≤ y) (hz : 0 ≤ z
   lift x to ℝ using ⟨hx_top, hx_bot⟩
   norm_cast
   rw [mul_add]
--- PRed, see #17087
+-- PRed, see #17087, deleted from the PR, subseded by EReal.right_distrib_of_nonneg
 lemma coe_add_mul_of_nonneg (x : EReal) {y z : ℝ} (hy : 0 ≤ y) (hz : 0 ≤ z) :
     (y + z) * x =  y * x + z * x := by
   simp_rw [mul_comm _ x]
@@ -320,7 +320,8 @@ instance : MeasurableNeg EReal := by
 section MeasurableMul
 
 variable {α β γ : Type*} {mα : MeasurableSpace α} {mβ : MeasurableSpace β} {mγ : MeasurableSpace γ}
--- PRed, see #17097
+-- PRed, see #17097, nothing in this page depends on this PR
+-- removed from the PR since it is not used anywhere, nonetheless it is saved in a separate branch of Mathlib (measurable_from_prod_countable_right) with a different name in case it becomes useful in the future
 theorem measurable_from_prod_countable'' [Countable β] [MeasurableSingletonClass β]
     {f : β × α → γ} (hf : ∀ x, Measurable fun y => f (x, y)) :
     Measurable f := by
@@ -408,7 +409,8 @@ instance : MeasurableMul₂ EReal := by
     exact (measurable_const_mul _).comp measurable_coe_real_ereal
 
 end MeasurableMul
--- PRed, see #17100
+
+-- PRed, see #17100, nothing in this page depends on this PR
 theorem nhdsWithin_top : 𝓝[≠] (⊤ : EReal) = (atTop).map Real.toEReal := by
   apply (nhdsWithin_hasBasis nhds_top_basis_Ici _).ext (atTop_basis.map Real.toEReal)
   · simp only [EReal.image_coe_Ici, true_and]
@@ -446,27 +448,26 @@ theorem tendsto_toReal_atTop : Tendsto EReal.toReal (𝓝[≠] ⊤) atTop := by
 theorem tendsto_toReal_atBot : Tendsto EReal.toReal (𝓝[≠] ⊥) atBot := by
   rw [nhdsWithin_bot, tendsto_map'_iff]
   exact tendsto_id
-
-/-- Reinterpret an EReal number `x` as an ENNReal number. Returns `0` if `x < 0`. -/
+-- PRed, see #18885
+/-- `x.toENNReal` returns `x` if it is nonnegative, `0` otherwise. -/
 noncomputable def toENNReal (x : EReal) : ENNReal :=
   if x = ⊤ then ⊤
   else ENNReal.ofReal x.toReal
-
-@[simp]
-theorem toENNReal_top : (⊤ : EReal).toENNReal = ⊤ := rfl
-
+-- PRed, see #18885
+@[simp] theorem toENNReal_top : (⊤ : EReal).toENNReal = ⊤ := rfl
+-- PRed, see #18885
 @[simp]
 lemma toENNReal_of_ne_top {x : EReal} (hx : x ≠ ⊤) : x.toENNReal = ENNReal.ofReal x.toReal :=
   if_neg hx
-
+-- PRed, see #18885
 @[simp]
 theorem toENNReal_eq_top_iff {x : EReal} : x.toENNReal = ⊤ ↔ x = ⊤ := by
   by_cases h : x = ⊤
   · simp [h]
   · simp [h, toENNReal]
-
+-- PRed, see #18885
 theorem toENNReal_ne_top_iff {x : EReal} : x.toENNReal ≠ ⊤ ↔ x ≠ ⊤ := toENNReal_eq_top_iff.not
-
+-- PRed, see #18885
 @[simp]
 theorem toENNReal_of_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
   rw [toENNReal, if_neg ?_]
@@ -474,16 +475,17 @@ theorem toENNReal_of_nonpos {x : EReal} (hx : x ≤ 0) : x.toENNReal = 0 := by
   intro h
   rw [h, top_le_iff] at hx
   exact zero_ne_top hx
-
+-- PRed, see #18885
 theorem toENNReal_eq_zero_iff {x : EReal} : x.toENNReal = 0 ↔ x ≤ 0 := by
   induction x <;> simp [toENNReal]
-
+-- PRed, see #18885
 theorem toENNReal_ne_zero_iff {x : EReal} : x.toENNReal ≠ 0 ↔ 0 < x := by
   simp [toENNReal_eq_zero_iff.not]
-
+-- PRed, see #18885
 lemma toENNReal_eq_toENNReal {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     x.toENNReal = y.toENNReal ↔ x = y := by
   induction x <;> induction y <;> simp_all
+-- PRed, see #18885
 @[simp]
 theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := by
   rw [toENNReal]
@@ -494,6 +496,7 @@ theorem coe_toENNReal {x : EReal} (hx : 0 ≤ x) : (x.toENNReal : EReal) = x := 
   simp only [coe_ennreal_ofReal, ge_iff_le, hx, toReal_nonneg, max_eq_left]
   exact coe_toReal h_top fun _ ↦ by simp_all only [le_bot_iff, zero_ne_bot]
 
+-- PRed, see #18885
 @[simp]
 theorem toENNReal_coe {x : ENNReal} : (x : EReal).toENNReal = x := by
   by_cases h_top : x = ⊤
@@ -501,7 +504,7 @@ theorem toENNReal_coe {x : ENNReal} : (x : EReal).toENNReal = x := by
   rw [toENNReal, if_neg _, toReal_coe_ennreal, ENNReal.ofReal_toReal_eq_iff]
   · exact h_top
   · simp [h_top]
-
+-- PRed, see #18885
 theorem toENNReal_le_toENNReal {x y : EReal} (h : x ≤ y) : x.toENNReal ≤ y.toENNReal := by
   induction x
   · simp
@@ -511,41 +514,44 @@ theorem toENNReal_le_toENNReal {x y : EReal} (h : x ≤ y) : x.toENNReal ≤ y.t
     refine ENNReal.ofReal_le_ofReal ?_
     refine EReal.toReal_le_toReal h (coe_ne_bot _) hy_top
   · simp_all
-
+-- PRed, see #18885
 lemma toENNReal_lt_toENNReal {x y : EReal} (hx : 0 ≤ x) (hxy : x < y) :
     x.toENNReal < y.toENNReal :=
   lt_of_le_of_ne (toENNReal_le_toENNReal hxy.le)
     fun h ↦ hxy.ne <| (toENNReal_eq_toENNReal hx (hx.trans_lt hxy).le).mp h
 
+-- PRed, see #18885
 @[simp] lemma real_coe_toENNReal (x : ℝ) : (x : EReal).toENNReal = ENNReal.ofReal x := rfl
 
+-- PRed, see #18885
 @[simp]
 lemma toReal_toENNReal {x : EReal} (hx : 0 ≤ x) : x.toENNReal.toReal = x.toReal := by
   by_cases h : x = ⊤
   · simp [h]
   · simp [h, toReal_nonneg hx]
-
+-- PRed, see #18885
 @[measurability]
 theorem _root_.measurable_ereal_toENNReal : Measurable EReal.toENNReal :=
   EReal.measurable_of_measurable_real (by simpa using ENNReal.measurable_ofReal)
-
+-- PRed, see #18885
 @[measurability, fun_prop]
 theorem _root_.Measurable.ereal_toENNReal {α : Type*} {_ : MeasurableSpace α}
     {f : α → EReal} (hf : Measurable f) :
     Measurable fun x => (f x).toENNReal :=
   measurable_ereal_toENNReal.comp hf
 
+-- PRed, see #18885
 lemma toENNReal_add {x y : EReal} (hx : 0 ≤ x) (hy : 0 ≤ y) :
     (x + y).toENNReal = x.toENNReal + y.toENNReal := by
   induction x <;> induction y <;> try {· simp_all}
   norm_cast
   simp_rw [real_coe_toENNReal]
   simp_all [ENNReal.ofReal_add]
-
+-- PRed, see #18885
 lemma toENNReal_add_le {x y : EReal} : (x + y).toENNReal ≤ x.toENNReal + y.toENNReal := by
   induction x <;> induction y <;> try {· simp}
   exact ENNReal.ofReal_add_le
-
+-- PRed, see #18885
 lemma toENNReal_sub {x y : EReal} (hy : 0 ≤ y) :
     (x - y).toENNReal = x.toENNReal - y.toENNReal := by
   induction x <;> induction y <;> try {· simp_all}
@@ -559,7 +565,7 @@ lemma toENNReal_sub {x y : EReal} (hy : 0 ≤ y) :
         ENNReal.ofReal_sub x (EReal.coe_nonneg.mp hy)]
       exact Ne.symm (ne_of_beq_false rfl)
   · rw [ENNReal.sub_eq_top_iff.mpr (by simp), top_sub_of_ne_top (coe_ne_top _), toENNReal_top]
-
+-- PRed, see #18885
 lemma toENNReal_mul {x y : EReal} (hx : 0 ≤ x) :
     (x * y).toENNReal = x.toENNReal * y.toENNReal := by
   induction x <;> induction y
@@ -572,11 +578,11 @@ lemma toENNReal_mul {x y : EReal} (hx : 0 ≤ x) :
     · simp_all [le_of_lt, top_mul_of_neg (EReal.coe_neg'.mpr ha)]
     · simp [ha]
     · simp_all [top_mul_of_pos (EReal.coe_pos.mpr ha)]
-
+-- PRed, see #18885
 lemma toENNReal_mul' {x y : EReal} (hy : 0 ≤ y) :
     (x * y).toENNReal = x.toENNReal * y.toENNReal := by
   rw [mul_comm, toENNReal_mul hy, mul_comm]
-
+-- PRed, see #18885
 lemma continuous_toENNReal : Continuous EReal.toENNReal := by
   refine continuous_iff_continuousAt.mpr fun x ↦ ?_
   by_cases h_top : x = ⊤
@@ -594,25 +600,25 @@ lemma continuous_toENNReal : Continuous EReal.toENNReal := by
   refine ENNReal.continuous_ofReal.continuousAt.comp' <| continuousOn_toReal.continuousAt
     <| (toFinite _).isClosed.compl_mem_nhds ?_
   simp_all only [mem_compl_iff, mem_singleton_iff, mem_insert_iff, or_self, not_false_eq_true]
-
+-- PRed, see #18885
 @[fun_prop]
 lemma _root_.Continous.ereal_toENNReal {α : Type*} [TopologicalSpace α] {f : α → EReal}
     (hf : Continuous f) :
     Continuous fun x => (f x).toENNReal :=
   continuous_toENNReal.comp hf
-
+-- PRed, see #18885
 @[fun_prop]
 lemma _root_.ContinuousOn.ereal_toENNReal {α : Type*} [TopologicalSpace α] {s : Set α}
     {f : α → EReal} (hf : ContinuousOn f s) :
     ContinuousOn (fun x => (f x).toENNReal) s :=
   continuous_toENNReal.comp_continuousOn hf
-
+-- PRed, see #18885
 @[fun_prop]
 lemma _root_.ContinuousWithinAt.ereal_toENNReal {α : Type*} [TopologicalSpace α] {f : α → EReal}
     {s : Set α} {x : α} (hf : ContinuousWithinAt f s x) :
     ContinuousWithinAt (fun x => (f x).toENNReal) s x :=
   continuous_toENNReal.continuousAt.comp_continuousWithinAt hf
-
+-- PRed, see #18885
 @[fun_prop]
 lemma _root_.ContinuousAt.ereal_toENNReal {α : Type*} [TopologicalSpace α] {f : α → EReal}
     {x : α} (hf : ContinuousAt f x) :
@@ -624,9 +630,8 @@ end EReal
 namespace ENNReal
 
 variable {a b c x y : ℝ≥0∞}
-
-lemma toEReal_sub (hy_top : y ≠ ⊤) (h_le : y ≤ x) :
-    (x - y).toEReal = x.toEReal - y.toEReal := by
+-- PRed, see #18925
+lemma toEReal_sub (hy_top : y ≠ ⊤) (h_le : y ≤ x) : (x - y).toEReal = x.toEReal - y.toEReal := by
   by_cases hx_top : x = ⊤
   · lift y to ℝ≥0 using hy_top
     simp only [hx_top, top_sub_coe, EReal.coe_ennreal_top]
@@ -639,10 +644,10 @@ lemma toEReal_sub (hy_top : y ≠ ⊤) (h_le : y ≤ x) :
   rw [toReal_sub_of_le h_le hx_top]
   exact EReal.coe_sub _ _
 
---PR these 2 lemmas to mathlib, just after ENNReal.mul_max
--- #check ENNReal.mul_max
+-- PRed, see #18926, the version in the PR is more general
 theorem min_mul : min a b * c = min (a * c) (b * c) := mul_right_mono.map_min
 
+-- PRed, see #18926, the version in the PR is more general
 theorem mul_min : a * min b c = min (a * b) (a * c) := mul_left_mono.map_min
 
 end ENNReal
